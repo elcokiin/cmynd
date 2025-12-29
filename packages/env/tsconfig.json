@@ -1,0 +1,3 @@
+{
+  "extends": "@elcokiin/config/tsconfig.base.json"
+}
