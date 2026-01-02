@@ -354,34 +354,518 @@ function UserList() {
 }
 ```
 
-### Prefer Controlled Components
-Use controlled components for forms:
+### Forms with TanStack Form
+
+This project uses **TanStack Form** (`@tanstack/react-form`) for form management. Follow these principles:
+
+#### Philosophy
+
+1. **No Generics**: Never pass generics to `useForm`. Let TypeScript infer types from `defaultValues`.
+2. **Controlled Inputs**: All forms use controlled inputs for predictability, testing, and debugging.
+3. **Flexible Validation**: Support multiple validation strategies (on blur, change, submit, mount).
+4. **Validation Libraries**: Use Zod or Valibot for validation schemas.
+5. **Wrap into Components**: Create reusable form components and hooks for your design system.
+
+#### Basic Form Pattern
 
 ```typescript
-// ✅ Good: controlled input
-function LoginForm() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+import { useForm } from "@tanstack/react-form";
+import { zodValidator } from "@tanstack/zod-form-adapter";
+import { z } from "zod";
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle login
-  };
+// ✅ Good: Infer types from defaultValues, no generics
+function LoginForm() {
+  const form = useForm({
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+    onSubmit: async ({ value }) => {
+      // Handle login with fully typed values
+      console.log(value.email, value.password);
+    },
+  });
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        form.handleSubmit();
+      }}
+    >
+      <form.Field
+        name="email"
+        validators={{
+          onChange: z.string().email("Invalid email"),
+        }}
+        validatorAdapter={zodValidator()}
+      >
+        {(field) => (
+          <div>
+            <label htmlFor={field.name}>Email</label>
+            <input
+              id={field.name}
+              type="email"
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange={(e) => field.handleChange(e.target.value)}
+            />
+            {field.state.meta.errors.length > 0 && (
+              <span>{field.state.meta.errors[0]}</span>
+            )}
+          </div>
+        )}
+      </form.Field>
+
+      <form.Field
+        name="password"
+        validators={{
+          onChange: z.string().min(8, "Password must be at least 8 characters"),
+        }}
+        validatorAdapter={zodValidator()}
+      >
+        {(field) => (
+          <div>
+            <label htmlFor={field.name}>Password</label>
+            <input
+              id={field.name}
+              type="password"
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange={(e) => field.handleChange(e.target.value)}
+            />
+            {field.state.meta.errors.length > 0 && (
+              <span>{field.state.meta.errors[0]}</span>
+            )}
+          </div>
+        )}
+      </form.Field>
+
+      <button type="submit" disabled={form.state.isSubmitting}>
+        {form.state.isSubmitting ? "Logging in..." : "Login"}
+      </button>
+    </form>
+  );
+}
+
+// ❌ Bad: using generics
+interface LoginFormValues {
+  email: string;
+  password: string;
+}
+
+function BadLoginForm() {
+  const form = useForm<LoginFormValues>({  // ❌ Don't use generics
+    // ...
+  });
+}
+```
+
+#### Type-Safe Forms with Zod
+
+```typescript
+import { useForm } from "@tanstack/react-form";
+import { zodValidator } from "@tanstack/zod-form-adapter";
+import { z } from "zod";
+
+// Define schema
+const userSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  age: z.number().min(18, "Must be 18 or older"),
+  bio: z.string().optional(),
+});
+
+type User = z.infer<typeof userSchema>;
+
+// ✅ Good: Type-safe with inference
+function UserForm() {
+  const defaultUser: User = {
+    name: "",
+    email: "",
+    age: 18,
+    bio: "",
+  };
+
+  const form = useForm({
+    defaultValues: defaultUser,
+    onSubmit: async ({ value }) => {
+      // value is fully typed as User
+      await saveUser(value);
+    },
+  });
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        form.handleSubmit();
+      }}
+    >
+      <form.Field
+        name="name"
+        validators={{
+          onChange: userSchema.shape.name,
+        }}
+        validatorAdapter={zodValidator()}
+      >
+        {(field) => (
+          <div>
+            <label>Name</label>
+            <input
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+              onBlur={field.handleBlur}
+            />
+            {field.state.meta.errors.map((error) => (
+              <span key={error}>{error}</span>
+            ))}
+          </div>
+        )}
+      </form.Field>
+
+      <form.Field
+        name="email"
+        validators={{
+          onChange: userSchema.shape.email,
+        }}
+        validatorAdapter={zodValidator()}
+      >
+        {(field) => (
+          <div>
+            <label>Email</label>
+            <input
+              type="email"
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+              onBlur={field.handleBlur}
+            />
+            {field.state.meta.errors.map((error) => (
+              <span key={error}>{error}</span>
+            ))}
+          </div>
+        )}
+      </form.Field>
+
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+```
+
+#### Async Validation with Debouncing
+
+```typescript
+function SignupForm() {
+  const form = useForm({
+    defaultValues: {
+      username: "",
+      email: "",
+    },
+    onSubmit: async ({ value }) => {
+      await createUser(value);
+    },
+  });
+
+  return (
+    <form onSubmit={(e) => {
+      e.preventDefault();
+      form.handleSubmit();
+    }}>
+      <form.Field
+        name="username"
+        validators={{
+          onChangeAsync: z.string().min(3),
+          onChangeAsyncDebounceMs: 500,
+        }}
+        validatorAdapter={zodValidator()}
+        asyncAlways
+      >
+        {(field) => (
+          <div>
+            <label>Username</label>
+            <input
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+            />
+            {field.state.meta.isValidating && <span>Checking...</span>}
+            {field.state.meta.errors.map((error) => (
+              <span key={error}>{error}</span>
+            ))}
+          </div>
+        )}
+      </form.Field>
+    </form>
+  );
+}
+```
+
+#### Custom Form Components (Recommended)
+
+Create reusable form components for consistency:
+
+```typescript
+// components/forms/TextField.tsx
+import type { FieldApi } from "@tanstack/react-form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+type TextFieldProps = {
+  field: FieldApi<any, any, any, any>;
+  label: string;
+  type?: "text" | "email" | "password" | "number";
+};
+
+export function TextField({ field, label, type = "text" }: TextFieldProps) {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={field.name}>{label}</Label>
+      <Input
+        id={field.name}
+        type={type}
+        value={field.state.value}
+        onChange={(e) => field.handleChange(e.target.value)}
+        onBlur={field.handleBlur}
       />
-      <input
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
+      {field.state.meta.errors.length > 0 && (
+        <p className="text-sm text-destructive">
+          {field.state.meta.errors[0]}
+        </p>
+      )}
+    </div>
+  );
+}
+
+// Usage with custom component
+function LoginForm() {
+  const form = useForm({
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+    onSubmit: async ({ value }) => {
+      await login(value);
+    },
+  });
+
+  return (
+    <form onSubmit={(e) => {
+      e.preventDefault();
+      form.handleSubmit();
+    }}>
+      <form.Field
+        name="email"
+        validators={{
+          onChange: z.string().email(),
+        }}
+        validatorAdapter={zodValidator()}
+      >
+        {(field) => <TextField field={field} label="Email" type="email" />}
+      </form.Field>
+
+      <form.Field
+        name="password"
+        validators={{
+          onChange: z.string().min(8),
+        }}
+        validatorAdapter={zodValidator()}
+      >
+        {(field) => <TextField field={field} label="Password" type="password" />}
+      </form.Field>
+
       <button type="submit">Login</button>
     </form>
   );
 }
 ```
+
+#### Conditional Fields
+
+```typescript
+function ProfileForm() {
+  const form = useForm({
+    defaultValues: {
+      userType: "individual" as "individual" | "business",
+      name: "",
+      companyName: "",
+      taxId: "",
+    },
+    onSubmit: async ({ value }) => {
+      await updateProfile(value);
+    },
+  });
+
+  return (
+    <form onSubmit={(e) => {
+      e.preventDefault();
+      form.handleSubmit();
+    }}>
+      <form.Field name="userType">
+        {(field) => (
+          <div>
+            <label>User Type</label>
+            <select
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value as any)}
+            >
+              <option value="individual">Individual</option>
+              <option value="business">Business</option>
+            </select>
+          </div>
+        )}
+      </form.Field>
+
+      <form.Field name="name">
+        {(field) => (
+          <div>
+            <label>Name</label>
+            <input
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+            />
+          </div>
+        )}
+      </form.Field>
+
+      {/* Conditional fields based on userType */}
+      <form.Subscribe
+        selector={(state) => state.values.userType}
+      >
+        {(userType) => (
+          userType === "business" && (
+            <>
+              <form.Field name="companyName">
+                {(field) => (
+                  <div>
+                    <label>Company Name</label>
+                    <input
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                    />
+                  </div>
+                )}
+              </form.Field>
+
+              <form.Field name="taxId">
+                {(field) => (
+                  <div>
+                    <label>Tax ID</label>
+                    <input
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                    />
+                  </div>
+                )}
+              </form.Field>
+            </>
+          )
+        )}
+      </form.Subscribe>
+
+      <button type="submit">Save Profile</button>
+    </form>
+  );
+}
+```
+
+#### Form Validation Timing
+
+TanStack Form supports multiple validation triggers:
+
+```typescript
+function FlexibleForm() {
+  const form = useForm({
+    defaultValues: {
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+    onSubmit: async ({ value }) => {
+      await register(value);
+    },
+  });
+
+  return (
+    <form onSubmit={(e) => {
+      e.preventDefault();
+      form.handleSubmit();
+    }}>
+      {/* Validate on change */}
+      <form.Field
+        name="email"
+        validators={{
+          onChange: z.string().email("Invalid email"),
+        }}
+        validatorAdapter={zodValidator()}
+      >
+        {(field) => (
+          <div>
+            <input
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+            />
+            {field.state.meta.errors.map((e) => <span key={e}>{e}</span>)}
+          </div>
+        )}
+      </form.Field>
+
+      {/* Validate on blur */}
+      <form.Field
+        name="password"
+        validators={{
+          onBlur: z.string().min(8, "Password must be at least 8 characters"),
+        }}
+        validatorAdapter={zodValidator()}
+      >
+        {(field) => (
+          <div>
+            <input
+              type="password"
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+              onBlur={field.handleBlur}
+            />
+            {field.state.meta.errors.map((e) => <span key={e}>{e}</span>)}
+          </div>
+        )}
+      </form.Field>
+
+      {/* Cross-field validation on submit */}
+      <form.Field
+        name="confirmPassword"
+        validators={{
+          onSubmit: ({ value, fieldApi }) => {
+            const password = fieldApi.form.getFieldValue("password");
+            return value === password ? undefined : "Passwords must match";
+          },
+        }}
+      >
+        {(field) => (
+          <div>
+            <input
+              type="password"
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+            />
+            {field.state.meta.errors.map((e) => <span key={e}>{e}</span>)}
+          </div>
+        )}
+      </form.Field>
+
+      <button type="submit">Register</button>
+    </form>
+  );
+}
+```
+
+#### Best Practices
+
+1. **Never use generics** - let TypeScript infer from `defaultValues`
+2. **Always define `defaultValues`** - ensures type safety without generics
+3. **Use Zod for validation** - consistent with project's validation strategy
+4. **Create reusable field components** - wrap form fields into your design system
+5. **Leverage controlled inputs** - predictable state, easier testing, better debugging
+6. **Use appropriate validation timing** - `onChange` for instant feedback, `onBlur` for expensive checks
+7. **Debounce async validation** - use `onChangeAsyncDebounceMs` for API calls
+8. **Handle form state** - use `form.state.isSubmitting`, `form.state.canSubmit` for UX
