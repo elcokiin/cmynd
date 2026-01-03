@@ -1,1 +1,4 @@
 @import "@elcokiin/ui/styles";
+
+/* Register web app source files for Tailwind to scan */
+@source "./";
