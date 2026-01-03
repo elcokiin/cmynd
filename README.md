@@ -50,7 +50,7 @@ Your app will connect to the Convex cloud backend automatically.
 ```
 elcokiin/
 ├── apps/
-│   ├── web/         # Frontend application (React + TanStack Start)
+│   ├── studio/         # Frontend application (React + TanStack Start)
 ├── packages/
 │   ├── backend/     # Convex backend functions and schema
 ```
@@ -59,6 +59,6 @@ elcokiin/
 
 - `bun run dev`: Start all applications in development mode
 - `bun run build`: Build all applications
-- `bun run dev:web`: Start only the web application
+- `bun run dev:studio`: Start only the web studio application
 - `bun run dev:setup`: Setup and configure your Convex project
 - `bun run check-types`: Check TypeScript types across all apps

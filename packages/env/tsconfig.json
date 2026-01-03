@@ -1,3 +1,7 @@
 {
-  "extends": "@elcokiin/config/tsconfig.base.json"
+  "extends": "@elcokiin/config/tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ESNext", "DOM"],
+    "types": ["node", "vite/client"]
+  }
 }
