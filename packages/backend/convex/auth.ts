@@ -4,11 +4,12 @@ import { betterAuth } from "better-auth";
 
 import type { DataModel } from "./_generated/dataModel";
 
+import { env } from "@elcokiin/env/backend";
 import { components } from "./_generated/api";
 import { query } from "./_generated/server";
 import authConfig from "./auth.config";
 
-const siteUrl = process.env.SITE_URL!;
+const siteUrl = env.SITE_URL;
 
 export const authComponent = createClient<DataModel>(components.betterAuth);
 
