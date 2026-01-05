@@ -14,21 +14,18 @@ import {
 } from "novel";
 import { cx } from "class-variance-authority";
 
-// Placeholder configuration
 const placeholder = Placeholder.configure({
   placeholder: "Press '/' for commands, or start typing...",
 });
 
-// Link configuration
 const tiptapLink = TiptapLink.configure({
   HTMLAttributes: {
     class: cx(
-      "text-primary underline underline-offset-[3px] hover:text-primary/80 transition-colors cursor-pointer"
+      "text-primary underline underline-offset-[3px] hover:text-primary/80 transition-colors cursor-pointer",
     ),
   },
 });
 
-// Image configuration
 const tiptapImage = TiptapImage.configure({
   allowBase64: true,
   HTMLAttributes: {
@@ -36,7 +33,6 @@ const tiptapImage = TiptapImage.configure({
   },
 });
 
-// Task list configuration
 const taskList = TaskList.configure({
   HTMLAttributes: {
     class: cx("not-prose pl-2"),
@@ -98,23 +94,18 @@ const starterKit = StarterKit.configure({
   gapcursor: false,
 });
 
-// Text style for color support
 const textStyle = TextStyle.configure({});
 
-// Color extension
 const color = Color.configure({
   types: ["textStyle"],
 });
 
-// Highlight extension
 const highlight = HighlightExtension.configure({
   multicolor: true,
 });
 
-// Underline extension
 const underline = TiptapUnderline.configure({});
 
-// Export all default extensions
 export const defaultExtensions = [
   starterKit,
   placeholder,

@@ -61,13 +61,10 @@ function EditorContent() {
   const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
   const getStorageUrl = useMutation(api.storage.getUrl);
 
-  // Configure image upload with Convex storage
   useEffect(() => {
     setImageUploadFn(async (file: File) => {
-      // Get upload URL from Convex
       const uploadUrl = await generateUploadUrl();
 
-      // Upload the file
       const response = await fetch(uploadUrl, {
         method: "POST",
         headers: { "Content-Type": file.type },
@@ -80,7 +77,6 @@ function EditorContent() {
 
       const { storageId } = await response.json();
 
-      // Get the public URL for the uploaded file
       const url = await getStorageUrl({ storageId });
       if (!url) {
         throw new Error("Failed to get image URL");
@@ -90,7 +86,6 @@ function EditorContent() {
     });
   }, [generateUploadUrl, getStorageUrl]);
 
-  // Handle debounced content updates (auto-save)
   const handleDebouncedUpdate = useCallback(
     async (content: JSONContent) => {
       try {
@@ -103,21 +98,20 @@ function EditorContent() {
         toast.error("Failed to save document");
       }
     },
-    [documentId, updateContent]
+    [documentId, updateContent],
   );
 
-  // Loading state
   if (document === undefined) {
     return <EditorSkeleton />;
   }
 
-  // Document not found or unauthorized
   if (document === null) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4">
         <h1 className="text-2xl font-bold">Document not found</h1>
         <p className="text-muted-foreground">
-          The document you're looking for doesn't exist or you don't have access to it.
+          The document you're looking for doesn't exist or you don't have access
+          to it.
         </p>
         <Button onClick={() => navigate({ to: "/" })}>
           <ArrowLeftIcon className="mr-2 h-4 w-4" />

@@ -1,4 +1,8 @@
 import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
+import type {
+  DocumentType,
+  DocumentStatus,
+} from "@elcokiin/backend/lib/types/documents";
 
 import { Button, buttonVariants } from "@elcokiin/ui/button";
 import { cn } from "@elcokiin/ui/lib/utils";
@@ -8,9 +12,6 @@ import { useState } from "react";
 
 import { DocumentSettingsDialog } from "./document-settings-dialog";
 import { EditableDocumentTitle } from "./editable-document-title";
-
-type DocumentType = "own" | "curated" | "inspiration";
-type DocumentStatus = "building" | "published";
 
 type EditorHeaderProps = {
   documentId: Id<"documents">;

@@ -1,5 +1,9 @@
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
+import type {
+  DocumentType,
+  DocumentStatus,
+} from "@elcokiin/backend/lib/types/documents";
 import { Button, buttonVariants } from "@elcokiin/ui/button";
 import {
   Card,
@@ -30,13 +34,13 @@ import { MoreVerticalIcon, PenIcon, TrashIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { type DocumentType, documentTypeConfig } from "./document-type-config";
+import { documentTypeConfig } from "./document-type-config";
 
 export type Document = {
   _id: Id<"documents">;
   title: string;
   type: DocumentType;
-  status: "building" | "published";
+  status: DocumentStatus;
   createdAt: number;
   updatedAt: number;
 };

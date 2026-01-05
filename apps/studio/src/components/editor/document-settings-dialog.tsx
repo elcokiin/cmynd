@@ -1,4 +1,5 @@
 import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
+import type { DocumentType } from "@elcokiin/backend/lib/types/documents";
 
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { Button } from "@elcokiin/ui/button";
@@ -15,7 +16,7 @@ import { useMutation } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { type DocumentType, documentTypeConfig } from "@/components/dashboard/document-type-config";
+import { documentTypeConfig } from "@/components/dashboard/document-type-config";
 
 type DocumentSettingsDialogProps = {
   documentId: Id<"documents">;

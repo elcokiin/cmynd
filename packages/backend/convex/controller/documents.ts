@@ -1,5 +1,11 @@
 import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
+import {
+  documentTypeValidator,
+  documentStatusValidator,
+  curationDataValidator,
+  referenceValidator,
+} from "../schemas/documents";
 import * as Documents from "../model/documents";
 
 // =============================================================================
@@ -41,7 +47,7 @@ export const list = query({
  */
 export const listByStatus = query({
   args: {
-    status: v.union(v.literal("building"), v.literal("published")),
+    status: documentStatusValidator,
   },
   handler: async (ctx, args) => {
     return await Documents.listByStatus(ctx, args.status);
@@ -58,7 +64,7 @@ export const listByStatus = query({
 export const create = mutation({
   args: {
     title: v.string(),
-    type: v.union(v.literal("own"), v.literal("curated"), v.literal("inspiration")),
+    type: documentTypeValidator,
     content: v.optional(v.any()),
   },
   handler: async (ctx, args) => {
@@ -91,7 +97,7 @@ export const updateTitle = mutation({
 export const updateType = mutation({
   args: {
     documentId: v.id("documents"),
-    type: v.union(v.literal("own"), v.literal("curated"), v.literal("inspiration")),
+    type: documentTypeValidator,
   },
   handler: async (ctx, args) => {
     await Documents.updateType(ctx, args.documentId, args.type);
@@ -119,26 +125,8 @@ export const updateMetadata = mutation({
     documentId: v.id("documents"),
     title: v.optional(v.string()),
     coverImageId: v.optional(v.union(v.id("_storage"), v.null())),
-    curation: v.optional(
-      v.union(
-        v.object({
-          sourceUrl: v.string(),
-          sourceTitle: v.string(),
-          sourceAuthor: v.optional(v.string()),
-          spin: v.string(),
-        }),
-        v.null()
-      )
-    ),
-    references: v.optional(
-      v.array(
-        v.object({
-          url: v.string(),
-          title: v.string(),
-          author: v.optional(v.string()),
-        })
-      )
-    ),
+    curation: v.optional(v.union(curationDataValidator, v.null())),
+    references: v.optional(v.array(referenceValidator)),
   },
   handler: async (ctx, args) => {
     const { documentId, ...input } = args;

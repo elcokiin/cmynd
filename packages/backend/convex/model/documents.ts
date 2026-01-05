@@ -1,22 +1,12 @@
 import type { Id } from "../_generated/dataModel";
 import type { QueryCtx, MutationCtx } from "../_generated/server";
+import type {
+  DocumentType,
+  DocumentStatus,
+  CurationData,
+  Reference,
+} from "../lib/types/documents";
 import * as Users from "./users";
-
-export type DocumentType = "own" | "curated" | "inspiration";
-export type DocumentStatus = "building" | "published";
-
-export type CurationData = {
-  sourceUrl: string;
-  sourceTitle: string;
-  sourceAuthor?: string;
-  spin: string;
-};
-
-export type Reference = {
-  url: string;
-  title: string;
-  author?: string;
-};
 
 export type CreateDocumentInput = {
   title: string;

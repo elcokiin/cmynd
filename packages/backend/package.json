@@ -4,6 +4,17 @@
   "description": "",
   "license": "ISC",
   "author": "",
+  "type": "module",
+  "exports": {
+    "./convex/_generated/api": "./convex/_generated/api.js",
+    "./convex/_generated/api.d": "./convex/_generated/api.d.ts",
+    "./convex/_generated/dataModel": "./convex/_generated/dataModel.d.ts",
+    "./lib/types": "./convex/lib/types/index.ts",
+    "./lib/types/documents": "./convex/lib/types/documents.ts",
+    "./lib/types/storage": "./convex/lib/types/storage.ts",
+    "./schemas": "./convex/schemas/index.ts",
+    "./schemas/documents": "./convex/schemas/documents.ts"
+  },
   "scripts": {
     "dev": "convex dev",
     "dev:setup": "convex dev --configure --until-success"

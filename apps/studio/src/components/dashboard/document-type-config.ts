@@ -1,6 +1,7 @@
+import type { DocumentType } from "@elcokiin/backend/lib/types/documents";
 import { BookOpenIcon, FileTextIcon, LightbulbIcon, PenIcon } from "lucide-react";
 
-export type DocumentType = "own" | "curated" | "inspiration";
+export type { DocumentType };
 
 export const documentTypeConfig: Record<
   DocumentType,

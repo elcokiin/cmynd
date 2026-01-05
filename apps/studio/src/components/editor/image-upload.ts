@@ -1,7 +1,5 @@
 import type { Editor } from "@tiptap/react";
-
-// Type for upload function
-type UploadFn = (file: File) => Promise<string>;
+import type { UploadFn } from "@elcokiin/backend/lib/types/storage";
 
 // Default upload function that can be overridden
 let uploadFn: UploadFn | null = null;
