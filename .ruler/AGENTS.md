@@ -52,7 +52,7 @@ bun run ruler:apply      # Apply ruler configuration (--local-only flag set)
 ```
 elcokiin/
 ├── apps/
-│   └── web/              # Frontend application
+│   └── studio/              # Frontend application
 │       ├── src/
 │       │   ├── components/  # React components
 │       │   ├── lib/         # Utilities, auth clients
@@ -63,6 +63,7 @@ elcokiin/
 │   ├── backend/          # Convex backend
 │   │   └── convex/       # Convex functions, schema, auth config
 │   ├── config/           # Shared TypeScript configs
+│   ├── ui/               # Shared shadcn components with styles 
 │   └── env/              # Shared environment variables
 └── turbo.json            # Turborepo configuration
 ```

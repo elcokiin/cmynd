@@ -196,3 +196,166 @@
     letter-spacing: var(--tracking-normal);
   }
 }
+
+/* Novel/ProseMirror Editor Styles */
+.ProseMirror {
+  @apply outline-none;
+}
+
+.ProseMirror > * + * {
+  margin-top: 0.75em;
+}
+
+/* Placeholder */
+.ProseMirror p.is-editor-empty:first-child::before {
+  @apply pointer-events-none float-left h-0 text-muted-foreground;
+  content: attr(data-placeholder);
+}
+
+/* Headings */
+.ProseMirror h1 {
+  @apply text-4xl font-bold;
+}
+
+.ProseMirror h2 {
+  @apply text-3xl font-bold;
+}
+
+.ProseMirror h3 {
+  @apply text-2xl font-bold;
+}
+
+.ProseMirror h4 {
+  @apply text-xl font-bold;
+}
+
+.ProseMirror h5 {
+  @apply text-lg font-bold;
+}
+
+.ProseMirror h6 {
+  @apply text-base font-bold;
+}
+
+/* Lists */
+.ProseMirror ul,
+.ProseMirror ol {
+  @apply pl-6;
+}
+
+.ProseMirror ul {
+  @apply list-disc;
+}
+
+.ProseMirror ol {
+  @apply list-decimal;
+}
+
+.ProseMirror li {
+  @apply my-1;
+}
+
+/* Task Lists */
+.ProseMirror ul[data-type="taskList"] {
+  @apply list-none pl-0;
+}
+
+.ProseMirror ul[data-type="taskList"] li {
+  @apply flex items-start gap-2;
+}
+
+.ProseMirror ul[data-type="taskList"] li > label {
+  @apply mt-0.5;
+}
+
+.ProseMirror ul[data-type="taskList"] li > div {
+  @apply flex-1;
+}
+
+/* Blockquotes */
+.ProseMirror blockquote {
+  @apply border-l-4 border-border pl-4 italic text-muted-foreground;
+}
+
+/* Code blocks */
+.ProseMirror pre {
+  @apply overflow-x-auto rounded-lg bg-muted p-4 font-mono text-sm;
+}
+
+.ProseMirror code {
+  @apply rounded bg-muted px-1.5 py-0.5 font-mono text-sm;
+}
+
+.ProseMirror pre code {
+  @apply bg-transparent p-0;
+}
+
+/* Horizontal rule */
+.ProseMirror hr {
+  @apply my-8 border-t border-border;
+}
+
+/* Images */
+.ProseMirror img {
+  @apply max-w-full rounded-lg;
+}
+
+.ProseMirror img.ProseMirror-selectednode {
+  @apply outline-2 outline outline-primary outline-offset-2;
+}
+
+/* Links */
+.ProseMirror a {
+  @apply cursor-pointer text-primary underline underline-offset-4 hover:text-primary/80;
+}
+
+/* Tables */
+.ProseMirror table {
+  @apply w-full border-collapse overflow-hidden rounded-lg;
+}
+
+.ProseMirror th,
+.ProseMirror td {
+  @apply border border-border px-3 py-2 text-left align-top;
+}
+
+.ProseMirror th {
+  @apply bg-muted font-medium;
+}
+
+/* Selection */
+.ProseMirror ::selection {
+  @apply bg-primary/20;
+}
+
+/* Drag handle */
+.ProseMirror .drag-handle {
+  @apply fixed flex h-7 w-7 cursor-grab items-center justify-center rounded bg-transparent opacity-0 transition-opacity;
+}
+
+.ProseMirror .drag-handle:hover {
+  @apply bg-muted;
+}
+
+.ProseMirror .drag-handle:active {
+  @apply cursor-grabbing bg-muted;
+}
+
+.ProseMirror .drag-handle.show {
+  @apply opacity-100;
+}
+
+/* Node selection */
+.ProseMirror .node-selection {
+  @apply outline-2 outline-dashed outline-primary outline-offset-2;
+}
+
+/* Collaboration cursor */
+.collaboration-cursor__caret {
+  @apply pointer-events-none relative ml-[-1px] mr-[-1px] w-0.5;
+}
+
+.collaboration-cursor__label {
+  @apply absolute left-[-1px] top-[-1.4em] select-none whitespace-nowrap rounded-sm px-1 py-0.5 text-xs font-medium text-white;
+}
+
