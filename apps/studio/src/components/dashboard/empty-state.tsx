@@ -1,6 +1,6 @@
 import { SparklesIcon } from "lucide-react";
 
-import { CreateDocumentDialog } from "./create-document-dialog";
+import { CreateDocumentButton } from "./create-document-button";
 
 export function EmptyState() {
   return (
@@ -13,7 +13,7 @@ export function EmptyState() {
         Create your first document to get started. You can write original content,
         curate from other sources, or collect inspiration.
       </p>
-      <CreateDocumentDialog />
+      <CreateDocumentButton />
     </div>
   );
 }

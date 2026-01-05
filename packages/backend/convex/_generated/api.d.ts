@@ -9,6 +9,7 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as controller_documents from "../controller/documents.js";
 import type * as documents from "../documents.js";
 import type * as healthCheck from "../healthCheck.js";
 import type * as http from "../http.js";
@@ -26,6 +27,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  "controller/documents": typeof controller_documents;
   documents: typeof documents;
   healthCheck: typeof healthCheck;
   http: typeof http;

@@ -4,7 +4,7 @@ import { Authenticated, AuthLoading, Unauthenticated, useQuery } from "convex/re
 import { useState } from "react";
 
 import {
-  CreateDocumentDialog,
+  CreateDocumentButton,
   DashboardSkeleton,
   DocumentCard,
   DocumentListSkeleton,
@@ -57,7 +57,7 @@ function DashboardContent() {
           </p>
         </div>
         <div className="flex items-center gap-4">
-          <CreateDocumentDialog />
+          <CreateDocumentButton />
           <UserMenu />
         </div>
       </div>

@@ -2,16 +2,22 @@ import type { JSONContent } from "novel";
 
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
-import { Button, buttonVariants } from "@elcokiin/ui/button";
-import { cn } from "@elcokiin/ui/lib/utils";
+import { Button } from "@elcokiin/ui/button";
 import { Skeleton } from "@elcokiin/ui/skeleton";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Authenticated, AuthLoading, Unauthenticated, useMutation, useQuery } from "convex/react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import {
+  Authenticated,
+  AuthLoading,
+  Unauthenticated,
+  useMutation,
+  useQuery,
+} from "convex/react";
 import { ArrowLeftIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { AdvancedEditor } from "@/components/editor/advanced-editor";
+import { EditorHeader } from "@/components/editor/editor-header";
 import { setImageUploadFn } from "@/components/editor/image-upload";
 import SignInForm from "@/components/sign-in-form";
 import SignUpForm from "@/components/sign-up-form";
@@ -126,32 +132,13 @@ function EditorContent() {
   return (
     <div className="flex flex-col h-full">
       {/* Editor header */}
-      <div className="flex items-center justify-between border-b px-4 py-2">
-        <div className="flex items-center gap-2">
-          <Link
-            to="/"
-            className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}
-          >
-            <ArrowLeftIcon className="h-4 w-4" />
-          </Link>
-          <div className="flex flex-col">
-            <h1 className="text-lg font-semibold truncate max-w-md">
-              {document.title || "Untitled"}
-            </h1>
-            <span className="text-xs text-muted-foreground capitalize">
-              {document.status} · {document.type}
-            </span>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {!isEditable && (
-            <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
-              Read-only (Published)
-            </span>
-          )}
-          {/* TODO: Add settings route */}
-        </div>
-      </div>
+      <EditorHeader
+        documentId={document._id}
+        title={document.title}
+        type={document.type}
+        status={document.status}
+        isEditable={isEditable}
+      />
 
       {/* Editor area */}
       <div className="flex-1 overflow-auto">

@@ -120,6 +120,27 @@ export async function listByStatus(ctx: QueryCtx, status: DocumentStatus) {
 }
 
 /**
+ * Update document type.
+ * Only allowed for documents in "building" status.
+ */
+export async function updateType(
+  ctx: MutationCtx,
+  documentId: Id<"documents">,
+  type: DocumentType,
+) {
+  const document = await getByIdForAuthor(ctx, documentId);
+
+  if (document.status === "published") {
+    throw new Error("Cannot change type of a published document");
+  }
+
+  await ctx.db.patch(documentId, {
+    type,
+    updatedAt: Date.now(),
+  });
+}
+
+/**
  * Update a document's content.
  * Only allowed for documents in "building" status.
  */
@@ -191,6 +212,11 @@ export async function publish(ctx: MutationCtx, documentId: Id<"documents">) {
 
   if (document.status === "published") {
     throw new Error("Document is already published");
+  }
+
+  // Validate required fields
+  if (!document.title || document.title.trim() === "") {
+    throw new Error("Document must have a title to be published");
   }
 
   // Validate required fields based on document type
