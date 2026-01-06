@@ -1,5 +1,5 @@
 import { defineSchema, defineTable } from "convex/server";
-import { documentValidator } from "./schemas/documents";
+import { documentValidator } from "../lib/validators/documents";
 
 export default defineSchema({
   documents: defineTable(documentValidator)

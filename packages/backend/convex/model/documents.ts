@@ -5,7 +5,7 @@ import type {
   DocumentStatus,
   CurationData,
   Reference,
-} from "../lib/types/documents";
+} from "../../lib/types/documents";
 import * as Users from "./users";
 
 export type CreateDocumentInput = {

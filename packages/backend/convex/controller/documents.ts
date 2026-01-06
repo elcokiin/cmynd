@@ -5,7 +5,7 @@ import {
   documentStatusValidator,
   curationDataValidator,
   referenceValidator,
-} from "../schemas/documents";
+} from "../../lib/validators/documents";
 import * as Documents from "../model/documents";
 
 // =============================================================================

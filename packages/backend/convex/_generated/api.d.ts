@@ -17,7 +17,6 @@ import type * as model_documents from "../model/documents.js";
 import type * as model_storage from "../model/storage.js";
 import type * as model_users from "../model/users.js";
 import type * as privateData from "../privateData.js";
-import type * as schemas_documents from "../schemas/documents.js";
 import type * as storage from "../storage.js";
 
 import type {
@@ -36,7 +35,6 @@ declare const fullApi: ApiFromModules<{
   "model/storage": typeof model_storage;
   "model/users": typeof model_users;
   privateData: typeof privateData;
-  "schemas/documents": typeof schemas_documents;
   storage: typeof storage;
 }>;
 

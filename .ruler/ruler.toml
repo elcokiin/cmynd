@@ -23,7 +23,7 @@ args = ["-y", "convex@latest", "mcp", "start"]
 
 [mcp_servers.shadcn]
 command = "npx"
-args = ["shadcn@latest", "mcp"]
+args = ["-y", "shadcn@latest", "mcp"]
 
 
 
