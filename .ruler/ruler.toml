@@ -13,19 +13,16 @@ merge_strategy = "merge"
 
 # --- MCP Server Definitions ---
 [mcp_servers.context7]
-command = "npx"
-args = ["-y", "@upstash/context7-mcp"]
-
+command = "bunx"
+args = ["--bun", "@upstash/context7-mcp"]
 
 [mcp_servers.convex]
-command = "npx"
-args = ["-y", "convex@latest", "mcp", "start"]
+command = "bunx"
+args = ["--bun", "convex@latest", "mcp", "start"]
 
 [mcp_servers.shadcn]
-command = "npx"
-args = ["-y", "shadcn@latest", "mcp"]
-
-
+command = "bunx"
+args = ["--bun", "shadcn@latest", "mcp"]
 
 
 
