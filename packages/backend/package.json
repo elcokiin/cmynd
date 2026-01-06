@@ -9,10 +9,8 @@
     "./convex/_generated/api": "./convex/_generated/api.js",
     "./convex/_generated/api.d": "./convex/_generated/api.d.ts",
     "./convex/_generated/dataModel": "./convex/_generated/dataModel.d.ts",
-    "./lib/types": "./convex/lib/types/index.ts",
-    "./lib/types/documents": "./convex/lib/types/documents.ts",
-    "./lib/types/storage": "./convex/lib/types/storage.ts",
-    "./schemas": "./convex/schemas/index.ts",
+    "./lib/types/documents": "./lib/types/documents.ts",
+    "./lib/types/storage": "./lib/types/storage.ts",
     "./schemas/documents": "./convex/schemas/documents.ts"
   },
   "scripts": {

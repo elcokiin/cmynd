@@ -13,15 +13,11 @@ import type * as controller_documents from "../controller/documents.js";
 import type * as documents from "../documents.js";
 import type * as healthCheck from "../healthCheck.js";
 import type * as http from "../http.js";
-import type * as lib_types_documents from "../lib/types/documents.js";
-import type * as lib_types_index from "../lib/types/index.js";
-import type * as lib_types_storage from "../lib/types/storage.js";
 import type * as model_documents from "../model/documents.js";
 import type * as model_storage from "../model/storage.js";
 import type * as model_users from "../model/users.js";
 import type * as privateData from "../privateData.js";
 import type * as schemas_documents from "../schemas/documents.js";
-import type * as schemas_index from "../schemas/index.js";
 import type * as storage from "../storage.js";
 
 import type {
@@ -36,15 +32,11 @@ declare const fullApi: ApiFromModules<{
   documents: typeof documents;
   healthCheck: typeof healthCheck;
   http: typeof http;
-  "lib/types/documents": typeof lib_types_documents;
-  "lib/types/index": typeof lib_types_index;
-  "lib/types/storage": typeof lib_types_storage;
   "model/documents": typeof model_documents;
   "model/storage": typeof model_storage;
   "model/users": typeof model_users;
   privateData: typeof privateData;
   "schemas/documents": typeof schemas_documents;
-  "schemas/index": typeof schemas_index;
   storage: typeof storage;
 }>;
 
