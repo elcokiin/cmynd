@@ -54,6 +54,26 @@ export const listByStatus = query({
   },
 });
 
+/**
+ * List all pending documents (admin only).
+ */
+export const listPendingForAdmin = query({
+  args: {},
+  handler: async (ctx) => {
+    return await Documents.listPendingForAdmin(ctx);
+  },
+});
+
+/**
+ * Get admin statistics (admin only).
+ */
+export const getAdminStats = query({
+  args: {},
+  handler: async (ctx) => {
+    return await Documents.getAdminStats(ctx);
+  },
+});
+
 // =============================================================================
 // MUTATIONS
 // =============================================================================
@@ -141,6 +161,39 @@ export const publish = mutation({
   args: { documentId: v.id("documents") },
   handler: async (ctx, args) => {
     await Documents.publish(ctx, args.documentId);
+  },
+});
+
+/**
+ * Submit a document for review.
+ */
+export const submit = mutation({
+  args: { documentId: v.id("documents") },
+  handler: async (ctx, args) => {
+    await Documents.submit(ctx, args.documentId);
+  },
+});
+
+/**
+ * Approve a document (admin only).
+ */
+export const approve = mutation({
+  args: { documentId: v.id("documents") },
+  handler: async (ctx, args) => {
+    await Documents.approve(ctx, args.documentId);
+  },
+});
+
+/**
+ * Reject a document (admin only).
+ */
+export const reject = mutation({
+  args: {
+    documentId: v.id("documents"),
+    reason: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await Documents.reject(ctx, args.documentId, args.reason);
   },
 });
 

@@ -4,11 +4,14 @@ import type {
   DocumentStatus,
 } from "@elcokiin/backend/lib/types/documents";
 
+import { api } from "@elcokiin/backend/convex/_generated/api";
 import { Button, buttonVariants } from "@elcokiin/ui/button";
 import { cn } from "@elcokiin/ui/lib/utils";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeftIcon, SettingsIcon } from "lucide-react";
+import { useMutation } from "convex/react";
+import { ArrowLeftIcon, SendIcon, SettingsIcon } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { DocumentSettingsDialog } from "./document-settings-dialog";
 import { EditableDocumentTitle } from "./editable-document-title";
@@ -29,6 +32,24 @@ export function EditorHeader({
   isEditable,
 }: EditorHeaderProps) {
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const submitDocument = useMutation(api.documents.submit);
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      await submitDocument({ documentId });
+      toast.success("Document submitted for review");
+    } catch (error) {
+      console.error("Failed to submit document:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to submit document";
+      toast.error(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <>
@@ -52,20 +73,41 @@ export function EditorHeader({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {!isEditable && (
+          {status === "pending" && (
+            <span className="text-xs text-muted-foreground bg-yellow-100 dark:bg-yellow-900/30 px-2 py-1 rounded">
+              Pending Review
+            </span>
+          )}
+          {!isEditable && status === "published" && (
             <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
               Read-only (Published)
             </span>
           )}
-          {isEditable && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSettingsOpen(true)}
-              title="Document settings"
-            >
-              <SettingsIcon className="h-4 w-4" />
-            </Button>
+          {isEditable && status === "building" && (
+            <>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleSubmit}
+                disabled={isSubmitting || !title.trim()}
+                title={
+                  !title.trim()
+                    ? "Document must have a title"
+                    : "Submit for review"
+                }
+              >
+                <SendIcon className="h-4 w-4 mr-2" />
+                {isSubmitting ? "Submitting..." : "Submit for Review"}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSettingsOpen(true)}
+                title="Document settings"
+              >
+                <SettingsIcon className="h-4 w-4" />
+              </Button>
+            </>
           )}
         </div>
       </div>

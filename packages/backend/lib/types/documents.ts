@@ -9,9 +9,10 @@ export type DocumentType = "own" | "curated" | "inspiration";
 /**
  * Publication status of a document.
  * - building: Draft/work-in-progress state (editable)
+ * - pending: Submitted for admin review (read-only, awaiting approval/rejection)
  * - published: Published state (read-only)
  */
-export type DocumentStatus = "building" | "published";
+export type DocumentStatus = "building" | "pending" | "published";
 
 /**
  * Metadata for curated documents.
@@ -44,4 +45,4 @@ export const DOCUMENT_TYPES = ["own", "curated", "inspiration"] as const;
  * Constants for document statuses.
  * Use these instead of string literals for better type safety.
  */
-export const DOCUMENT_STATUSES = ["building", "published"] as const;
+export const DOCUMENT_STATUSES = ["building", "pending", "published"] as const;

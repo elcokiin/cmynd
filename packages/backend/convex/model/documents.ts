@@ -124,6 +124,10 @@ export async function updateType(
     throw new Error("Cannot change type of a published document");
   }
 
+  if (document.status === "pending") {
+    throw new Error("Cannot edit a document that is pending review");
+  }
+
   await ctx.db.patch(documentId, {
     type,
     updatedAt: Date.now(),
@@ -145,6 +149,10 @@ export async function updateContent(
     throw new Error("Cannot edit a published document");
   }
 
+  if (document.status === "pending") {
+    throw new Error("Cannot edit a document that is pending review");
+  }
+
   await ctx.db.patch(documentId, {
     content,
     updatedAt: Date.now(),
@@ -164,6 +172,10 @@ export async function updateMetadata(
 
   if (document.status === "published") {
     throw new Error("Cannot edit a published document");
+  }
+
+  if (document.status === "pending") {
+    throw new Error("Cannot edit a document that is pending review");
   }
 
   const updates: Record<string, unknown> = {
@@ -219,6 +231,150 @@ export async function publish(ctx: MutationCtx, documentId: Id<"documents">) {
     publishedAt: Date.now(),
     updatedAt: Date.now(),
   });
+}
+
+/**
+ * Submit a document for review.
+ * Changes status from "building" to "pending".
+ * Includes rate limiting: max 3 submissions per 24 hours.
+ */
+export async function submit(ctx: MutationCtx, documentId: Id<"documents">) {
+  const document = await getByIdForAuthor(ctx, documentId);
+
+  if (document.status === "published") {
+    throw new Error("Document is already published");
+  }
+
+  if (document.status === "pending") {
+    throw new Error("Document is already pending review");
+  }
+
+  // Validate required fields
+  if (!document.title || document.title.trim() === "") {
+    throw new Error("Document must have a title to be submitted");
+  }
+
+  // Validate required fields based on document type
+  if (document.type === "curated" && !document.curation) {
+    throw new Error("Curated documents must have curation data");
+  }
+
+  // Rate limiting: check submission history
+  const submissionHistory = document.submissionHistory ?? [];
+  const now = Date.now();
+  const twentyFourHoursAgo = now - 24 * 60 * 60 * 1000;
+
+  // Filter submissions in the last 24 hours
+  const recentSubmissions = submissionHistory.filter(
+    (timestamp) => timestamp > twentyFourHoursAgo,
+  );
+
+  if (recentSubmissions.length >= 3) {
+    throw new Error(
+      "Rate limit exceeded: You can only submit a document 3 times per 24 hours",
+    );
+  }
+
+  // Update submission history
+  const updatedHistory = [...submissionHistory, now];
+
+  await ctx.db.patch(documentId, {
+    status: "pending",
+    submittedAt: now,
+    submissionHistory: updatedHistory,
+    rejectionReason: undefined, // Clear previous rejection reason
+    updatedAt: now,
+  });
+}
+
+/**
+ * Approve a document (admin only).
+ * Changes status from "pending" to "published".
+ */
+export async function approve(ctx: MutationCtx, documentId: Id<"documents">) {
+  await Users.requireAdmin(ctx);
+
+  const document = await ctx.db.get(documentId);
+  if (!document) {
+    throw new Error("Document not found");
+  }
+
+  if (document.status !== "pending") {
+    throw new Error("Only pending documents can be approved");
+  }
+
+  await ctx.db.patch(documentId, {
+    status: "published",
+    publishedAt: Date.now(),
+    updatedAt: Date.now(),
+  });
+}
+
+/**
+ * Reject a document (admin only).
+ * Changes status from "pending" back to "building" with a rejection reason.
+ */
+export async function reject(
+  ctx: MutationCtx,
+  documentId: Id<"documents">,
+  reason: string,
+) {
+  await Users.requireAdmin(ctx);
+
+  const document = await ctx.db.get(documentId);
+  if (!document) {
+    throw new Error("Document not found");
+  }
+
+  if (document.status !== "pending") {
+    throw new Error("Only pending documents can be rejected");
+  }
+
+  if (!reason || reason.trim() === "") {
+    throw new Error("Rejection reason is required");
+  }
+
+  await ctx.db.patch(documentId, {
+    status: "building",
+    rejectionReason: reason,
+    updatedAt: Date.now(),
+  });
+}
+
+/**
+ * List all pending documents (admin only).
+ */
+export async function listPendingForAdmin(ctx: QueryCtx) {
+  await Users.requireAdmin(ctx);
+
+  return await ctx.db
+    .query("documents")
+    .withIndex("by_status", (q) => q.eq("status", "pending"))
+    .order("desc")
+    .collect();
+}
+
+/**
+ * Get admin statistics.
+ * Returns counts of documents by status.
+ */
+export async function getAdminStats(ctx: QueryCtx) {
+  await Users.requireAdmin(ctx);
+
+  const allDocuments = await ctx.db.query("documents").collect();
+
+  const stats = {
+    totalDocuments: allDocuments.length,
+    building: 0,
+    pending: 0,
+    published: 0,
+  };
+
+  for (const doc of allDocuments) {
+    stats[doc.status]++;
+  }
+
+  return stats;
 }
 
 /**

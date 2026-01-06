@@ -43,6 +43,8 @@ export type Document = {
   status: DocumentStatus;
   createdAt: number;
   updatedAt: number;
+  submittedAt?: number;
+  rejectionReason?: string;
 };
 
 type DocumentCardProps = {
@@ -85,7 +87,7 @@ export function DocumentCard({ document, onOpen }: DocumentCardProps) {
     <Card className="group hover:shadow-md transition-shadow">
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Icon className="h-4 w-4 text-muted-foreground" />
             <span className="text-xs text-muted-foreground capitalize">
               {config.label}
@@ -93,6 +95,11 @@ export function DocumentCard({ document, onOpen }: DocumentCardProps) {
             {document.status === "published" && (
               <span className="text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-1.5 py-0.5 rounded">
                 Published
+              </span>
+            )}
+            {document.status === "pending" && (
+              <span className="text-xs bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 px-1.5 py-0.5 rounded">
+                Pending Review
               </span>
             )}
           </div>
@@ -159,6 +166,12 @@ export function DocumentCard({ document, onOpen }: DocumentCardProps) {
       </CardHeader>
       <CardContent>
         <CardDescription>Updated {formatDate(document.updatedAt)}</CardDescription>
+        {document.rejectionReason && (
+          <div className="mt-2 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-xs text-red-700 dark:text-red-400">
+            <span className="font-medium">Rejected: </span>
+            {document.rejectionReason}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

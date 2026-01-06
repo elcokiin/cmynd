@@ -14,6 +14,7 @@ export const documentTypeValidator = v.union(
  */
 export const documentStatusValidator = v.union(
   v.literal("building"),
+  v.literal("pending"),
   v.literal("published"),
 );
 
@@ -51,4 +52,7 @@ export const documentValidator = {
   createdAt: v.number(),
   updatedAt: v.number(),
   publishedAt: v.optional(v.number()),
+  submittedAt: v.optional(v.number()),
+  rejectionReason: v.optional(v.string()),
+  submissionHistory: v.optional(v.array(v.number())),
 };
