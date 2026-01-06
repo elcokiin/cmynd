@@ -1,9 +1,5 @@
 import { api } from "@elcokiin/backend/convex/_generated/api";
-import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
-import type {
-  DocumentType,
-  DocumentStatus,
-} from "@elcokiin/backend/lib/types/documents";
+import type { Doc } from "@elcokiin/backend/convex/_generated/dataModel";
 import { Button, buttonVariants } from "@elcokiin/ui/button";
 import {
   Card,
@@ -36,19 +32,8 @@ import { toast } from "sonner";
 
 import { documentTypeConfig } from "./document-type-config";
 
-export type Document = {
-  _id: Id<"documents">;
-  title: string;
-  type: DocumentType;
-  status: DocumentStatus;
-  createdAt: number;
-  updatedAt: number;
-  submittedAt?: number;
-  rejectionReason?: string;
-};
-
 type DocumentCardProps = {
-  document: Document;
+  document: Doc<"documents">;
   onOpen: () => void;
 };
 
