@@ -342,10 +342,14 @@ export async function reject(
 }
 
 /**
- * List all pending documents (admin only).
+ * List all pending documents for admin review.
+ * Returns null if user is not an admin.
  */
 export async function listPendingForAdmin(ctx: QueryCtx) {
-  await Users.requireAdmin(ctx);
+  const isUserAdmin = await Users.isAdmin(ctx);
+  if (!isUserAdmin) {
+    return null;
+  }
 
   return await ctx.db
     .query("documents")
@@ -357,9 +361,13 @@ export async function listPendingForAdmin(ctx: QueryCtx) {
 /**
  * Get admin statistics.
  * Returns counts of documents by status.
+ * Returns null if user is not an admin.
  */
 export async function getAdminStats(ctx: QueryCtx) {
-  await Users.requireAdmin(ctx);
+  const isUserAdmin = await Users.isAdmin(ctx);
+  if (!isUserAdmin) {
+    return null;
+  }
 
   const allDocuments = await ctx.db.query("documents").collect();
 

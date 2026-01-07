@@ -1,6 +1,3 @@
-//
-// ADMIN DASHBOARD
-//
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { Button, buttonVariants } from "@elcokiin/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@elcokiin/ui/card";
@@ -25,7 +22,7 @@ import { useState } from "react";
 import SignInForm from "@/components/sign-in-form";
 import SignUpForm from "@/components/sign-up-form";
 
-export const Route = createFileRoute("/dashboard")({
+export const Route = createFileRoute("/admin/dashboard")({
   component: Dashboard,
 });
 

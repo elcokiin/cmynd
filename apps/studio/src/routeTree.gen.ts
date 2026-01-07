@@ -9,16 +9,11 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as EditorDocumentIdRouteImport } from './routes/editor.$documentId'
+import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -29,6 +24,11 @@ const EditorDocumentIdRoute = EditorDocumentIdRouteImport.update({
   path: '/editor/$documentId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminDashboardRoute = AdminDashboardRouteImport.update({
+  id: '/admin/dashboard',
+  path: '/admin/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -37,47 +37,45 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
   '/editor/$documentId': typeof EditorDocumentIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
   '/editor/$documentId': typeof EditorDocumentIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
   '/editor/$documentId': typeof EditorDocumentIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/editor/$documentId' | '/api/auth/$'
+  fullPaths: '/' | '/admin/dashboard' | '/editor/$documentId' | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/editor/$documentId' | '/api/auth/$'
-  id: '__root__' | '/' | '/dashboard' | '/editor/$documentId' | '/api/auth/$'
+  to: '/' | '/admin/dashboard' | '/editor/$documentId' | '/api/auth/$'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin/dashboard'
+    | '/editor/$documentId'
+    | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DashboardRoute: typeof DashboardRoute
+  AdminDashboardRoute: typeof AdminDashboardRoute
   EditorDocumentIdRoute: typeof EditorDocumentIdRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -92,6 +90,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EditorDocumentIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/dashboard': {
+      id: '/admin/dashboard'
+      path: '/admin/dashboard'
+      fullPath: '/admin/dashboard'
+      preLoaderRoute: typeof AdminDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -104,7 +109,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DashboardRoute: DashboardRoute,
+  AdminDashboardRoute: AdminDashboardRoute,
   EditorDocumentIdRoute: EditorDocumentIdRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }

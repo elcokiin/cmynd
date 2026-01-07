@@ -15,6 +15,12 @@ export const env = createEnv({
     BETTER_AUTH_SECRET: z
       .string()
       .min(32, "Secret must be at least 32 characters"),
+    ADMIN_EMAILS: z
+      .string()
+      .default("")
+      .transform((val) =>
+        val ? val.split(",").map((email) => email.trim().toLowerCase()) : []
+      ),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,

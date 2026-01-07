@@ -1,5 +1,6 @@
 import type { QueryCtx, MutationCtx } from "../_generated/server";
 import { authComponent } from "../auth";
+import { env } from "@elcokiin/env/backend";
 
 /**
  * Get the current authenticated user.
@@ -32,24 +33,32 @@ export async function requireAuth(ctx: QueryCtx | MutationCtx): Promise<string> 
 
 /**
  * Check if the current user is an admin.
- * Returns false if not authenticated.
+ * Checks if the user's email is in the ADMIN_EMAILS environment variable.
+ * Returns false if not authenticated or email not in admin list.
  */
 export async function isAdmin(ctx: QueryCtx | MutationCtx): Promise<boolean> {
   const user = await getCurrentUserOrNull(ctx);
-  // Type assertion needed until Better Auth component schema is updated
-  return (user as any)?.role === "admin";
+  if (!user?.email) return false;
+
+  const adminEmails = env.ADMIN_EMAILS;
+  return adminEmails.includes(user.email.toLowerCase());
 }
 
 /**
  * Require the user to be an admin.
+ * Checks if the user's email is in the ADMIN_EMAILS environment variable.
  * Throws an error if not authenticated or not an admin.
  * Returns the user object.
  */
 export async function requireAdmin(ctx: QueryCtx | MutationCtx) {
   const user = await getCurrentUser(ctx);
-  // Type assertion needed until Better Auth component schema is updated
-  if ((user as any).role !== "admin") {
+
+  const adminEmails = env.ADMIN_EMAILS;
+  const userEmail = user.email?.toLowerCase();
+
+  if (!userEmail || !adminEmails.includes(userEmail)) {
     throw new Error("Unauthorized: Admin access required");
   }
+
   return user;
 }
