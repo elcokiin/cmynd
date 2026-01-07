@@ -3,54 +3,24 @@ import type { JSONContent } from "novel";
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
 import { Button } from "@elcokiin/ui/button";
-import { Skeleton } from "@elcokiin/ui/skeleton";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import {
-  Authenticated,
-  AuthLoading,
-  Unauthenticated,
-  useMutation,
-  useQuery,
-} from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { ArrowLeftIcon } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { toast } from "sonner";
 
 import { AdvancedEditor } from "@/components/editor/advanced-editor";
 import { EditorHeader } from "@/components/editor/editor-header";
-import { setImageUploadFn } from "@/components/editor/image-upload";
-import SignInForm from "@/components/sign-in-form";
-import SignUpForm from "@/components/sign-up-form";
+import { EditorSkeleton } from "@/components/editor/editor-skeleton";
 
-export const Route = createFileRoute("/editor/$documentId")({
+import { setImageUploadFn } from "@/components/editor/image-upload";
+
+export const Route = createFileRoute("/_auth/editor/$documentId")({
   component: EditorRoute,
+  pendingComponent: EditorSkeleton,
 });
 
 function EditorRoute() {
-  const [showSignIn, setShowSignIn] = useState(false);
-
-  return (
-    <>
-      <Authenticated>
-        <EditorContent />
-      </Authenticated>
-      <Unauthenticated>
-        <div className="flex items-center justify-center h-full">
-          {showSignIn ? (
-            <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
-          ) : (
-            <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
-          )}
-        </div>
-      </Unauthenticated>
-      <AuthLoading>
-        <EditorSkeleton />
-      </AuthLoading>
-    </>
-  );
-}
-
-function EditorContent() {
   const { documentId } = Route.useParams();
   const navigate = useNavigate();
 
@@ -143,37 +113,6 @@ function EditorContent() {
             editable={isEditable}
             className="min-h-full"
           />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function EditorSkeleton() {
-  return (
-    <div className="flex flex-col h-full">
-      {/* Header skeleton */}
-      <div className="flex items-center justify-between border-b px-4 py-2">
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-8 w-8 rounded" />
-          <div className="flex flex-col gap-1">
-            <Skeleton className="h-5 w-48" />
-            <Skeleton className="h-3 w-24" />
-          </div>
-        </div>
-        <Skeleton className="h-8 w-8 rounded" />
-      </div>
-
-      {/* Editor skeleton */}
-      <div className="flex-1 p-8">
-        <div className="max-w-4xl mx-auto space-y-4">
-          <Skeleton className="h-8 w-3/4" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-2/3" />
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-5/6" />
         </div>
       </div>
     </div>

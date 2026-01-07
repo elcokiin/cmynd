@@ -1,7 +1,6 @@
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Authenticated, AuthLoading, Unauthenticated, useQuery } from "convex/react";
-import { useState } from "react";
+import { useQuery } from "convex/react";
 
 import {
   CreateDocumentButton,
@@ -10,39 +9,14 @@ import {
   DocumentListSkeleton,
   EmptyState,
 } from "@/components/dashboard";
-import SignInForm from "@/components/sign-in-form";
-import SignUpForm from "@/components/sign-up-form";
 import UserMenu from "@/components/user-menu";
 
-export const Route = createFileRoute("/")({
-  component: RouteComponent,
+export const Route = createFileRoute("/_auth/")({
+  component: DashboardRoute,
+  pendingComponent: DashboardSkeleton,
 });
 
-function RouteComponent() {
-  const [showSignIn, setShowSignIn] = useState(false);
-
-  return (
-    <>
-      <Authenticated>
-        <DashboardContent />
-      </Authenticated>
-      <Unauthenticated>
-        <div className="flex items-center justify-center h-full">
-          {showSignIn ? (
-            <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
-          ) : (
-            <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
-          )}
-        </div>
-      </Unauthenticated>
-      <AuthLoading>
-        <DashboardSkeleton />
-      </AuthLoading>
-    </>
-  );
-}
-
-function DashboardContent() {
+function DashboardRoute() {
   const documents = useQuery(api.documents.list);
   const navigate = useNavigate();
 

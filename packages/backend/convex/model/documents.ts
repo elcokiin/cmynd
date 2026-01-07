@@ -75,8 +75,8 @@ export async function getByIdForAuthor(
 
 /**
  * List all documents for the current user.
- * Returns empty array if not authenticated (graceful handling for sign-out).
- */
+ * Returns empty array if not authenticated.
+ * */
 export async function listByAuthor(ctx: QueryCtx) {
   const user = await Users.getCurrentUserOrNull(ctx);
   if (!user) {

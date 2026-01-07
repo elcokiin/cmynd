@@ -11,7 +11,8 @@
     "./convex/_generated/dataModel": "./convex/_generated/dataModel.d.ts",
     "./lib/types/documents": "./lib/types/documents.ts",
     "./lib/types/storage": "./lib/types/storage.ts",
-    "./lib/validators/documents": "./validators/documents.ts"
+    "./lib/validators/documents": "./lib/validators/documents.ts",
+    "./lib/validators/auth": "./lib/validators/auth.ts"
   },
   "scripts": {
     "dev": "convex dev",

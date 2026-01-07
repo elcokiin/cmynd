@@ -1,10 +1,10 @@
+import { signUpValidator } from "@elcokiin/backend/lib/validators/auth";
 import { Button } from "@elcokiin/ui/button";
 import { Input } from "@elcokiin/ui/input";
 import { Label } from "@elcokiin/ui/label";
 import { useForm } from "@tanstack/react-form";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import z from "zod";
 
 import { authClient } from "@/lib/auth-client";
 
@@ -40,11 +40,7 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
       );
     },
     validators: {
-      onSubmit: z.object({
-        name: z.string().min(2, "Name must be at least 2 characters"),
-        email: z.email("Invalid email address"),
-        password: z.string().min(8, "Password must be at least 8 characters"),
-      }),
+      onSubmit: signUpValidator,
     },
   });
 

@@ -1,15 +1,9 @@
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { Button, buttonVariants } from "@elcokiin/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@elcokiin/ui/card";
-import { Skeleton } from "@elcokiin/ui/skeleton";
 import { cn } from "@elcokiin/ui/lib/utils";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import {
-  Authenticated,
-  AuthLoading,
-  Unauthenticated,
-  useQuery,
-} from "convex/react";
+import { useQuery } from "convex/react";
 import {
   ArrowLeftIcon,
   BarChart3Icon,
@@ -17,58 +11,26 @@ import {
   FileTextIcon,
   HourglassIcon,
 } from "lucide-react";
-import { useState } from "react";
 
-import SignInForm from "@/components/sign-in-form";
-import SignUpForm from "@/components/sign-up-form";
+import { AdminDashboardSkeleton } from "@/components/admin/admin-dashboard-skeleton";
 
-export const Route = createFileRoute("/admin/dashboard")({
-  component: Dashboard,
+export const Route = createFileRoute("/_auth/admin/dashboard")({
+  component: AdminDashboard,
+  pendingComponent: AdminDashboardSkeleton,
+  errorComponent: AdminErrorComponent,
 });
 
-function Dashboard() {
-  const [showSignIn, setShowSignIn] = useState(false);
-
-  return (
-    <>
-      <Authenticated>
-        <DashboardContent />
-      </Authenticated>
-      <Unauthenticated>
-        <div className="flex items-center justify-center h-full">
-          {showSignIn ? (
-            <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
-          ) : (
-            <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
-          )}
-        </div>
-      </Unauthenticated>
-      <AuthLoading>
-        <DashboardSkeleton />
-      </AuthLoading>
-    </>
-  );
-}
-
-function DashboardContent() {
-  const navigate = useNavigate();
+function AdminDashboard() {
   const stats = useQuery(api.documents.getAdminStats, {});
   const pendingDocuments = useQuery(api.documents.listPendingForAdmin, {});
 
+  // Throw error if not admin (stats === null)
   if (stats === null) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full gap-4">
-        <h1 className="text-2xl font-bold">Unauthorized</h1>
-        <p className="text-muted-foreground">
-          You don't have permission to access the admin panel.
-        </p>
-        <Button onClick={() => navigate({ to: "/" })}>Go to Home</Button>
-      </div>
-    );
+    throw new Error("You don't have permission to access the admin panel.");
   }
 
   if (stats === undefined || pendingDocuments === undefined) {
-    return <DashboardSkeleton />;
+    return <AdminDashboardSkeleton />;
   }
 
   return (
@@ -220,35 +182,28 @@ function DashboardContent() {
   );
 }
 
-function DashboardSkeleton() {
-  return (
-    <div className="flex flex-col h-full">
-      <header className="border-b px-4 py-3">
-        <Skeleton className="h-8 w-48" />
-      </header>
-      <main className="flex-1 overflow-auto">
-        <div className="container mx-auto p-6 space-y-6">
-          <div>
-            <Skeleton className="h-9 w-48 mb-2" />
-            <Skeleton className="h-5 w-96" />
-          </div>
+function AdminErrorComponent({
+  error,
+  reset,
+}: {
+  error: Error;
+  reset: () => void;
+}) {
+  const navigate = useNavigate();
 
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Card key={i}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-4 w-4 rounded" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-8 w-16 mb-1" />
-                  <Skeleton className="h-3 w-32" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </main>
+  return (
+    <div className="flex flex-col items-center justify-center h-full gap-4">
+      <h1 className="text-2xl font-bold">Access Denied</h1>
+      <p className="text-muted-foreground max-w-md text-center">
+        {error.message}
+      </p>
+      <div className="flex gap-2">
+        <Button onClick={() => navigate({ to: "/" })} variant="outline">
+          <ArrowLeftIcon className="mr-2 h-4 w-4" />
+          Go to Home
+        </Button>
+        <Button onClick={reset}>Try Again</Button>
+      </div>
     </div>
   );
 }
