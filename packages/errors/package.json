@@ -1,0 +1,25 @@
+{
+  "name": "@elcokiin/errors",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./backend": "./src/backend/index.ts",
+    "./codes": "./src/codes.ts",
+    "./utils": "./src/utils.ts",
+    "./retry": "./src/retry.ts"
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "convex": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@elcokiin/config": "workspace:*",
+    "@types/node": "^25.0.3",
+    "typescript": "catalog:"
+  }
+}

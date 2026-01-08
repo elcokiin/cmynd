@@ -13,6 +13,7 @@ import { ArrowLeftIcon, SendIcon, SettingsIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { useRetryMutation } from "@/hooks/use-retry-mutation";
 import { DocumentSettingsDialog } from "./document-settings-dialog";
 import { EditableDocumentTitle } from "./editable-document-title";
 
@@ -32,24 +33,19 @@ export function EditorHeader({
   isEditable,
 }: EditorHeaderProps) {
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const submitDocument = useMutation(api.documents.submit);
 
-  const handleSubmit = async () => {
-    setIsSubmitting(true);
-    try {
-      await submitDocument({ documentId });
-      toast.success("Document submitted for review");
-    } catch (error) {
-      console.error("Failed to submit document:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to submit document";
-      toast.error(errorMessage);
-    } finally {
-      setIsSubmitting(false);
+  const submitMutation = useRetryMutation(
+    async (input: { documentId: Id<"documents"> }) =>
+      await submitDocument(input),
+    {
+      context: "EditorHeader.handleSubmit",
+      onSuccess: () => {
+        toast.success("Document submitted for review");
+      },
     }
-  };
+  );
 
   return (
     <>
@@ -88,8 +84,8 @@ export function EditorHeader({
               <Button
                 variant="default"
                 size="sm"
-                onClick={handleSubmit}
-                disabled={isSubmitting || !title.trim()}
+                onClick={() => submitMutation.mutate({ documentId })}
+                disabled={submitMutation.isPending || !title.trim()}
                 title={
                   !title.trim()
                     ? "Document must have a title"
@@ -97,7 +93,7 @@ export function EditorHeader({
                 }
               >
                 <SendIcon className="h-4 w-4 mr-2" />
-                {isSubmitting ? "Submitting..." : "Submit for Review"}
+                {submitMutation.isPending ? "Submitting..." : "Submit for Review"}
               </Button>
               <Button
                 variant="ghost"

@@ -7,6 +7,16 @@ import type {
   Reference,
 } from "../../lib/types/documents";
 import * as Users from "./users";
+import {
+  DocumentNotFoundError,
+  DocumentOwnershipError,
+  DocumentAlreadyPublishedError,
+  DocumentPendingReviewError,
+  DocumentPublishedError,
+  DocumentValidationError,
+  DocumentRateLimitError,
+  DocumentInvalidStatusError,
+} from "@elcokiin/errors/backend";
 
 export type CreateDocumentInput = {
   title: string;
@@ -63,11 +73,11 @@ export async function getByIdForAuthor(
   const document = await ctx.db.get(documentId);
 
   if (!document) {
-    throw new Error("Document not found");
+    throw new DocumentNotFoundError();
   }
 
   if (document.authorId !== userId) {
-    throw new Error("Unauthorized: You don't own this document");
+    throw new DocumentOwnershipError();
   }
 
   return document;
@@ -121,11 +131,11 @@ export async function updateType(
   const document = await getByIdForAuthor(ctx, documentId);
 
   if (document.status === "published") {
-    throw new Error("Cannot change type of a published document");
+    throw new DocumentPublishedError();
   }
 
   if (document.status === "pending") {
-    throw new Error("Cannot edit a document that is pending review");
+    throw new DocumentPendingReviewError();
   }
 
   await ctx.db.patch(documentId, {
@@ -146,11 +156,11 @@ export async function updateContent(
   const document = await getByIdForAuthor(ctx, documentId);
 
   if (document.status === "published") {
-    throw new Error("Cannot edit a published document");
+    throw new DocumentPublishedError();
   }
 
   if (document.status === "pending") {
-    throw new Error("Cannot edit a document that is pending review");
+    throw new DocumentPendingReviewError();
   }
 
   await ctx.db.patch(documentId, {
@@ -171,11 +181,11 @@ export async function updateMetadata(
   const document = await getByIdForAuthor(ctx, documentId);
 
   if (document.status === "published") {
-    throw new Error("Cannot edit a published document");
+    throw new DocumentPublishedError();
   }
 
   if (document.status === "pending") {
-    throw new Error("Cannot edit a document that is pending review");
+    throw new DocumentPendingReviewError();
   }
 
   const updates: Record<string, unknown> = {
@@ -213,17 +223,17 @@ export async function publish(ctx: MutationCtx, documentId: Id<"documents">) {
   const document = await getByIdForAuthor(ctx, documentId);
 
   if (document.status === "published") {
-    throw new Error("Document is already published");
+    throw new DocumentAlreadyPublishedError();
   }
 
   // Validate required fields
   if (!document.title || document.title.trim() === "") {
-    throw new Error("Document must have a title to be published");
+    throw new DocumentValidationError("Document must have a title to be published");
   }
 
   // Validate required fields based on document type
   if (document.type === "curated" && !document.curation) {
-    throw new Error("Curated documents must have curation data");
+    throw new DocumentValidationError("Curated documents must have curation data");
   }
 
   await ctx.db.patch(documentId, {
@@ -242,21 +252,21 @@ export async function submit(ctx: MutationCtx, documentId: Id<"documents">) {
   const document = await getByIdForAuthor(ctx, documentId);
 
   if (document.status === "published") {
-    throw new Error("Document is already published");
+    throw new DocumentAlreadyPublishedError();
   }
 
   if (document.status === "pending") {
-    throw new Error("Document is already pending review");
+    throw new DocumentInvalidStatusError("Document is already pending review");
   }
 
   // Validate required fields
   if (!document.title || document.title.trim() === "") {
-    throw new Error("Document must have a title to be submitted");
+    throw new DocumentValidationError("Document must have a title to be submitted");
   }
 
   // Validate required fields based on document type
   if (document.type === "curated" && !document.curation) {
-    throw new Error("Curated documents must have curation data");
+    throw new DocumentValidationError("Curated documents must have curation data");
   }
 
   // Rate limiting: check submission history
@@ -270,9 +280,7 @@ export async function submit(ctx: MutationCtx, documentId: Id<"documents">) {
   );
 
   if (recentSubmissions.length >= 3) {
-    throw new Error(
-      "Rate limit exceeded: You can only submit a document 3 times per 24 hours",
-    );
+    throw new DocumentRateLimitError();
   }
 
   // Update submission history
@@ -296,11 +304,11 @@ export async function approve(ctx: MutationCtx, documentId: Id<"documents">) {
 
   const document = await ctx.db.get(documentId);
   if (!document) {
-    throw new Error("Document not found");
+    throw new DocumentNotFoundError();
   }
 
   if (document.status !== "pending") {
-    throw new Error("Only pending documents can be approved");
+    throw new DocumentInvalidStatusError("Only pending documents can be approved");
   }
 
   await ctx.db.patch(documentId, {
@@ -323,15 +331,15 @@ export async function reject(
 
   const document = await ctx.db.get(documentId);
   if (!document) {
-    throw new Error("Document not found");
+    throw new DocumentNotFoundError();
   }
 
   if (document.status !== "pending") {
-    throw new Error("Only pending documents can be rejected");
+    throw new DocumentInvalidStatusError("Only pending documents can be rejected");
   }
 
   if (!reason || reason.trim() === "") {
-    throw new Error("Rejection reason is required");
+    throw new DocumentValidationError("Rejection reason is required");
   }
 
   await ctx.db.patch(documentId, {

@@ -5,7 +5,7 @@ import { Input } from "@elcokiin/ui/input";
 import { cn } from "@elcokiin/ui/lib/utils";
 import { useMutation } from "convex/react";
 import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+import { useRetryMutation } from "@/hooks/use-retry-mutation";
 
 type EditableDocumentTitleProps = {
   documentId: Id<"documents">;
@@ -22,7 +22,18 @@ export function EditableDocumentTitle({
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const titleUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const updateTitle = useMutation(api.documents.updateTitle);
+  
+  const updateTitleMutation = useMutation(api.documents.updateTitle);
+  
+  const updateTitle = useRetryMutation(
+    async (input: { documentId: Id<"documents">; title: string }) => {
+      await updateTitleMutation(input);
+    },
+    {
+      context: "EditableDocumentTitle.handleTitleChange",
+      showErrorToast: true,
+    }
+  );
 
   // Focus input when editing starts
   useEffect(() => {
@@ -51,16 +62,11 @@ export function EditableDocumentTitle({
     }
 
     // Set new timeout for debounced save (500ms)
-    titleUpdateTimeoutRef.current = setTimeout(async () => {
-      try {
-        await updateTitle({
-          documentId,
-          title: newTitle,
-        });
-      } catch (error) {
-        console.error("Failed to update title:", error);
-        toast.error("Failed to update title");
-      }
+    titleUpdateTimeoutRef.current = setTimeout(() => {
+      updateTitle.mutate({
+        documentId,
+        title: newTitle,
+      });
     }, 500);
   };
 

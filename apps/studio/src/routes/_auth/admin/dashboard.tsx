@@ -24,7 +24,6 @@ function AdminDashboard() {
   const stats = useQuery(api.documents.getAdminStats, {});
   const pendingDocuments = useQuery(api.documents.listPendingForAdmin, {});
 
-  // Throw error if not admin (stats === null)
   if (stats === null) {
     throw new Error("You don't have permission to access the admin panel.");
   }

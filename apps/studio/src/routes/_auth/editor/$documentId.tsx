@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { AdvancedEditor } from "@/components/editor/advanced-editor";
 import { EditorHeader } from "@/components/editor/editor-header";
 import { EditorSkeleton } from "@/components/editor/editor-skeleton";
+import { useErrorHandler } from "@/hooks/use-error-handler";
 
 import { setImageUploadFn } from "@/components/editor/image-upload";
 
@@ -23,6 +24,7 @@ export const Route = createFileRoute("/_auth/editor/$documentId")({
 function EditorRoute() {
   const { documentId } = Route.useParams();
   const navigate = useNavigate();
+  const { handleErrorSilent } = useErrorHandler();
 
   const document = useQuery(api.documents.getForEdit, {
     documentId: documentId as Id<"documents">,
@@ -64,11 +66,10 @@ function EditorRoute() {
           content,
         });
       } catch (error) {
-        console.error("Failed to save document:", error);
-        toast.error("Failed to save document");
+        handleErrorSilent(error, { context: "EditorRoute.handleDebouncedUpdate" });
       }
     },
-    [documentId, updateContent],
+    [documentId, updateContent, handleErrorSilent],
   );
 
   if (document === undefined) {

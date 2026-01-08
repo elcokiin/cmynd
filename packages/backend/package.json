@@ -24,7 +24,8 @@
     "@convex-dev/better-auth": "catalog:",
     "dotenv": "catalog:",
     "zod": "catalog:",
-    "@elcokiin/env": "workspace:*"
+    "@elcokiin/env": "workspace:*",
+    "@elcokiin/errors": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^24.3.0",

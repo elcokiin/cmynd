@@ -22,6 +22,7 @@
         "@convex-dev/react-query": "^0.1.0",
         "@elcokiin/backend": "workspace:*",
         "@elcokiin/env": "workspace:*",
+        "@elcokiin/errors": "workspace:*",
         "@elcokiin/ui": "workspace:*",
         "@tailwindcss/vite": "^4.1.8",
         "@tanstack/react-form": "^1.23.5",
@@ -69,6 +70,7 @@
       "dependencies": {
         "@convex-dev/better-auth": "catalog:",
         "@elcokiin/env": "workspace:*",
+        "@elcokiin/errors": "workspace:*",
         "better-auth": "catalog:",
         "convex": "catalog:",
         "dotenv": "catalog:",
@@ -97,6 +99,19 @@
         "@types/node": "^25.0.3",
         "typescript": "catalog:",
         "vite": "^7.3.0",
+      },
+    },
+    "packages/errors": {
+      "name": "@elcokiin/errors",
+      "version": "0.0.0",
+      "dependencies": {
+        "convex": "catalog:",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@elcokiin/config": "workspace:*",
+        "@types/node": "^25.0.3",
+        "typescript": "catalog:",
       },
     },
     "packages/ui": {
@@ -253,6 +268,8 @@
     "@elcokiin/config": ["@elcokiin/config@workspace:packages/config"],
 
     "@elcokiin/env": ["@elcokiin/env@workspace:packages/env"],
+
+    "@elcokiin/errors": ["@elcokiin/errors@workspace:packages/errors"],
 
     "@elcokiin/ui": ["@elcokiin/ui@workspace:packages/ui"],
 
@@ -1877,6 +1894,8 @@
     "@ecies/ciphers/@noble/ciphers": ["@noble/ciphers@1.3.0", "", {}, "sha512-2I0gnIVPtfnMw9ee9h1dJG7tp81+8Ob3OJb3Mv37rx5L40/b0i7djjCVvGOVqc9AEIQyvyu1i6ypKdFw8R8gQw=="],
 
     "@elcokiin/env/@types/node": ["@types/node@25.0.3", "", { "dependencies": { "undici-types": "~7.16.0" } }, "sha512-W609buLVRVmeW693xKfzHeIV6nJGGz98uCPfeXI1ELMLXVeKYZ9m15fAMSaUPBHYLGFsVRcMmSCksQOrZV9BYA=="],
+
+    "@elcokiin/errors/@types/node": ["@types/node@25.0.3", "", { "dependencies": { "undici-types": "~7.16.0" } }, "sha512-W609buLVRVmeW693xKfzHeIV6nJGGz98uCPfeXI1ELMLXVeKYZ9m15fAMSaUPBHYLGFsVRcMmSCksQOrZV9BYA=="],
 
     "@elcokiin/ui/@types/node": ["@types/node@22.19.3", "", { "dependencies": { "undici-types": "~6.21.0" } }, "sha512-1N9SBnWYOJTrNZCdh/yJE+t910Y128BoyY+zBLWhL3r0TYzlTmFdXrPwHL9DyFZmlEXNQQolTZh3KHV31QDhyA=="],
 

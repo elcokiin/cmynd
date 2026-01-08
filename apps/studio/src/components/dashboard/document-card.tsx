@@ -29,6 +29,7 @@ import { useMutation } from "convex/react";
 import { MoreVerticalIcon, PenIcon, TrashIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useRetryMutation } from "@/hooks/use-retry-mutation";
 
 import { documentTypeConfig } from "./document-type-config";
 
@@ -39,25 +40,27 @@ type DocumentCardProps = {
 
 export function DocumentCard({ document, onOpen }: DocumentCardProps) {
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
 
-  const removeDocument = useMutation(api.documents.remove);
+  const removeDocumentMutation = useMutation(api.documents.remove);
+
+  const removeDocument = useRetryMutation(
+    async (documentId: string) => {
+      await removeDocumentMutation({ documentId });
+    },
+    {
+      context: "DocumentCard.handleDelete",
+      onSuccess: () => {
+        toast.success("Document deleted");
+        setDeleteOpen(false);
+      },
+    }
+  );
 
   const config = documentTypeConfig[document.type];
   const Icon = config.icon;
 
-  const handleDelete = async () => {
-    setIsDeleting(true);
-    try {
-      await removeDocument({ documentId: document._id });
-      toast.success("Document deleted");
-      setDeleteOpen(false);
-    } catch (error) {
-      console.error("Failed to delete document:", error);
-      toast.error("Failed to delete document");
-    } finally {
-      setIsDeleting(false);
-    }
+  const handleDelete = () => {
+    removeDocument.mutate(document._id);
   };
 
   const formatDate = (timestamp: number): string => {
@@ -133,9 +136,9 @@ export function DocumentCard({ document, onOpen }: DocumentCardProps) {
                 <Button
                   variant="destructive"
                   onClick={handleDelete}
-                  disabled={isDeleting}
+                  disabled={removeDocument.isPending}
                 >
-                  {isDeleting ? "Deleting..." : "Delete"}
+                  {removeDocument.isPending ? "Deleting..." : "Delete"}
                 </Button>
               </DialogFooter>
             </DialogContent>

@@ -16,6 +16,7 @@ import { createServerFn } from "@tanstack/react-start";
 
 import { authClient } from "@/lib/auth-client";
 import { getToken } from "@/lib/auth-server";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 import appCss from "../index.css?url";
 
@@ -77,9 +78,11 @@ function RootDocument() {
             <HeadContent />
           </head>
           <body>
-            <div className="grid h-svh grid-rows-[auto_1fr]">
-              <Outlet />
-            </div>
+            <ErrorBoundary>
+              <div className="grid h-svh grid-rows-[auto_1fr]">
+                <Outlet />
+              </div>
+            </ErrorBoundary>
             <Toaster richColors />
             <TanStackRouterDevtools position="bottom-left" />
             <Scripts />

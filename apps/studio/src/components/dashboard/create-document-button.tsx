@@ -3,34 +3,36 @@ import { Button } from "@elcokiin/ui/button";
 import { useNavigate } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
 import { PlusIcon } from "lucide-react";
-import { useState } from "react";
 import { toast } from "sonner";
+import { useRetryMutation } from "@/hooks/use-retry-mutation";
 
 export function CreateDocumentButton() {
-  const [isCreating, setIsCreating] = useState(false);
-  const createDocument = useMutation(api.documents.create);
+  const createDocumentMutation = useMutation(api.documents.create);
   const navigate = useNavigate();
 
-  const handleCreate = async () => {
-    setIsCreating(true);
-    try {
-      const documentId = await createDocument({
-        title: "Untitled",
-        type: "own",
-      });
-      navigate({ to: "/editor/$documentId", params: { documentId } });
-    } catch (error) {
-      console.error("Failed to create document:", error);
-      toast.error("Failed to create document");
-    } finally {
-      setIsCreating(false);
+  const createDocument = useRetryMutation(
+    async (input: { title: string; type: "own" | "curated" }) => {
+      return await createDocumentMutation(input);
+    },
+    {
+      context: "CreateDocumentButton.handleCreate",
+      onSuccess: (documentId) => {
+        navigate({ to: "/editor/$documentId", params: { documentId } });
+      },
     }
+  );
+
+  const handleCreate = () => {
+    createDocument.mutate({
+      title: "Untitled",
+      type: "own",
+    });
   };
 
   return (
-    <Button onClick={handleCreate} disabled={isCreating}>
+    <Button onClick={handleCreate} disabled={createDocument.isPending}>
       <PlusIcon className="h-4 w-4 mr-2" />
-      {isCreating ? "Creating..." : "New Document"}
+      {createDocument.isPending ? "Creating..." : "New Document"}
     </Button>
   );
 }

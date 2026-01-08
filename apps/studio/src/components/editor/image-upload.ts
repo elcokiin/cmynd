@@ -1,6 +1,8 @@
 import type { Editor } from "@tiptap/react";
 import type { UploadFn } from "@elcokiin/backend/lib/types/storage";
 
+import { parseError, getUserFriendlyMessage } from "@elcokiin/errors";
+
 // Default upload function that can be overridden
 let uploadFn: UploadFn | null = null;
 
@@ -48,7 +50,12 @@ export async function uploadImage(file: File, editor: Editor): Promise<void> {
       })
       .run();
   } catch (error) {
-    console.error("Failed to upload image:", error);
+    const parsedError = parseError(error);
+    const message = getUserFriendlyMessage(parsedError);
+    console.error("[image-upload.uploadImage]", message, {
+      code: parsedError.code,
+      error: parsedError,
+    });
   }
 }
 

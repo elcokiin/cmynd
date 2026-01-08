@@ -12,6 +12,7 @@
     "@convex-dev/react-query": "^0.1.0",
     "@elcokiin/backend": "workspace:*",
     "@elcokiin/env": "workspace:*",
+    "@elcokiin/errors": "workspace:*",
     "@elcokiin/ui": "workspace:*",
     "@tailwindcss/vite": "^4.1.8",
     "@tanstack/react-form": "^1.23.5",

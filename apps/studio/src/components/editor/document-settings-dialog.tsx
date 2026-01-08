@@ -17,6 +17,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { documentTypeConfig } from "@/components/dashboard/document-type-config";
+import { useRetryMutation } from "@/hooks/use-retry-mutation";
 
 type DocumentSettingsDialogProps = {
   documentId: Id<"documents">;
@@ -32,29 +33,27 @@ export function DocumentSettingsDialog({
   onOpenChange,
 }: DocumentSettingsDialogProps) {
   const [type, setType] = useState<DocumentType>(currentType);
-  const [isSaving, setIsSaving] = useState(false);
   const updateType = useMutation(api.documents.updateType);
 
-  const handleSave = async () => {
+  const updateMutation = useRetryMutation(
+    async (input: { documentId: Id<"documents">; type: DocumentType }) =>
+      await updateType(input),
+    {
+      context: "DocumentSettingsDialog.handleSave",
+      onSuccess: () => {
+        toast.success("Document settings updated");
+        onOpenChange(false);
+      },
+    }
+  );
+
+  const handleSave = () => {
     if (type === currentType) {
       onOpenChange(false);
       return;
     }
 
-    setIsSaving(true);
-    try {
-      await updateType({
-        documentId,
-        type,
-      });
-      toast.success("Document settings updated");
-      onOpenChange(false);
-    } catch (error) {
-      console.error("Failed to update document settings:", error);
-      toast.error("Failed to update settings");
-    } finally {
-      setIsSaving(false);
-    }
+    updateMutation.mutate({ documentId, type });
   };
 
   return (
@@ -107,8 +106,8 @@ export function DocumentSettingsDialog({
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? "Saving..." : "Save Changes"}
+          <Button onClick={handleSave} disabled={updateMutation.isPending}>
+            {updateMutation.isPending ? "Saving..." : "Save Changes"}
           </Button>
         </DialogFooter>
       </DialogContent>

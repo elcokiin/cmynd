@@ -1,6 +1,7 @@
 import type { QueryCtx, MutationCtx } from "../_generated/server";
 import { authComponent } from "../auth";
 import { env } from "@elcokiin/env/backend";
+import { UnauthenticatedError, AdminRequiredError } from "@elcokiin/errors/backend";
 
 /**
  * Get the current authenticated user.
@@ -9,7 +10,7 @@ import { env } from "@elcokiin/env/backend";
 export async function getCurrentUser(ctx: QueryCtx | MutationCtx) {
   const user = await authComponent.safeGetAuthUser(ctx);
   if (!user) {
-    throw new Error("Not authenticated");
+    throw new UnauthenticatedError();
   }
   return user;
 }
@@ -57,7 +58,7 @@ export async function requireAdmin(ctx: QueryCtx | MutationCtx) {
   const userEmail = user.email?.toLowerCase();
 
   if (!userEmail || !adminEmails.includes(userEmail)) {
-    throw new Error("Unauthorized: Admin access required");
+    throw new AdminRequiredError();
   }
 
   return user;
