@@ -1,20 +1,26 @@
-# Best Practices & Code Quality
+# AI Agent Best Practices & Code Quality
 
-## Code Quality Principles
+**Audience**: This document is written for AI agents. Follow these rules when generating, modifying, or reviewing code.
 
-### Write Self-Documenting Code
-Use clear, descriptive names that explain intent:
+---
 
+## 🎯 Core Principles
+
+### 1. Write Self-Documenting Code
+Use descriptive, unambiguous names for all identifiers. Names must clearly communicate intent and purpose.
+
+**Correct:**
 ```typescript
-// ✅ Good: clear intent
 function calculateTotalPrice(items: CartItem[]): number {
   return items.reduce((total, item) => total + item.price * item.quantity, 0);
 }
 
 const isUserAuthenticated = session !== null;
 const hasPermission = user.role === "admin";
+```
 
-// ❌ Bad: unclear names
+**Incorrect:**
+```typescript
 function calc(arr: any[]): number {
   return arr.reduce((t, i) => t + i.p * i.q, 0);
 }
@@ -23,11 +29,11 @@ const flag = session !== null;
 const x = user.role === "admin";
 ```
 
-### Keep Functions Small and Focused
-Each function should do one thing well:
+### 2. Single Responsibility Principle
+Each function must perform exactly one logical operation. If a function validates input, writes to a database, and sends an email, you must refactor it into three separate functions.
 
+**Correct:**
 ```typescript
-// ✅ Good: single responsibility
 function validateEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
@@ -43,28 +49,13 @@ function validateUserInput(email: string, password: string): ValidationResult {
     password: validatePassword(password),
   };
 }
-
-// ❌ Bad: doing too much
-function validateAndCreateUser(email: string, password: string) {
-  // Validation
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return null;
-  if (password.length < 8) return null;
-  
-  // User creation
-  const user = { email, password: hashPassword(password) };
-  saveToDatabase(user);
-  sendWelcomeEmail(email);
-  logUserCreation(email);
-  
-  return user;
-}
 ```
 
-### Avoid Deep Nesting
-Keep nesting to maximum 3 levels:
+### 3. Avoid Deep Nesting (Maximum 3 Levels)
+Use early returns and guard clauses to maintain flat code structure. Deep nesting is a code smell.
 
+**Correct:**
 ```typescript
-// ✅ Good: early returns, flat structure
 function processUser(user: User | null): ProcessResult {
   if (!user) {
     return { success: false, error: "User not found" };
@@ -80,51 +71,42 @@ function processUser(user: User | null): ProcessResult {
 
   return processActiveUser(user);
 }
-
-// ❌ Bad: deep nesting
-function processUser(user: User | null) {
-  if (user) {
-    if (user.isActive) {
-      if (user.hasPermission) {
-        return processActiveUser(user);
-      } else {
-        return { success: false };
-      }
-    } else {
-      return { success: false };
-    }
-  } else {
-    return { success: false };
-  }
-}
 ```
 
-## Comments
+---
 
-### When to Comment
-Add comments for "why" not "what":
+## 💬 Comments Policy
 
+**Primary Rule**: Write code so clear that comments are unnecessary.
+
+### When to Add Comments
+Add comments ONLY to explain **"why"**, never **"what"**. The code itself should explain what it does.
+
+**Acceptable:**
 ```typescript
-// ✅ Good: explains why
 // Use exponential backoff to avoid overwhelming the API during rate limits
 const retryDelay = Math.pow(2, attemptCount) * 1000;
 
 // Cache user preferences for 5 minutes to reduce database load
 const CACHE_TTL = 5 * 60 * 1000;
+```
 
-// ❌ Bad: explains what (code is self-explanatory)
+**Unacceptable:**
+```typescript
 // Calculate retry delay
 const retryDelay = Math.pow(2, attemptCount) * 1000;
 
-// Set cache time to live
-const CACHE_TTL = 5 * 60 * 1000;
+// Get the user by ID
+const user = await getUserById(id);
+
+// Increment counter by 1
+counter++;
 ```
 
-### Complex Logic Comments
-Document complex algorithms:
+### Document Complex Algorithms
+For non-trivial algorithms, provide JSDoc comments explaining the approach, complexity, and any edge cases:
 
 ```typescript
-// ✅ Good: explains complex logic
 /**
  * Implements a sliding window rate limiter using timestamps.
  * Maintains a fixed-size window of recent requests and only
@@ -138,115 +120,156 @@ function rateLimiter(userId: string, limit: number, windowMs: number): boolean {
 }
 ```
 
-### Avoid Obvious Comments
+### Avoid Excessive Comments
+**Less is more.** Each comment is a maintenance burden and an admission that the code isn't clear enough.
+
+**Before adding a comment, try:**
+1. Rename variables/functions to be more descriptive
+2. Extract complex logic into well-named helper functions
+3. Simplify the code structure
+4. Only if all else fails, add a comment explaining **why**
+
 ```typescript
-// ❌ Bad: stating the obvious
-// Get the user by ID
-const user = await getUserById(id);
+// ✅ Good: no comments needed, code is self-explanatory
+function isEligibleForDiscount(user: User, purchaseAmount: number): boolean {
+  const isVipMember = user.membershipTier === "VIP";
+  const meetsMinimumPurchase = purchaseAmount >= 100;
+  return isVipMember && meetsMinimumPurchase;
+}
 
-// Increment counter by 1
-counter++;
-
-// ✅ Good: no comment needed, code is clear
-const user = await getUserById(id);
-counter++;
+// ❌ Bad: comments compensating for unclear code
+function check(u: User, amt: number): boolean {
+  // Check if user is VIP
+  const x = u.membershipTier === "VIP";
+  // Check if purchase is at least $100
+  const y = amt >= 100;
+  // Return true if both conditions met
+  return x && y;
+}
 ```
 
-## Error Handling
+**Comment Smell Test:**
+- If removing the comment makes code unclear → **refactor the code**
+- If comment explains business logic rationale → **keep it**
+- If comment describes what code does → **delete it**
 
-### Use Try-Catch for Async Operations
 ```typescript
-// ✅ Good: proper error handling
-async function fetchUserData(userId: string): Promise<User | null> {
-  try {
-    const response = await fetch(`/api/users/${userId}`);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+// ✅ Good: explains business decision (why)
+// Apply 24-hour grace period per company policy to avoid support tickets
+const dueDate = addHours(subscriptionEnd, 24);
+
+// ❌ Bad: explains code operation (what)
+// Add 24 hours to subscription end date
+const dueDate = addHours(subscriptionEnd, 24);
+
+// ✅ Good: no comment needed
+const dueDateWithGracePeriod = addHours(subscriptionEnd, 24);
+```
+
+---
+
+## 🛡️ Security (CRITICAL - NON-NEGOTIABLE)
+
+Security violations are unacceptable. These rules have no exceptions.
+
+### Rule 1: Always Validate User Input
+**You MUST validate ALL external input using Zod.** Never trust data from users, APIs, or any external source.
+
+**Correct:**
+```typescript
+import { z } from "zod";
+
+const userSchema = z.object({
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  age: z.number().min(18, "Must be 18 or older"),
+});
+
+function registerUser(input: unknown) {
+  const validated = userSchema.parse(input);
+  // validated is now type-safe and validated
+}
+```
+
+**Incorrect:**
+```typescript
+function registerUser(input: any) {
+  // Directly use untrusted input - SECURITY VIOLATION
+  createUser(input.email, input.password);
+}
+```
+
+### Rule 2: Always Enforce Authentication & Authorization
+**You MUST check authentication in every protected backend function.** Use `ctx.auth.getUserIdentity()` in Convex.
+
+**Correct:**
+```typescript
+export const getPrivateData = query({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
     }
     
-    return await response.json();
-  } catch (error) {
-    console.error(`Failed to fetch user ${userId}:`, error);
-    return null;
-  }
-}
+    return await ctx.db.query("privateData").collect();
+  },
+});
+```
 
-// ❌ Bad: no error handling
-async function fetchUserData(userId: string) {
-  const response = await fetch(`/api/users/${userId}`);
-  return await response.json();
+**Incorrect:**
+```typescript
+export const getPrivateData = query({
+  handler: async (ctx) => {
+    // SECURITY VIOLATION: No authentication check
+    return await ctx.db.query("privateData").collect();
+  },
+});
+```
+
+### Rule 3: Never Expose Sensitive Data
+**You MUST filter out sensitive fields** (passwords, tokens, API keys, etc.) before returning data.
+
+**Correct:**
+```typescript
+const { password, tokenIdentifier, apiKey, ...publicUser } = user;
+return publicUser;
+```
+
+**Incorrect:**
+```typescript
+return user; // SECURITY VIOLATION: Exposes password, tokens, etc.
+```
+
+### Rule 4: Always Sanitize User-Generated Content
+**You MUST sanitize HTML** before rendering user-generated content to prevent XSS attacks. Use `DOMPurify`.
+
+**Correct:**
+```typescript
+import DOMPurify from "dompurify";
+
+function UserBio({ bio }: { bio: string }) {
+  const sanitized = DOMPurify.sanitize(bio);
+  return <div dangerouslySetInnerHTML={{ __html: sanitized }} />;
 }
 ```
 
-### Throw Specific Error Types
+**Incorrect:**
 ```typescript
-// ✅ Good: specific error types
-class AuthenticationError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "AuthenticationError";
-  }
-}
-
-class ValidationError extends Error {
-  constructor(
-    message: string,
-    public field: string
-  ) {
-    super(message);
-    this.name = "ValidationError";
-  }
-}
-
-function authenticateUser(token: string): User {
-  if (!token) {
-    throw new AuthenticationError("Token is required");
-  }
-  
-  const user = verifyToken(token);
-  if (!user) {
-    throw new AuthenticationError("Invalid token");
-  }
-  
-  return user;
-}
-
-// ❌ Bad: generic errors
-function authenticateUser(token: string) {
-  if (!token) throw new Error("Error");
-  const user = verifyToken(token);
-  if (!user) throw new Error("Error");
-  return user;
+function UserBio({ bio }: { bio: string }) {
+  // SECURITY VIOLATION: XSS vulnerability
+  return <div dangerouslySetInnerHTML={{ __html: bio }} />;
 }
 ```
 
-### Handle Errors at Appropriate Boundaries
-```typescript
-// ✅ Good: error boundary at component level
-function UserProfile() {
-  const { data: user, error } = useConvexQuery(api.users.getCurrentUser, {});
+---
 
-  if (error) {
-    return <ErrorMessage message="Failed to load user profile" />;
-  }
+## ⚡ Performance Requirements
 
-  if (!user) {
-    return <Skeleton />;
-  }
-
-  return <ProfileDisplay user={user} />;
-}
-```
-
-## Performance
-
-### React Server Components (TanStack Start)
-Use server components where possible:
+### 1. Prefer Server Components
+Default to React Server Components (standard in TanStack Start) for components without client-side interactivity.
 
 ```typescript
-// ✅ Good: server component for static data
-// app/routes/about.tsx
+// Server component (no "use client" directive needed)
 export default function About() {
   return (
     <div>
@@ -257,12 +280,11 @@ export default function About() {
 }
 ```
 
-### Lazy Loading
-Lazy load heavy components:
+### 2. Lazy Load Heavy Components
+Use `React.lazy()` and `Suspense` for code splitting:
 
 ```typescript
-// ✅ Good: lazy loading
-import { lazy } from "react";
+import { lazy, Suspense } from "react";
 
 const HeavyChart = lazy(() => import("@/components/heavy-chart"));
 
@@ -277,9 +299,10 @@ function Dashboard() {
 }
 ```
 
-### Optimize Images
+### 3. Optimize Images
+Always specify width, height, and use lazy loading:
+
 ```typescript
-// ✅ Good: optimized images
 <img
   src="/images/hero.jpg"
   alt="Hero"
@@ -287,15 +310,12 @@ function Dashboard() {
   height={600}
   loading="lazy"
 />
-
-// Consider using next-gen formats: WebP, AVIF
 ```
 
-### Use Convex's Reactive Queries
-Leverage Convex's reactivity:
+### 4. Leverage Convex Reactivity
+Use `useConvexQuery` for automatic real-time updates. Do not manually refetch data.
 
 ```typescript
-// ✅ Good: reactive query updates automatically
 function UserList() {
   const users = useConvexQuery(api.users.list, {});
   
@@ -308,192 +328,268 @@ function UserList() {
 }
 ```
 
-## Security
+---
 
-### Validate All User Input
-Always validate with Zod:
+## 🚨 Error Handling
 
+This project uses a **structured error management system** with the `@elcokiin/errors` package. **You MUST use these error classes and utilities instead of generic `throw new Error()`.**
+
+---
+
+### Backend Error Handling (Convex Functions)
+
+#### Rule 1: Use Specific Error Classes
+**You MUST throw specific error classes from `@elcokiin/errors/backend`** instead of generic errors.
+
+**Available Error Classes:**
+- **Authentication:** `UnauthenticatedError`, `UnauthorizedError`, `AdminRequiredError`
+- **Documents:** `DocumentNotFoundError`, `DocumentOwnershipError`, `DocumentAlreadyPublishedError`, `DocumentPendingReviewError`, `DocumentPublishedError`, `DocumentValidationError`, `DocumentRateLimitError`, `DocumentInvalidStatusError`
+- **Validation:** `ValidationError`, `ZodValidationError`
+
+**Correct (Backend):**
 ```typescript
-import { z } from "zod";
+import { UnauthenticatedError, DocumentNotFoundError } from "@elcokiin/errors/backend";
 
-// ✅ Good: Zod validation
-const userSchema = z.object({
-  email: z.string().email("Invalid email format"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  age: z.number().min(18, "Must be 18 or older"),
-});
-
-function registerUser(input: unknown) {
-  const validated = userSchema.parse(input);
-  // validated is now type-safe and validated
-}
-
-// ❌ Bad: no validation
-function registerUser(input: any) {
-  // Directly use untrusted input
-  createUser(input.email, input.password);
-}
-```
-
-### Use Convex's Built-in Auth
-Always check authentication:
-
-```typescript
-// ✅ Good: protected endpoint
-export const getPrivateData = query({
-  handler: async (ctx) => {
+export const getDocument = query({
+  handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
-      throw new Error("Not authenticated");
+      throw new UnauthenticatedError(); // Specific error
     }
-    
-    return await ctx.db.query("privateData").collect();
-  },
-});
 
-// ❌ Bad: no auth check
-export const getPrivateData = query({
-  handler: async (ctx) => {
-    return await ctx.db.query("privateData").collect();
-  },
-});
-```
+    const document = await ctx.db.get(args.documentId);
+    if (!document) {
+      throw new DocumentNotFoundError(); // Specific error
+    }
 
-### Never Expose Sensitive Data
-```typescript
-// ✅ Good: filter sensitive data
-export const getCurrentUser = query({
-  handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) return null;
-
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
-      .unique();
-
-    if (!user) return null;
-
-    // Remove sensitive fields
-    const { password, tokenIdentifier, ...publicUser } = user;
-    return publicUser;
-  },
-});
-
-// ❌ Bad: exposing everything
-export const getCurrentUser = query({
-  handler: async (ctx) => {
-    const user = await ctx.db.query("users").first();
-    return user; // Includes password, tokens, etc.
+    return document;
   },
 });
 ```
 
-### Sanitize User-Generated Content
+**Incorrect (Backend):**
 ```typescript
-// ✅ Good: sanitize before rendering
-import DOMPurify from "dompurify";
-
-function UserBio({ bio }: { bio: string }) {
-  const sanitized = DOMPurify.sanitize(bio);
-  return <div dangerouslySetInnerHTML={{ __html: sanitized }} />;
+// NEVER use generic Error in backend
+if (!identity) {
+  throw new Error("Not authenticated"); // FORBIDDEN
 }
 
-// ❌ Bad: directly rendering user content
-function UserBio({ bio }: { bio: string }) {
-  return <div dangerouslySetInnerHTML={{ __html: bio }} />;
+if (!document) {
+  throw new Error("Document not found"); // FORBIDDEN
 }
 ```
 
-## Git Commits
+#### Rule 2: Error Classes Extend ConvexError
+All backend error classes extend `ConvexError`, which means:
+- Errors are properly serialized across Convex boundaries
+- Errors appear in Convex dashboard with structured data
+- Frontend can parse error codes and display user-friendly messages
 
-### Conventional Commits Format
-Use conventional commits:
+---
 
-```bash
-# Feature
-git commit -m "feat: add user profile page"
+### Frontend Error Handling (React Components)
 
-# Bug fix
-git commit -m "fix: resolve authentication redirect loop"
+#### Rule 3: Use `useRetryMutation` for Mutations with Retry Logic
+**You MUST use `useRetryMutation`** for mutations that should automatically retry on network errors, timeouts, or rate limits.
 
-# Chore
-git commit -m "chore: update dependencies"
+**Correct (Frontend with Retry):**
+```typescript
+import { useRetryMutation } from "@/hooks/use-retry-mutation";
+import { useMutation } from "convex/react";
+import { api } from "@elcokiin/backend/convex/_generated/api";
 
-# Documentation
-git commit -m "docs: add API documentation"
+function CreateDocumentButton() {
+  const createDoc = useMutation(api.documents.create);
 
-# Refactor
-git commit -m "refactor: simplify user validation logic"
+  const mutation = useRetryMutation(
+    async (input: { title: string }) => await createDoc(input),
+    {
+      context: "CreateDocumentButton.handleCreate",
+      onSuccess: () => {
+        toast.success("Document created!");
+      },
+    }
+  );
 
-# Style
-git commit -m "style: format code with prettier"
-
-# Test
-git commit -m "test: add tests for auth flow"
+  return (
+    <button
+      onClick={() => mutation.mutate({ title: "New Doc" })}
+      disabled={mutation.isPending}
+    >
+      {mutation.isPending ? "Creating..." : "Create Document"}
+    </button>
+  );
+}
 ```
 
-### Write Clear Commit Messages
-```bash
-# ✅ Good: descriptive and focused
-git commit -m "feat: add email verification for new users
+**Why use `useRetryMutation`:**
+- Automatically retries network errors, timeouts, rate limits
+- Exponential backoff (configurable via environment variables)
+- Automatic error display with user-friendly messages
+- Consistent error handling across all mutations
 
-- Send verification email on signup
-- Add email verification route
-- Update user schema with emailVerified field"
+#### Rule 4: Use `useErrorHandler` for Non-Mutation Errors
+**You MUST use `useErrorHandler`** for try/catch blocks that don't use mutations.
 
-# ❌ Bad: vague or too generic
-git commit -m "update stuff"
-git commit -m "fix bug"
-git commit -m "changes"
+**Correct (Frontend without Retry):**
+```typescript
+import { useErrorHandler } from "@/hooks/use-error-handler";
+
+function EditorRoute() {
+  const { handleError, handleErrorSilent } = useErrorHandler();
+
+  const handleSave = async (content: JSONContent) => {
+    try {
+      await saveContent(content);
+    } catch (error) {
+      // Shows toast + logs error
+      handleError(error, { context: "EditorRoute.handleSave" });
+    }
+  };
+
+  const handleAutoSave = async (content: JSONContent) => {
+    try {
+      await saveContent(content);
+    } catch (error) {
+      // Only logs error (no toast for auto-save)
+      handleErrorSilent(error, { context: "EditorRoute.handleAutoSave" });
+    }
+  };
+}
 ```
 
-### Keep Commits Atomic
-One logical change per commit:
+**Why use `useErrorHandler`:**
+- Parses errors and extracts user-friendly messages
+- Logs full error details (code, statusCode, message)
+- `handleError()` shows toast + logs
+- `handleErrorSilent()` only logs (for background operations)
 
+#### Rule 5: Use Error Utils Directly in Non-React Code
+**For utilities/helpers (non-React files), import error utils directly.**
+
+**Correct (Utility File):**
+```typescript
+import { parseError, getUserFriendlyMessage } from "@elcokiin/errors";
+
+export async function uploadImage(file: File): Promise<string> {
+  try {
+    const url = await uploadToServer(file);
+    return url;
+  } catch (error) {
+    const parsedError = parseError(error);
+    const message = getUserFriendlyMessage(parsedError);
+    console.error("[uploadImage]", message, {
+      code: parsedError.code,
+      error: parsedError,
+    });
+    throw parsedError; // Re-throw for caller to handle
+  }
+}
+```
+
+#### Rule 6: Error Boundary Catches Unhandled Errors
+The root route has an Error Boundary that catches all unhandled React errors:
+
+```typescript
+// apps/studio/src/routes/__root.tsx
+<ErrorBoundary fallback={<ErrorFallback />}>
+  <Outlet />
+</ErrorBoundary>
+```
+
+**You should still handle errors explicitly** in components. The Error Boundary is a safety net.
+
+---
+
+### Error Handling Checklist
+
+Before submitting code, verify:
+
+**Backend:**
+- [ ] No generic `throw new Error()` statements
+- [ ] All errors use specific classes from `@elcokiin/errors/backend`
+- [ ] Authentication errors use `UnauthenticatedError` / `UnauthorizedError`
+- [ ] Document errors use appropriate `Document*Error` classes
+- [ ] Validation errors use `ValidationError` / `ZodValidationError`
+
+**Frontend (React Components):**
+- [ ] Mutations use `useRetryMutation` when retry logic is needed
+- [ ] Try/catch blocks use `useErrorHandler` hook
+- [ ] Error context includes component and method name (e.g., `"ComponentName.methodName"`)
+- [ ] No manual `toast.error()` calls (handled by error system)
+- [ ] Auto-save/background operations use `handleErrorSilent()`
+
+**Frontend (Utilities):**
+- [ ] Non-React files import `parseError`, `getUserFriendlyMessage` directly
+- [ ] Errors are logged with context tags: `[fileName.functionName]`
+- [ ] Log includes error code and full error object
+
+**All Code:**
+- [ ] All async operations have error handling
+- [ ] Error messages are descriptive and specific
+- [ ] No sensitive data exposed in error messages
+
+---
+
+## 📝 Git Commit Standards
+
+### Conventional Commits (MANDATORY)
+**You MUST use Conventional Commits format.** This is not optional.
+
+**Format**: `<type>: <subject>`
+
+**Types:**
+- `feat:` - New feature
+- `fix:` - Bug fix
+- `refactor:` - Code refactoring (no behavior change)
+- `chore:` - Build/tooling changes
+- `docs:` - Documentation only
+- `test:` - Adding or fixing tests
+- `style:` - Code formatting (no logic change)
+
+**Examples:**
 ```bash
-# ✅ Good: atomic commits
+feat: add user profile page
+fix: resolve authentication redirect loop
+refactor: simplify user validation logic
+chore: update dependencies
+docs: add API documentation
+test: add tests for auth flow
+```
+
+### Atomic Commits
+Each commit must represent ONE logical change. Do not mix unrelated changes.
+
+**Correct:**
+```bash
 git commit -m "feat: add user registration form"
 git commit -m "feat: add user registration API endpoint"
 git commit -m "test: add tests for user registration"
+```
 
-# ❌ Bad: mixed changes
+**Incorrect:**
+```bash
 git commit -m "add registration, fix header bug, update deps"
 ```
 
-## Code Organization
+### Clear, Descriptive Messages
+Explain what changed and why:
 
-### Group Related Code
-```typescript
-// ✅ Good: organized imports and code
-// Types
-type User = { /* ... */ };
-type Post = { /* ... */ };
+```bash
+feat: add email verification for new users
 
-// Constants
-const MAX_POSTS = 10;
-const CACHE_TTL = 5000;
-
-// Helper functions
-function formatDate(date: Date): string { /* ... */ }
-function validatePost(post: Post): boolean { /* ... */ }
-
-// Main component
-function PostList() { /* ... */ }
+- Send verification email on signup
+- Add email verification route
+- Update user schema with emailVerified field
 ```
 
-### Use Barrel Exports
-```typescript
-// components/ui/index.ts
-export { Button } from "./button";
-export { Card, CardHeader, CardContent } from "./card";
-export { Input } from "./input";
+---
 
-// Usage
-import { Button, Card, Input } from "@/components/ui";
-```
+## 🏗️ Code Organization
 
-### Consistent File Structure
+### File Structure
+Follow the existing project structure strictly:
+
 ```
 src/
 ├── components/
@@ -504,3 +600,69 @@ src/
 ├── hooks/            # Custom React hooks
 └── routes/           # Route components
 ```
+
+### Code Grouping Within Files
+Maintain consistent order within each file:
+
+```typescript
+// 1. Type imports
+import type { User, Post } from "./types";
+
+// 2. Value imports
+import { someFunction } from "./utils";
+
+// 3. Type definitions
+type LocalType = { /* ... */ };
+
+// 4. Constants
+const MAX_POSTS = 10;
+const CACHE_TTL = 5000;
+
+// 5. Helper functions
+function formatDate(date: Date): string { /* ... */ }
+function validatePost(post: Post): boolean { /* ... */ }
+
+// 6. Main component/export
+function PostList() { /* ... */ }
+```
+
+### Use Barrel Exports
+For directories with multiple modules, create an `index.ts` barrel file:
+
+```typescript
+// components/ui/index.ts
+export { Button } from "./button";
+export { Card, CardHeader, CardContent } from "./card";
+export { Input } from "./input";
+
+// Usage elsewhere
+import { Button, Card, Input } from "@/components/ui";
+```
+
+---
+
+## ✅ Pre-Commit Checklist
+
+Before creating any commit, verify:
+
+**Security & Validation:**
+- [ ] All user inputs are validated with Zod
+- [ ] Authentication/authorization checks are present in protected functions
+- [ ] Sensitive data is filtered before returning from APIs
+
+**Error Handling:**
+- [ ] Backend errors use specific classes from `@elcokiin/errors/backend`
+- [ ] Frontend mutations use `useRetryMutation` or `useErrorHandler`
+- [ ] All async operations have error handling (try/catch or mutation wrapper)
+- [ ] Error context includes component/function name
+- [ ] No generic `throw new Error()` in backend code
+
+**Code Quality:**
+- [ ] Code follows single responsibility principle
+- [ ] Nesting depth does not exceed 3 levels
+- [ ] Names are descriptive and unambiguous
+- [ ] Comments explain "why", not "what"
+
+**Git Standards:**
+- [ ] Commit message follows Conventional Commits format
+- [ ] Commit is atomic (one logical change)

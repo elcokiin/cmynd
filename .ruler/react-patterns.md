@@ -1,15 +1,25 @@
-# React & Component Patterns
+# AI Agent React Patterns
 
-## React Version
-This project uses **React 19** with the latest features enabled.
+**Audience**: This document defines React component patterns for AI agents. Follow these rules when creating or modifying React components.
 
-## Component Structure
+---
 
-### Function Declarations
-Use function declarations with named exports:
+## Project Configuration
+- **React Version**: React 19
+- **Router**: TanStack Router
+- **Data Fetching**: TanStack Query + Convex
+- **Forms**: TanStack Form
+- **Styling**: TailwindCSS 4
 
+---
+
+## Component Structure (MANDATORY)
+
+### Rule 1: Use Function Declarations with Named Exports
+**Never use arrow functions or default exports for components.**
+
+**Correct:**
 ```typescript
-// ✅ Good: function declaration with named export
 import type { VariantProps } from "class-variance-authority";
 import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { cn } from "@/lib/utils";
@@ -30,8 +40,11 @@ function Button({
 }
 
 export { Button, buttonVariants };
+```
 
-// ❌ Bad: arrow function with default export
+**Incorrect:**
+```typescript
+// Arrow function with default export
 const Button = ({ className, variant, size, ...props }) => {
   return <ButtonPrimitive {...props} />;
 };
@@ -39,11 +52,11 @@ const Button = ({ className, variant, size, ...props }) => {
 export default Button;
 ```
 
-### Component Props
-Use `type` for component props:
+### Rule 2: Use `type` for Component Props
+Define props using `type` (not `interface`).
 
+**Correct:**
 ```typescript
-// ✅ Good: type for props
 type ButtonProps = {
   variant?: "default" | "outline" | "ghost";
   size?: "default" | "sm" | "lg";
@@ -52,37 +65,22 @@ type ButtonProps = {
 };
 
 function Button({ variant = "default", size = "default", ...props }: ButtonProps) {
-  // ...
-}
-
-// ⚠️ Acceptable: inline props
-function Button({
-  variant = "default",
-  size = "default",
-  disabled,
-  children,
-}: {
-  variant?: "default" | "outline" | "ghost";
-  size?: "default" | "sm" | "lg";
-  disabled?: boolean;
-  children: React.ReactNode;
-}) {
-  // ...
+  // Implementation
 }
 ```
 
-### Component Size
-- Keep components small and focused (< 200 lines)
-- Extract logic into custom hooks
-- Split complex components into smaller sub-components
+### Rule 3: Keep Components Under 200 Lines
+If a component exceeds 200 lines:
+1. Extract logic into custom hooks
+2. Split into smaller sub-components
+3. Move helper functions to separate files
 
-## React Patterns
+---
 
-### TanStack Router
-Use TanStack Router for navigation:
+## Navigation (TanStack Router)
 
+### Route Definition
 ```typescript
-// Route definition
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/dashboard")({
@@ -92,8 +90,10 @@ export const Route = createFileRoute("/dashboard")({
 function Dashboard() {
   return <div>Dashboard</div>;
 }
+```
 
-// Navigation
+### Navigation Patterns
+```typescript
 import { Link, useNavigate } from "@tanstack/react-router";
 
 function Navigation() {
@@ -110,11 +110,13 @@ function Navigation() {
 }
 ```
 
-### TanStack Query
-Use TanStack Query for data fetching:
+---
+
+## Data Fetching (TanStack Query + Convex)
+
+**You MUST use `useConvexQuery` for all Convex data fetching.**
 
 ```typescript
-import { useQuery } from "@tanstack/react-query";
 import { useConvexQuery } from "@convex-dev/react-query";
 import { api } from "@elcokiin/backend";
 
@@ -131,11 +133,14 @@ function UserProfile() {
 }
 ```
 
-### Custom Hooks
-Extract reusable logic into custom hooks:
+---
 
+## Custom Hooks
+
+Extract reusable component logic into custom hooks prefixed with `use`.
+
+**Example:**
 ```typescript
-// ✅ Good: custom hook
 function useAuth() {
   const { data: session, isLoading } = useSession();
   const navigate = useNavigate();
@@ -168,33 +173,37 @@ function UserMenu() {
 }
 ```
 
-### State Management
-Prefer local state and server state over global state:
+---
 
+## State Management
+
+**Priority Order:**
+1. **Local state** (`useState`) for UI-only state (modals, toggles, inputs)
+2. **Server state** (`useConvexQuery`) for data from backend
+3. **Context** for deeply nested shared state (themes, auth)
+4. **Avoid global state managers** (Redux, Zustand) unless absolutely necessary
+
+**Examples:**
 ```typescript
-// ✅ Good: local state for UI
+// Local state for UI
 function SearchInput() {
   const [query, setQuery] = useState("");
-
-  return (
-    <input
-      value={query}
-      onChange={(e) => setQuery(e.target.value)}
-    />
-  );
+  return <input value={query} onChange={(e) => setQuery(e.target.value)} />;
 }
 
-// ✅ Good: server state with TanStack Query
+// Server state with Convex
 function UserList() {
-  const { data: users } = useConvexQuery(api.users.list, {});
+  const { data: users } = useConvexQuery(api.users.list);
   return <ul>{users?.map(u => <li key={u.id}>{u.name}</li>)}</ul>;
 }
 ```
 
+---
+
 ## Component Composition
 
 ### Compound Components
-Use compound components for related UI:
+Use for related UI elements that work together:
 
 ```typescript
 function Card({ children, className }: { children: React.ReactNode; className?: string }) {
@@ -210,24 +219,10 @@ function CardContent({ children, className }: { children: React.ReactNode; class
 }
 
 export { Card, CardHeader, CardContent };
-
-// Usage
-function UserCard() {
-  return (
-    <Card>
-      <CardHeader>
-        <h2>User Profile</h2>
-      </CardHeader>
-      <CardContent>
-        <p>User details here</p>
-      </CardContent>
-    </Card>
-  );
-}
 ```
 
 ### Render Props Pattern
-Use render props for flexible components:
+Use for flexible, reusable list components:
 
 ```typescript
 type DataListProps<T> = {
@@ -243,28 +238,14 @@ function DataList<T>({ data, renderItem, renderEmpty }: DataListProps<T>) {
 
   return <ul>{data.map(renderItem)}</ul>;
 }
-
-// Usage
-function UserList() {
-  const { data: users = [] } = useConvexQuery(api.users.list, {});
-
-  return (
-    <DataList
-      data={users}
-      renderItem={(user) => <li key={user.id}>{user.name}</li>}
-      renderEmpty={() => <div>No users found</div>}
-    />
-  );
-}
 ```
 
-## Performance Optimization
+---
 
-### Memoization
-Use React 19's automatic memoization where applicable:
+## Performance
 
+### Use `useMemo` for Expensive Calculations
 ```typescript
-// React 19 automatically optimizes these patterns
 function ExpensiveComponent({ data }: { data: ComplexData }) {
   const processedData = useMemo(() => {
     return data.items.map(item => expensiveOperation(item));
@@ -274,29 +255,67 @@ function ExpensiveComponent({ data }: { data: ComplexData }) {
 }
 ```
 
-### Code Splitting
-Use `React.lazy()` for route-based code splitting:
-
+### Use `React.lazy()` for Code Splitting
 ```typescript
 import { lazy } from "react";
 
 const Dashboard = lazy(() => import("./routes/dashboard"));
-const Profile = lazy(() => import("./routes/profile"));
 
-// TanStack Router handles suspense automatically
 export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
 });
 ```
 
-## Best Practices
+---
 
-### Avoid Prop Drilling
-Use context or composition to avoid deep prop drilling:
+## JSX Best Practices
+
+### Rule: Extract Complex Logic from JSX
+**Never write complex conditionals or filtering directly in JSX.**
+
+**Correct:**
+```typescript
+function UserList() {
+  const { data: users = [] } = useConvexQuery(api.users.list, {});
+  const activeUsers = users.filter(u => u.status === "active");
+  const hasActiveUsers = activeUsers.length > 0;
+
+  if (!hasActiveUsers) {
+    return <div>No active users</div>;
+  }
+
+  return (
+    <ul>
+      {activeUsers.map(user => (
+        <li key={user.id}>{user.name}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+**Incorrect:**
+```typescript
+function UserList() {
+  const { data: users = [] } = useConvexQuery(api.users.list, {});
+
+  return (
+    <ul>
+      {users.filter(u => u.status === "active").length > 0
+        ? users.filter(u => u.status === "active").map(user => (
+            <li key={user.id}>{user.name}</li>
+          ))
+        : <div>No active users</div>}
+    </ul>
+  );
+}
+```
+
+### Rule: Avoid Prop Drilling
+Use Context for deeply nested state:
 
 ```typescript
-// ✅ Good: context for global state
-import { createContext, useContext } from "react";
+import { createContext, useContext, useState } from "react";
 
 const ThemeContext = createContext<"light" | "dark">("light");
 
@@ -315,65 +334,28 @@ function App() {
 }
 ```
 
-### Keep JSX Simple
-Extract complex logic out of JSX:
+---
 
-```typescript
-// ✅ Good: logic extracted
-function UserList() {
-  const { data: users = [] } = useConvexQuery(api.users.list, {});
-  const activeUsers = users.filter(u => u.status === "active");
-  const hasActiveUsers = activeUsers.length > 0;
+## Forms with TanStack Form (MANDATORY PATTERNS)
 
-  if (!hasActiveUsers) {
-    return <div>No active users</div>;
-  }
+This project uses **TanStack Form** (`@tanstack/react-form`).
 
-  return (
-    <ul>
-      {activeUsers.map(user => (
-        <li key={user.id}>{user.name}</li>
-      ))}
-    </ul>
-  );
-}
+### Core Rules
 
-// ❌ Bad: complex logic in JSX
-function UserList() {
-  const { data: users = [] } = useConvexQuery(api.users.list, {});
+1. **NEVER use generics with `useForm`** - let TypeScript infer types from `defaultValues`
+2. **ALWAYS use controlled inputs** - no uncontrolled form elements
+3. **ALWAYS validate with Zod** - use `zodValidator()` adapter
+4. **ALWAYS define `defaultValues`** - required for type inference
+5. **Create reusable field components** - wrap repetitive field patterns
 
-  return (
-    <ul>
-      {users.filter(u => u.status === "active").length > 0
-        ? users.filter(u => u.status === "active").map(user => (
-            <li key={user.id}>{user.name}</li>
-          ))
-        : <div>No active users</div>}
-    </ul>
-  );
-}
-```
+### Basic Form Pattern
 
-### Forms with TanStack Form
-
-This project uses **TanStack Form** (`@tanstack/react-form`) for form management. Follow these principles:
-
-#### Philosophy
-
-1. **No Generics**: Never pass generics to `useForm`. Let TypeScript infer types from `defaultValues`.
-2. **Controlled Inputs**: All forms use controlled inputs for predictability, testing, and debugging.
-3. **Flexible Validation**: Support multiple validation strategies (on blur, change, submit, mount).
-4. **Validation Libraries**: Use Zod or Valibot for validation schemas.
-5. **Wrap into Components**: Create reusable form components and hooks for your design system.
-
-#### Basic Form Pattern
-
+**Correct:**
 ```typescript
 import { useForm } from "@tanstack/react-form";
 import { zodValidator } from "@tanstack/zod-form-adapter";
 import { z } from "zod";
 
-// ✅ Good: Infer types from defaultValues, no generics
 function LoginForm() {
   const form = useForm({
     defaultValues: {
@@ -381,8 +363,8 @@ function LoginForm() {
       password: "",
     },
     onSubmit: async ({ value }) => {
-      // Handle login with fully typed values
-      console.log(value.email, value.password);
+      // value is fully typed from defaultValues
+      await login(value);
     },
   });
 
@@ -448,66 +430,53 @@ function LoginForm() {
     </form>
   );
 }
+```
 
-// ❌ Bad: using generics
+**Incorrect:**
+```typescript
 interface LoginFormValues {
   email: string;
   password: string;
 }
 
 function BadLoginForm() {
-  const form = useForm<LoginFormValues>({  // ❌ Don't use generics
+  const form = useForm<LoginFormValues>({  // NEVER use generics
     // ...
   });
 }
 ```
 
-#### Type-Safe Forms with Zod
+### Type-Safe Forms with Zod Schema
 
 ```typescript
-import { useForm } from "@tanstack/react-form";
-import { zodValidator } from "@tanstack/zod-form-adapter";
-import { z } from "zod";
-
-// Define schema
 const userSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
   age: z.number().min(18, "Must be 18 or older"),
-  bio: z.string().optional(),
 });
 
 type User = z.infer<typeof userSchema>;
 
-// ✅ Good: Type-safe with inference
 function UserForm() {
-  const defaultUser: User = {
-    name: "",
-    email: "",
-    age: 18,
-    bio: "",
-  };
-
   const form = useForm({
-    defaultValues: defaultUser,
+    defaultValues: {
+      name: "",
+      email: "",
+      age: 18,
+    } satisfies User,
     onSubmit: async ({ value }) => {
-      // value is fully typed as User
       await saveUser(value);
     },
   });
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        form.handleSubmit();
-      }}
-    >
+    <form onSubmit={(e) => {
+      e.preventDefault();
+      form.handleSubmit();
+    }}>
       <form.Field
         name="name"
-        validators={{
-          onChange: userSchema.shape.name,
-        }}
+        validators={{ onChange: userSchema.shape.name }}
         validatorAdapter={zodValidator()}
       >
         {(field) => (
@@ -525,85 +494,45 @@ function UserForm() {
         )}
       </form.Field>
 
-      <form.Field
-        name="email"
-        validators={{
-          onChange: userSchema.shape.email,
-        }}
-        validatorAdapter={zodValidator()}
-      >
-        {(field) => (
-          <div>
-            <label>Email</label>
-            <input
-              type="email"
-              value={field.state.value}
-              onChange={(e) => field.handleChange(e.target.value)}
-              onBlur={field.handleBlur}
-            />
-            {field.state.meta.errors.map((error) => (
-              <span key={error}>{error}</span>
-            ))}
-          </div>
-        )}
-      </form.Field>
-
       <button type="submit">Submit</button>
     </form>
   );
 }
 ```
 
-#### Async Validation with Debouncing
+### Async Validation with Debouncing
+
+Use `onChangeAsyncDebounceMs` for expensive validation (e.g., checking username availability):
 
 ```typescript
-function SignupForm() {
-  const form = useForm({
-    defaultValues: {
-      username: "",
-      email: "",
-    },
-    onSubmit: async ({ value }) => {
-      await createUser(value);
-    },
-  });
-
-  return (
-    <form onSubmit={(e) => {
-      e.preventDefault();
-      form.handleSubmit();
-    }}>
-      <form.Field
-        name="username"
-        validators={{
-          onChangeAsync: z.string().min(3),
-          onChangeAsyncDebounceMs: 500,
-        }}
-        validatorAdapter={zodValidator()}
-        asyncAlways
-      >
-        {(field) => (
-          <div>
-            <label>Username</label>
-            <input
-              value={field.state.value}
-              onChange={(e) => field.handleChange(e.target.value)}
-            />
-            {field.state.meta.isValidating && <span>Checking...</span>}
-            {field.state.meta.errors.map((error) => (
-              <span key={error}>{error}</span>
-            ))}
-          </div>
-        )}
-      </form.Field>
-    </form>
-  );
-}
+<form.Field
+  name="username"
+  validators={{
+    onChangeAsync: z.string().min(3),
+    onChangeAsyncDebounceMs: 500,
+  }}
+  validatorAdapter={zodValidator()}
+  asyncAlways
+>
+  {(field) => (
+    <div>
+      <label>Username</label>
+      <input
+        value={field.state.value}
+        onChange={(e) => field.handleChange(e.target.value)}
+      />
+      {field.state.meta.isValidating && <span>Checking...</span>}
+      {field.state.meta.errors.map((error) => (
+        <span key={error}>{error}</span>
+      ))}
+    </div>
+  )}
+</form.Field>
 ```
 
-#### Custom Form Components (Recommended)
+### Reusable Field Components (RECOMMENDED)
 
-Create reusable form components for consistency:
+**You should create reusable field components** to reduce boilerplate:
 
 ```typescript
 // components/forms/TextField.tsx
@@ -637,16 +566,11 @@ export function TextField({ field, label, type = "text" }: TextFieldProps) {
   );
 }
 
-// Usage with custom component
+// Usage
 function LoginForm() {
   const form = useForm({
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-    onSubmit: async ({ value }) => {
-      await login(value);
-    },
+    defaultValues: { email: "", password: "" },
+    onSubmit: async ({ value }) => await login(value),
   });
 
   return (
@@ -656,9 +580,7 @@ function LoginForm() {
     }}>
       <form.Field
         name="email"
-        validators={{
-          onChange: z.string().email(),
-        }}
+        validators={{ onChange: z.string().email() }}
         validatorAdapter={zodValidator()}
       >
         {(field) => <TextField field={field} label="Email" type="email" />}
@@ -666,9 +588,7 @@ function LoginForm() {
 
       <form.Field
         name="password"
-        validators={{
-          onChange: z.string().min(8),
-        }}
+        validators={{ onChange: z.string().min(8) }}
         validatorAdapter={zodValidator()}
       >
         {(field) => <TextField field={field} label="Password" type="password" />}
@@ -680,192 +600,79 @@ function LoginForm() {
 }
 ```
 
-#### Conditional Fields
+### Conditional Fields
+
+Use `form.Subscribe` to show/hide fields based on other field values:
 
 ```typescript
-function ProfileForm() {
-  const form = useForm({
-    defaultValues: {
-      userType: "individual" as "individual" | "business",
-      name: "",
-      companyName: "",
-      taxId: "",
-    },
-    onSubmit: async ({ value }) => {
-      await updateProfile(value);
-    },
-  });
-
-  return (
-    <form onSubmit={(e) => {
-      e.preventDefault();
-      form.handleSubmit();
-    }}>
-      <form.Field name="userType">
-        {(field) => (
-          <div>
-            <label>User Type</label>
-            <select
-              value={field.state.value}
-              onChange={(e) => field.handleChange(e.target.value as any)}
-            >
-              <option value="individual">Individual</option>
-              <option value="business">Business</option>
-            </select>
-          </div>
-        )}
-      </form.Field>
-
-      <form.Field name="name">
-        {(field) => (
-          <div>
-            <label>Name</label>
-            <input
-              value={field.state.value}
-              onChange={(e) => field.handleChange(e.target.value)}
-            />
-          </div>
-        )}
-      </form.Field>
-
-      {/* Conditional fields based on userType */}
-      <form.Subscribe
-        selector={(state) => state.values.userType}
-      >
-        {(userType) => (
-          userType === "business" && (
-            <>
-              <form.Field name="companyName">
-                {(field) => (
-                  <div>
-                    <label>Company Name</label>
-                    <input
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                    />
-                  </div>
-                )}
-              </form.Field>
-
-              <form.Field name="taxId">
-                {(field) => (
-                  <div>
-                    <label>Tax ID</label>
-                    <input
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                    />
-                  </div>
-                )}
-              </form.Field>
-            </>
-          )
-        )}
-      </form.Subscribe>
-
-      <button type="submit">Save Profile</button>
-    </form>
-  );
-}
+<form.Subscribe selector={(state) => state.values.userType}>
+  {(userType) => (
+    userType === "business" && (
+      <>
+        <form.Field name="companyName">
+          {(field) => <TextField field={field} label="Company Name" />}
+        </form.Field>
+        <form.Field name="taxId">
+          {(field) => <TextField field={field} label="Tax ID" />}
+        </form.Field>
+      </>
+    )
+  )}
+</form.Subscribe>
 ```
 
-#### Form Validation Timing
+### Validation Timing
 
-TanStack Form supports multiple validation triggers:
+Choose appropriate validation strategy:
+- **`onChange`**: Instant feedback (email format, required fields)
+- **`onBlur`**: After user leaves field (password strength)
+- **`onSubmit`**: Cross-field validation (password confirmation)
+- **`onChangeAsync`**: API calls (username availability)
 
 ```typescript
-function FlexibleForm() {
-  const form = useForm({
-    defaultValues: {
-      email: "",
-      password: "",
-      confirmPassword: "",
+// Instant validation
+<form.Field
+  name="email"
+  validators={{ onChange: z.string().email("Invalid email") }}
+  validatorAdapter={zodValidator()}
+>
+  {(field) => /* ... */}
+</form.Field>
+
+// Blur validation
+<form.Field
+  name="password"
+  validators={{ onBlur: z.string().min(8) }}
+  validatorAdapter={zodValidator()}
+>
+  {(field) => /* ... */}
+</form.Field>
+
+// Cross-field validation
+<form.Field
+  name="confirmPassword"
+  validators={{
+    onSubmit: ({ value, fieldApi }) => {
+      const password = fieldApi.form.getFieldValue("password");
+      return value === password ? undefined : "Passwords must match";
     },
-    onSubmit: async ({ value }) => {
-      await register(value);
-    },
-  });
-
-  return (
-    <form onSubmit={(e) => {
-      e.preventDefault();
-      form.handleSubmit();
-    }}>
-      {/* Validate on change */}
-      <form.Field
-        name="email"
-        validators={{
-          onChange: z.string().email("Invalid email"),
-        }}
-        validatorAdapter={zodValidator()}
-      >
-        {(field) => (
-          <div>
-            <input
-              value={field.state.value}
-              onChange={(e) => field.handleChange(e.target.value)}
-            />
-            {field.state.meta.errors.map((e) => <span key={e}>{e}</span>)}
-          </div>
-        )}
-      </form.Field>
-
-      {/* Validate on blur */}
-      <form.Field
-        name="password"
-        validators={{
-          onBlur: z.string().min(8, "Password must be at least 8 characters"),
-        }}
-        validatorAdapter={zodValidator()}
-      >
-        {(field) => (
-          <div>
-            <input
-              type="password"
-              value={field.state.value}
-              onChange={(e) => field.handleChange(e.target.value)}
-              onBlur={field.handleBlur}
-            />
-            {field.state.meta.errors.map((e) => <span key={e}>{e}</span>)}
-          </div>
-        )}
-      </form.Field>
-
-      {/* Cross-field validation on submit */}
-      <form.Field
-        name="confirmPassword"
-        validators={{
-          onSubmit: ({ value, fieldApi }) => {
-            const password = fieldApi.form.getFieldValue("password");
-            return value === password ? undefined : "Passwords must match";
-          },
-        }}
-      >
-        {(field) => (
-          <div>
-            <input
-              type="password"
-              value={field.state.value}
-              onChange={(e) => field.handleChange(e.target.value)}
-            />
-            {field.state.meta.errors.map((e) => <span key={e}>{e}</span>)}
-          </div>
-        )}
-      </form.Field>
-
-      <button type="submit">Register</button>
-    </form>
-  );
-}
+  }}
+>
+  {(field) => /* ... */}
+</form.Field>
 ```
 
-#### Best Practices
+---
 
-1. **Never use generics** - let TypeScript infer from `defaultValues`
-2. **Always define `defaultValues`** - ensures type safety without generics
-3. **Use Zod for validation** - consistent with project's validation strategy
-4. **Create reusable field components** - wrap form fields into your design system
-5. **Leverage controlled inputs** - predictable state, easier testing, better debugging
-6. **Use appropriate validation timing** - `onChange` for instant feedback, `onBlur` for expensive checks
-7. **Debounce async validation** - use `onChangeAsyncDebounceMs` for API calls
-8. **Handle form state** - use `form.state.isSubmitting`, `form.state.canSubmit` for UX
+## Form Checklist
+
+Before submitting a form implementation, verify:
+
+- [ ] No generics passed to `useForm`
+- [ ] `defaultValues` are defined
+- [ ] All fields use controlled inputs
+- [ ] Zod validation on all fields
+- [ ] Error messages are displayed
+- [ ] Submit button shows loading state (`form.state.isSubmitting`)
+- [ ] Form prevents default submit behavior
+- [ ] Reusable field components created for repeated patterns
