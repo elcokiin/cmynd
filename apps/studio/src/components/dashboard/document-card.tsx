@@ -29,8 +29,8 @@ import { useMutation } from "convex/react";
 import { MoreVerticalIcon, PenIcon, TrashIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useRetryMutation } from "@/hooks/use-retry-mutation";
 
+import { useErrorHandler } from "@/hooks/use-error-handler";
 import { documentTypeConfig } from "./document-type-config";
 
 type DocumentCardProps = {
@@ -40,27 +40,25 @@ type DocumentCardProps = {
 
 export function DocumentCard({ document, onOpen }: DocumentCardProps) {
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const { handleError } = useErrorHandler();
 
-  const removeDocumentMutation = useMutation(api.documents.remove);
-
-  const removeDocument = useRetryMutation(
-    async (documentId: string) => {
-      await removeDocumentMutation({ documentId });
-    },
-    {
-      context: "DocumentCard.handleDelete",
-      onSuccess: () => {
-        toast.success("Document deleted");
-        setDeleteOpen(false);
-      },
-    }
-  );
+  const removeDocument = useMutation(api.documents.remove);
 
   const config = documentTypeConfig[document.type];
   const Icon = config.icon;
 
-  const handleDelete = () => {
-    removeDocument.mutate(document._id);
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await removeDocument({ documentId: document._id });
+      toast.success("Document deleted");
+      setDeleteOpen(false);
+    } catch (error) {
+      handleError(error, { context: "DocumentCard.handleDelete" });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const formatDate = (timestamp: number): string => {
@@ -136,9 +134,9 @@ export function DocumentCard({ document, onOpen }: DocumentCardProps) {
                 <Button
                   variant="destructive"
                   onClick={handleDelete}
-                  disabled={removeDocument.isPending}
+                  disabled={isDeleting}
                 >
-                  {removeDocument.isPending ? "Deleting..." : "Delete"}
+                  {isDeleting ? "Deleting..." : "Delete"}
                 </Button>
               </DialogFooter>
             </DialogContent>

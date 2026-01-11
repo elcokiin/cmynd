@@ -19,10 +19,6 @@ export const ErrorCode = {
   INVALID_INPUT: "VAL_3002",
   ZOD_VALIDATION: "VAL_3003",
 
-  // Network Errors (6xxx) - for retry logic
-  NETWORK_ERROR: "NET_6001",
-  NETWORK_TIMEOUT: "NET_6002",
-
   // Unknown Errors (9xxx)
   UNKNOWN: "ERR_9999",
 } as const;

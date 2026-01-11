@@ -389,72 +389,40 @@ All backend error classes extend `ConvexError`, which means:
 
 ### Frontend Error Handling (React Components)
 
-#### Rule 3: Use `useRetryMutation` for Mutations with Retry Logic
-**You MUST use `useRetryMutation`** for mutations that should automatically retry on network errors, timeouts, or rate limits.
+#### Rule 3: Use `useErrorHandler` for Error Handling
+**You MUST use `useErrorHandler`** for try/catch blocks in React components.
 
-**Correct (Frontend with Retry):**
-```typescript
-import { useRetryMutation } from "@/hooks/use-retry-mutation";
-import { useMutation } from "convex/react";
-import { api } from "@elcokiin/backend/convex/_generated/api";
-
-function CreateDocumentButton() {
-  const createDoc = useMutation(api.documents.create);
-
-  const mutation = useRetryMutation(
-    async (input: { title: string }) => await createDoc(input),
-    {
-      context: "CreateDocumentButton.handleCreate",
-      onSuccess: () => {
-        toast.success("Document created!");
-      },
-    }
-  );
-
-  return (
-    <button
-      onClick={() => mutation.mutate({ title: "New Doc" })}
-      disabled={mutation.isPending}
-    >
-      {mutation.isPending ? "Creating..." : "Create Document"}
-    </button>
-  );
-}
-```
-
-**Why use `useRetryMutation`:**
-- Automatically retries network errors, timeouts, rate limits
-- Exponential backoff (configurable via environment variables)
-- Automatic error display with user-friendly messages
-- Consistent error handling across all mutations
-
-#### Rule 4: Use `useErrorHandler` for Non-Mutation Errors
-**You MUST use `useErrorHandler`** for try/catch blocks that don't use mutations.
-
-**Correct (Frontend without Retry):**
+**Correct (Frontend):**
 ```typescript
 import { useErrorHandler } from "@/hooks/use-error-handler";
+import { useMutation } from "convex/react";
+import { api } from "@elcokiin/backend/convex/_generated/api";
+import { useState } from "react";
+import { toast } from "sonner";
 
-function EditorRoute() {
-  const { handleError, handleErrorSilent } = useErrorHandler();
+function CreateDocumentButton() {
+  const [isCreating, setIsCreating] = useState(false);
+  const { handleError } = useErrorHandler();
+  const createDoc = useMutation(api.documents.create);
 
-  const handleSave = async (content: JSONContent) => {
+  const handleCreate = async () => {
+    setIsCreating(true);
     try {
-      await saveContent(content);
+      const documentId = await createDoc({ title: "New Doc" });
+      toast.success("Document created!");
+      navigate({ to: "/editor/$documentId", params: { documentId } });
     } catch (error) {
-      // Shows toast + logs error
-      handleError(error, { context: "EditorRoute.handleSave" });
+      handleError(error, { context: "CreateDocumentButton.handleCreate" });
+    } finally {
+      setIsCreating(false);
     }
   };
 
-  const handleAutoSave = async (content: JSONContent) => {
-    try {
-      await saveContent(content);
-    } catch (error) {
-      // Only logs error (no toast for auto-save)
-      handleErrorSilent(error, { context: "EditorRoute.handleAutoSave" });
-    }
-  };
+  return (
+    <button onClick={handleCreate} disabled={isCreating}>
+      {isCreating ? "Creating..." : "Create Document"}
+    </button>
+  );
 }
 ```
 
@@ -463,6 +431,27 @@ function EditorRoute() {
 - Logs full error details (code, statusCode, message)
 - `handleError()` shows toast + logs
 - `handleErrorSilent()` only logs (for background operations)
+
+#### Rule 4: Use `handleErrorSilent` for Background Operations
+**For auto-save, debounced updates, or other non-critical operations**, use `handleErrorSilent()` to log errors without showing toast notifications.
+
+**Correct (Background Operation):**
+```typescript
+import { useErrorHandler } from "@/hooks/use-error-handler";
+
+function EditorRoute() {
+  const { handleErrorSilent } = useErrorHandler();
+
+  const handleAutoSave = async (content: JSONContent) => {
+    try {
+      await saveContent(content);
+    } catch (error) {
+      // Only logs error (no toast for auto-save)
+      handleErrorSilent(error, "EditorRoute.handleAutoSave");
+    }
+  };
+}
+```
 
 #### Rule 5: Use Error Utils Directly in Non-React Code
 **For utilities/helpers (non-React files), import error utils directly.**
@@ -513,10 +502,8 @@ Before submitting code, verify:
 - [ ] Validation errors use `ValidationError` / `ZodValidationError`
 
 **Frontend (React Components):**
-- [ ] Mutations use `useRetryMutation` when retry logic is needed
 - [ ] Try/catch blocks use `useErrorHandler` hook
 - [ ] Error context includes component and method name (e.g., `"ComponentName.methodName"`)
-- [ ] No manual `toast.error()` calls (handled by error system)
 - [ ] Auto-save/background operations use `handleErrorSilent()`
 
 **Frontend (Utilities):**
@@ -652,8 +639,8 @@ Before creating any commit, verify:
 
 **Error Handling:**
 - [ ] Backend errors use specific classes from `@elcokiin/errors/backend`
-- [ ] Frontend mutations use `useRetryMutation` or `useErrorHandler`
-- [ ] All async operations have error handling (try/catch or mutation wrapper)
+- [ ] Frontend mutations use `useErrorHandler` for try/catch blocks
+- [ ] All async operations have error handling (try/catch)
 - [ ] Error context includes component/function name
 - [ ] No generic `throw new Error()` in backend code
 

@@ -68,8 +68,6 @@ const ERROR_MESSAGE_MAP: Record<string, string> = {
     "This action cannot be performed on the document's current status",
   [ErrorCode.VALIDATION_ERROR]: "Please check your input and try again",
   [ErrorCode.ZOD_VALIDATION]: "Please check your input and try again",
-  [ErrorCode.NETWORK_ERROR]: "Network error. Please check your connection.",
-  [ErrorCode.NETWORK_TIMEOUT]: "Request timed out. Please try again.",
   [ErrorCode.UNKNOWN]: "Something went wrong. Please try again.",
 };
 
@@ -85,21 +83,4 @@ export function getUserFriendlyMessage(error: unknown): string {
   }
 
   return parsed.message ?? ERROR_MESSAGE_MAP[ErrorCode.UNKNOWN] ?? "Something went wrong";
-}
-
-/**
- * Check if error is retryable (network errors, timeouts, rate limits)
- */
-export function isRetryableError(error: unknown): boolean {
-  const parsed = parseError(error);
-
-  if (!parsed.code) return false;
-
-  const retryableCodes: string[] = [
-    ErrorCode.NETWORK_ERROR,
-    ErrorCode.NETWORK_TIMEOUT,
-    ErrorCode.DOCUMENT_RATE_LIMIT,
-  ];
-
-  return retryableCodes.includes(parsed.code);
 }
