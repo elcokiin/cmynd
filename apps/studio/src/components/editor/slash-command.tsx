@@ -1,3 +1,5 @@
+import type { UploadFn } from "@elcokiin/backend/lib/types/storage";
+
 import {
   CheckSquare,
   Code,
@@ -7,23 +9,24 @@ import {
   Image,
   List,
   ListOrdered,
+  Minus,
   Text,
   TextQuote,
-  Minus,
 } from "lucide-react";
 import {
   Command,
   createSuggestionItems,
-  renderItems,
+  EditorCommand,
   EditorCommandEmpty,
   EditorCommandItem,
   EditorCommandList,
-  EditorCommand,
+  renderItems,
 } from "novel";
-import { uploadImage } from "./image-upload.ts";
 
-// Define suggestion items for the slash command
-export const suggestionItems = createSuggestionItems([
+import { uploadImage } from "@/utils/image-upload";
+import { useImageUpload } from "./image-upload-context";
+
+const baseSuggestionItems = createSuggestionItems([
   {
     title: "Text",
     description: "Just start typing with plain text.",
@@ -132,29 +135,6 @@ export const suggestionItems = createSuggestionItems([
     },
   },
   {
-    title: "Image",
-    description: "Upload an image from your computer.",
-    searchTerms: ["photo", "picture", "media"],
-    icon: <Image size={18} />,
-    command: ({ editor, range }) => {
-      editor.chain().focus().deleteRange(range).run();
-      // Open file picker
-      const input = document.createElement("input");
-      input.type = "file";
-      input.accept = "image/*";
-      input.onchange = async () => {
-        if (input.files?.length) {
-          const file = input.files[0];
-          if (file) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            await uploadImage(file, editor as any);
-          }
-        }
-      };
-      input.click();
-    },
-  },
-  {
     title: "Divider",
     description: "Add a horizontal divider.",
     searchTerms: ["hr", "horizontal", "rule", "line"],
@@ -165,20 +145,57 @@ export const suggestionItems = createSuggestionItems([
   },
 ]);
 
-// Configure the slash command extension
+function createImageSuggestionItem(
+  uploadFn: UploadFn | null,
+  onError?: (error: Error) => void,
+) {
+  return {
+    title: "Image",
+    description: "Upload an image from your computer.",
+    searchTerms: ["photo", "picture", "media"],
+    icon: <Image size={18} />,
+    command: ({ editor, range }: { editor: unknown; range: unknown }) => {
+      // Type assertion needed due to Novel's internal types
+      const ed = editor as Parameters<typeof uploadImage>[2];
+      const rg = range as { from: number; to: number };
+
+      ed.chain().focus().deleteRange(rg).run();
+
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "image/*";
+      input.onchange = async () => {
+        const file = input.files?.[0];
+        if (file) {
+          await uploadImage(uploadFn, file, ed, onError);
+        }
+      };
+      input.click();
+    },
+  };
+}
+
 export const slashCommand = Command.configure({
   suggestion: {
-    items: () => suggestionItems,
+    items: () => baseSuggestionItems,
     render: renderItems,
   },
 });
 
-// Slash command UI component
 type SlashCommandProps = {
   className?: string;
 };
 
 export function SlashCommand({ className }: SlashCommandProps) {
+  const { uploadFn, onError } = useImageUpload();
+
+  // Create suggestion items with the Image command that has access to uploadFn
+  const suggestionItems = [
+    ...baseSuggestionItems.slice(0, 9), // Items before Divider
+    createImageSuggestionItem(uploadFn, onError),
+    ...baseSuggestionItems.slice(9), // Divider and after
+  ];
+
   return (
     <EditorCommand
       className={
@@ -202,7 +219,9 @@ export function SlashCommand({ className }: SlashCommandProps) {
             </div>
             <div>
               <p className="font-medium">{item.title}</p>
-              <p className="text-xs text-muted-foreground">{item.description}</p>
+              <p className="text-xs text-muted-foreground">
+                {item.description}
+              </p>
             </div>
           </EditorCommandItem>
         ))}

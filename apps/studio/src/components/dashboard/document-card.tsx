@@ -75,9 +75,6 @@ export function DocumentCard({ document, onOpen }: DocumentCardProps) {
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2 flex-wrap">
             <Icon className="h-4 w-4 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground capitalize">
-              {config.label}
-            </span>
             {document.status === "published" && (
               <span className="text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-1.5 py-0.5 rounded">
                 Published
@@ -95,7 +92,7 @@ export function DocumentCard({ document, onOpen }: DocumentCardProps) {
               <DropdownMenuTrigger
                 className={cn(
                   buttonVariants({ variant: "ghost", size: "icon" }),
-                  "h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                  "h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer",
                 )}
               >
                 <MoreVerticalIcon className="h-4 w-4" />
@@ -118,15 +115,15 @@ export function DocumentCard({ document, onOpen }: DocumentCardProps) {
               <DialogHeader>
                 <DialogTitle>Delete Document</DialogTitle>
                 <DialogDescription>
-                  Are you sure you want to delete "{document.title}"? This action
-                  cannot be undone.
+                  Are you sure you want to delete "{document.title}"? This
+                  action cannot be undone.
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>
                 <DialogClose
                   className={cn(
                     buttonVariants({ variant: "ghost" }),
-                    "cursor-pointer"
+                    "cursor-pointer",
                   )}
                 >
                   Cancel
@@ -151,7 +148,9 @@ export function DocumentCard({ document, onOpen }: DocumentCardProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <CardDescription>Updated {formatDate(document.updatedAt)}</CardDescription>
+        <CardDescription>
+          Updated {formatDate(document.updatedAt)}
+        </CardDescription>
         {document.rejectionReason && (
           <div className="mt-2 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-xs text-red-700 dark:text-red-400">
             <span className="font-medium">Rejected: </span>

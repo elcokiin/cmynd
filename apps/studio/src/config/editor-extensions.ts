@@ -1,16 +1,16 @@
 import {
+  Color,
+  HighlightExtension,
+  HorizontalRule,
+  Placeholder,
+  StarterKit,
+  TaskItem,
+  TaskList,
+  TextStyle,
   TiptapImage,
   TiptapLink,
   TiptapUnderline,
   UpdatedImage,
-  TaskList,
-  TaskItem,
-  HorizontalRule,
-  StarterKit,
-  Placeholder,
-  TextStyle,
-  Color,
-  HighlightExtension,
 } from "novel";
 import { cx } from "class-variance-authority";
 
@@ -21,7 +21,7 @@ const placeholder = Placeholder.configure({
 const tiptapLink = TiptapLink.configure({
   HTMLAttributes: {
     class: cx(
-      "text-primary underline underline-offset-[3px] hover:text-primary/80 transition-colors cursor-pointer",
+      "text-primary underline underline-offset-[3px] hover:text-primary/80 transition-colors cursor-pointer"
     ),
   },
 });
@@ -46,14 +46,12 @@ const taskItem = TaskItem.configure({
   nested: true,
 });
 
-// Horizontal rule configuration
 const horizontalRule = HorizontalRule.configure({
   HTMLAttributes: {
     class: cx("mt-4 mb-6 border-t border-muted-foreground"),
   },
 });
 
-// StarterKit configuration (includes most basic extensions)
 const starterKit = StarterKit.configure({
   bulletList: {
     HTMLAttributes: {
@@ -106,7 +104,7 @@ const highlight = HighlightExtension.configure({
 
 const underline = TiptapUnderline.configure({});
 
-export const defaultExtensions = [
+export const editorExtensions = [
   starterKit,
   placeholder,
   tiptapLink,

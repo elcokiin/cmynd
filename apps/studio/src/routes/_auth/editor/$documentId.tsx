@@ -6,15 +6,13 @@ import { Button } from "@elcokiin/ui/button";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { ArrowLeftIcon } from "lucide-react";
-import { useCallback, useEffect } from "react";
-import { toast } from "sonner";
+import { useCallback } from "react";
 
 import { AdvancedEditor } from "@/components/editor/advanced-editor";
 import { EditorHeader } from "@/components/editor/editor-header";
 import { EditorSkeleton } from "@/components/editor/editor-skeleton";
+import { useConvexImageUpload } from "@/hooks/use-convex-image-upload";
 import { useErrorHandler } from "@/hooks/use-error-handler";
-
-import { setImageUploadFn } from "@/components/editor/image-upload";
 
 export const Route = createFileRoute("/_auth/editor/$documentId")({
   component: EditorRoute,
@@ -30,33 +28,7 @@ function EditorRoute() {
     documentId: documentId as Id<"documents">,
   });
   const updateContent = useMutation(api.documents.updateContent);
-  const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
-  const getStorageUrl = useMutation(api.storage.getUrl);
-
-  useEffect(() => {
-    setImageUploadFn(async (file: File) => {
-      const uploadUrl = await generateUploadUrl();
-
-      const response = await fetch(uploadUrl, {
-        method: "POST",
-        headers: { "Content-Type": file.type },
-        body: file,
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to upload image");
-      }
-
-      const { storageId } = await response.json();
-
-      const url = await getStorageUrl({ storageId });
-      if (!url) {
-        throw new Error("Failed to get image URL");
-      }
-
-      return url;
-    });
-  }, [generateUploadUrl, getStorageUrl]);
+  const uploadFn = useConvexImageUpload();
 
   const handleDebouncedUpdate = useCallback(
     async (content: JSONContent) => {
@@ -66,10 +38,17 @@ function EditorRoute() {
           content,
         });
       } catch (error) {
-        handleErrorSilent(error, { context: "EditorRoute.handleDebouncedUpdate" });
+        handleErrorSilent(error, "EditorRoute.handleDebouncedUpdate");
       }
     },
-    [documentId, updateContent, handleErrorSilent],
+    [documentId, updateContent, handleErrorSilent]
+  );
+
+  const handleUploadError = useCallback(
+    (error: Error) => {
+      handleErrorSilent(error, "EditorRoute.handleUploadError");
+    },
+    [handleErrorSilent]
   );
 
   if (document === undefined) {
@@ -112,6 +91,8 @@ function EditorRoute() {
             initialContent={document.content as JSONContent | undefined}
             onDebouncedUpdate={isEditable ? handleDebouncedUpdate : undefined}
             editable={isEditable}
+            uploadFn={isEditable ? uploadFn : null}
+            onUploadError={handleUploadError}
             className="min-h-full"
           />
         </div>
