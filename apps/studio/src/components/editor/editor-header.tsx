@@ -8,8 +8,9 @@ import { api } from "@elcokiin/backend/convex/_generated/api";
 import { Button, buttonVariants } from "@elcokiin/ui/button";
 import { cn } from "@elcokiin/ui/lib/utils";
 import { Link } from "@tanstack/react-router";
+import { Popover, PopoverContent, PopoverTrigger } from "@elcokiin/ui/popover";
 import { useMutation } from "convex/react";
-import { ArrowLeftIcon, SendIcon, SettingsIcon } from "lucide-react";
+import { ArrowLeftIcon, MessageCircleWarningIcon, SendIcon, SettingsIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -23,6 +24,7 @@ type EditorHeaderProps = {
   type: DocumentType;
   status: DocumentStatus;
   isEditable: boolean;
+  rejectionReason?: string;
 };
 
 export function EditorHeader({
@@ -31,6 +33,7 @@ export function EditorHeader({
   type,
   status,
   isEditable,
+  rejectionReason,
 }: EditorHeaderProps) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -81,6 +84,27 @@ export function EditorHeader({
             <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
               Read-only (Published)
             </span>
+          )}
+          {rejectionReason && status === "building" && (
+            <Popover>
+              <PopoverTrigger
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "sm" }),
+                  "text-red-600 border-red-300 hover:bg-red-50 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/20"
+                )}
+              >
+                <MessageCircleWarningIcon className="h-4 w-4 mr-2" />
+                View Feedback
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-80">
+                <div className="space-y-2">
+                  <h4 className="font-medium text-sm">Reviewer Feedback</h4>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                    {rejectionReason}
+                  </p>
+                </div>
+              </PopoverContent>
+            </Popover>
           )}
           {isEditable && status === "building" && (
             <>

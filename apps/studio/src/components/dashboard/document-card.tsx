@@ -37,6 +37,11 @@ export function DocumentCard({ document, onOpen }: DocumentCardProps) {
                 Pending Review
               </span>
             )}
+            {document.rejectionReason && (
+              <span className="text-xs bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-1.5 py-0.5 rounded">
+                Has Feedback
+              </span>
+            )}
           </div>
 
           <DocumentCardMenu document={document} onEdit={onOpen} />
@@ -53,12 +58,6 @@ export function DocumentCard({ document, onOpen }: DocumentCardProps) {
         <CardDescription>
           Updated {formatDate(document.updatedAt)}
         </CardDescription>
-        {document.rejectionReason && (
-          <div className="mt-2 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-xs text-red-700 dark:text-red-400">
-            <span className="font-medium">Rejected: </span>
-            {document.rejectionReason}
-          </div>
-        )}
       </CardContent>
     </Card>
   );

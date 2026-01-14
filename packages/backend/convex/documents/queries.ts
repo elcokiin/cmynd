@@ -89,6 +89,34 @@ export const listPendingForAdmin = query({
 });
 
 /**
+ * Get a document for admin review (admin only).
+ * Returns the full document content without author info (anonymous review).
+ * Returns null if user is not an admin or document is not pending.
+ */
+export const getForAdminReview = query({
+  args: { documentId: v.id("documents") },
+  handler: async (ctx, args) => {
+    const isUserAdmin = await Auth.isAdmin(ctx);
+    if (!isUserAdmin) return null;
+
+    const document = await ctx.db.get(args.documentId);
+    if (!document || document.status !== "pending") return null;
+
+    return {
+      _id: document._id,
+      title: document.title,
+      type: document.type,
+      content: document.content,
+      curation: document.curation,
+      references: document.references,
+      coverImageId: document.coverImageId,
+      submittedAt: document.submittedAt,
+      createdAt: document.createdAt,
+    };
+  },
+});
+
+/**
  * Get admin statistics (admin only).
  * Returns counts of documents by status.
  * Returns null if user is not an admin.

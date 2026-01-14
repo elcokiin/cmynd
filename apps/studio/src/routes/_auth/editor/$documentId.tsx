@@ -82,6 +82,7 @@ function EditorRoute() {
         type={document.type}
         status={document.status}
         isEditable={isEditable}
+        rejectionReason={document.rejectionReason}
       />
 
       {/* Editor area */}

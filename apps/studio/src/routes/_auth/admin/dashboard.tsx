@@ -123,8 +123,7 @@ function AdminDashboard() {
                 <div className="flex items-center justify-between">
                   <CardTitle>Recent Pending Documents</CardTitle>
                   <Link
-                    to="/"
-                    search={{ tab: "review" }}
+                    to="/admin/review"
                     className={cn(
                       buttonVariants({ variant: "outline", size: "sm" }),
                       "gap-2",
@@ -138,9 +137,11 @@ function AdminDashboard() {
               <CardContent>
                 <div className="space-y-3">
                   {pendingDocuments.slice(0, 5).map((doc) => (
-                    <div
+                    <Link
                       key={doc._id}
-                      className="flex items-center justify-between border-b pb-2 last:border-0"
+                      to="/admin/review"
+                      search={{ doc: doc._id }}
+                      className="flex items-center justify-between border-b pb-2 last:border-0 hover:bg-muted/50 rounded px-2 -mx-2 py-1 transition-colors"
                     >
                       <div className="flex-1">
                         <p className="font-medium">{doc.title || "Untitled"}</p>
@@ -158,7 +159,7 @@ function AdminDashboard() {
                           }).format(new Date(doc.submittedAt ?? doc.updatedAt))}
                         </p>
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               </CardContent>

@@ -1,0 +1,160 @@
+import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
+
+import { useState } from "react";
+import { useMutation } from "convex/react";
+import { api } from "@elcokiin/backend/convex/_generated/api";
+import { toast } from "sonner";
+import { CheckIcon, XIcon, LoaderIcon } from "lucide-react";
+
+import { Button } from "@elcokiin/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@elcokiin/ui/card";
+import { Label } from "@elcokiin/ui/label";
+import { cn } from "@elcokiin/ui/lib/utils";
+
+import { ReviewSidebarSkeleton } from "./review-skeleton";
+
+type ReviewSidebarProps = {
+  documentId: Id<"documents"> | null;
+  documentTitle: string | null;
+  onActionComplete: () => void;
+  isLoading: boolean;
+};
+
+export function ReviewSidebar({
+  documentId,
+  documentTitle,
+  onActionComplete,
+  isLoading,
+}: ReviewSidebarProps) {
+  const [observations, setObservations] = useState("");
+  const [isApproving, setIsApproving] = useState(false);
+  const [isRejecting, setIsRejecting] = useState(false);
+
+  const approveMutation = useMutation(api.documents.mutations.approve);
+  const rejectMutation = useMutation(api.documents.mutations.reject);
+
+  const isProcessing = isApproving || isRejecting;
+  const canReject = observations.trim().length > 0;
+
+  async function handleApprove(): Promise<void> {
+    if (!documentId) return;
+
+    setIsApproving(true);
+    try {
+      await approveMutation({ documentId });
+      toast.success("Document approved and published");
+      setObservations("");
+      onActionComplete();
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to approve document";
+      toast.error(message);
+    } finally {
+      setIsApproving(false);
+    }
+  }
+
+  async function handleReject(): Promise<void> {
+    if (!documentId || !canReject) return;
+
+    setIsRejecting(true);
+    try {
+      await rejectMutation({ documentId, reason: observations.trim() });
+      toast.success("Document rejected with feedback");
+      setObservations("");
+      onActionComplete();
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to reject document";
+      toast.error(message);
+    } finally {
+      setIsRejecting(false);
+    }
+  }
+
+  if (isLoading) {
+    return <ReviewSidebarSkeleton />;
+  }
+
+  if (!documentId) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm">Review Actions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            Select a document to review
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-sm">Review Actions</CardTitle>
+        {documentTitle && (
+          <p className="text-xs text-muted-foreground line-clamp-1">
+            {documentTitle}
+          </p>
+        )}
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="observations" className="text-sm">
+            Observations / Feedback
+          </Label>
+          <textarea
+            id="observations"
+            value={observations}
+            onChange={(e) => setObservations(e.target.value)}
+            placeholder="Add observations or feedback for the author..."
+            disabled={isProcessing}
+            className={cn(
+              "w-full min-h-[120px] p-3 text-sm rounded-md border resize-y",
+              "bg-background placeholder:text-muted-foreground",
+              "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+              "disabled:opacity-50 disabled:cursor-not-allowed",
+            )}
+          />
+          <p className="text-xs text-muted-foreground">
+            {canReject
+              ? "Observations will be sent to the author if rejected"
+              : "Required for rejection"}
+          </p>
+        </div>
+
+        <div className="flex gap-2">
+          <Button
+            onClick={handleApprove}
+            disabled={isProcessing}
+            className="flex-1"
+            variant="default"
+          >
+            {isApproving ? (
+              <LoaderIcon className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <CheckIcon className="h-4 w-4 mr-2" />
+            )}
+            Approve
+          </Button>
+          <Button
+            onClick={handleReject}
+            disabled={isProcessing || !canReject}
+            className="flex-1"
+            variant="destructive"
+          >
+            {isRejecting ? (
+              <LoaderIcon className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <XIcon className="h-4 w-4 mr-2" />
+            )}
+            Reject
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
