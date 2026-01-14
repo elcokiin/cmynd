@@ -8,6 +8,7 @@ import { env } from "@elcokiin/env/backend";
 import { components } from "./_generated/api";
 import { query } from "./_generated/server";
 import authConfig from "./auth.config";
+import { isAdmin } from "./_lib/auth";
 
 const siteUrl = env.SITE_URL;
 
@@ -37,5 +38,12 @@ export const getCurrentUser = query({
   args: {},
   handler: async (ctx) => {
     return await authComponent.safeGetAuthUser(ctx);
+  },
+});
+
+export const isCurrentUserAdmin = query({
+  args: {},
+  handler: async (ctx): Promise<boolean> => {
+    return await isAdmin(ctx);
   },
 });

@@ -1,6 +1,9 @@
 import { api } from "@elcokiin/backend/convex/_generated/api";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { buttonVariants } from "@elcokiin/ui/button";
+import { cn } from "@elcokiin/ui/lib/utils";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
+import { ShieldIcon } from "lucide-react";
 
 import {
   CreateDocumentButton,
@@ -18,6 +21,7 @@ export const Route = createFileRoute("/_auth/")({
 
 function DashboardRoute() {
   const documents = useQuery(api.documents.queries.list);
+  const isAdmin = useQuery(api.auth.isCurrentUserAdmin);
   const navigate = useNavigate();
 
   return (
@@ -32,6 +36,15 @@ function DashboardRoute() {
         </div>
         <div className="flex items-center gap-4">
           <CreateDocumentButton />
+          {isAdmin && (
+            <Link
+              to="/admin/dashboard"
+              className={cn(buttonVariants({ variant: "secondary" }))}
+            >
+              <ShieldIcon className="h-4 w-4 mr-2" />
+              Admin
+            </Link>
+          )}
           <UserMenu />
         </div>
       </div>
