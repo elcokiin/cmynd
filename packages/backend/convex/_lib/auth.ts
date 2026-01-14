@@ -1,7 +1,10 @@
 import type { QueryCtx, MutationCtx } from "../_generated/server";
 import { authComponent } from "../auth";
 import { env } from "@elcokiin/env/backend";
-import { UnauthenticatedError, AdminRequiredError } from "@elcokiin/errors/backend";
+import {
+  UnauthenticatedError,
+  AdminRequiredError,
+} from "@elcokiin/errors/backend";
 
 /**
  * Get the current authenticated user.
@@ -27,7 +30,9 @@ export async function getCurrentUserOrNull(ctx: QueryCtx | MutationCtx) {
  * Throws an error if not authenticated.
  * Returns the user's ID.
  */
-export async function requireAuth(ctx: QueryCtx | MutationCtx): Promise<string> {
+export async function requireAuth(
+  ctx: QueryCtx | MutationCtx,
+): Promise<string> {
   const user = await getCurrentUser(ctx);
   return user._id;
 }

@@ -36,7 +36,7 @@ export function EditorHeader({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { handleError } = useErrorHandler();
 
-  const submitDocument = useMutation(api.documents.submit);
+  const submitDocument = useMutation(api.documents.mutations.submit);
 
   const handleSubmit = async () => {
     setIsSubmitting(true);

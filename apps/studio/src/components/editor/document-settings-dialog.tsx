@@ -36,7 +36,7 @@ export function DocumentSettingsDialog({
   const [isSaving, setIsSaving] = useState(false);
   const { handleError } = useErrorHandler();
 
-  const updateType = useMutation(api.documents.updateType);
+  const updateType = useMutation(api.documents.mutations.updateType);
 
   const handleSave = async () => {
     if (type === currentType) {

@@ -8,8 +8,10 @@
 - `auth.config.ts`: Better-Auth config.
 - `schema.ts`: defineSchema and defineTable definitions.
 - `http.ts`: httpRouter endpoints.
-- `[feature].ts`: Public API (Queries, Mutations, Actions).
-- `model/[feature].ts`: Business logic helpers (Pure TS functions).
+- `_lib/`: Shared utilities (auth helpers, etc.) - not exported to API.
+- `[feature]/queries.ts`: Public query functions.
+- `[feature]/mutations.ts`: Public mutation functions.
+- `[feature]/helpers.ts`: Business logic helpers (Pure TS functions).
 - `_generated/*`: Type definitions.
 
 ## Strict Constraints (Enforce These)
@@ -18,7 +20,7 @@
 - **MUST** await all promises. No floating promises.
 - **MUST** use `internal.*` (not `api.*`) for crons, scheduler, and `ctx.run*`.
 - **MUST** use `ctx.runMutation`/`ctx.runQuery` only inside Actions or Components.
-- **MUST NOT** use `ctx.runMutation`/`ctx.runQuery` inside Queries or Mutations. Call `model/*` functions directly.
+- **MUST NOT** use `ctx.runMutation`/`ctx.runQuery` inside Queries or Mutations. Call `[feature]/helpers` functions directly.
 - **MUST NOT** use `ctx.runAction` unless switching runtimes (Convex -> Node.js).
 
 ### Database Performance
@@ -30,7 +32,7 @@
 ### Security & Auth
 - **MUST** define args for all public functions (query, mutation, action).
 - **MUST NOT** accept userId, email, or permissions as arguments for access control.
-- **MUST** derive identity via `ctx.auth.getUserIdentity()`.
+- **MUST** derive identity via `_lib/auth.ts` helpers (`requireAuth`, `requireAdmin`, etc.).
 - **MUST** use `v.id("tableName")` for ID arguments.
 
 ## Implementation Patterns
@@ -54,15 +56,16 @@ const items = await ctx.db
 ### Pattern: Mutation with Auth
 
 ```typescript
+import * as Auth from "../_lib/auth";
+
 export const updateItem = mutation({
   args: { id: v.id("items"), data: v.string() },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthenticated");
+    const userId = await Auth.requireAuth(ctx);
 
     // Authorization check
     const item = await ctx.db.get(args.id);
-    if (item.ownerId !== identity.subject) throw new Error("Unauthorized");
+    if (item.ownerId !== userId) throw new Error("Unauthorized");
 
     await ctx.db.patch(args.id, {
       data: args.data,
@@ -73,9 +76,27 @@ export const updateItem = mutation({
 ```
 ### Pattern: Internal Logic Separation
 
-**File: convex/model/users.ts**
+**File: convex/_lib/auth.ts**
 ```typescript
-import { QueryCtx } from '../_generated/server';
+import type { QueryCtx, MutationCtx } from '../_generated/server';
+import { authComponent } from "../auth";
+
+export async function getCurrentUser(ctx: QueryCtx | MutationCtx) {
+  const user = await authComponent.safeGetAuthUser(ctx);
+  if (!user) throw new Error("Unauthenticated");
+  return user;
+}
+
+export async function requireAuth(ctx: QueryCtx | MutationCtx): Promise<string> {
+  const user = await getCurrentUser(ctx);
+  return user._id;
+}
+```
+
+**File: convex/[feature]/helpers.ts**
+```typescript
+import type { QueryCtx } from '../_generated/server';
+import * as Auth from "../_lib/auth";
 
 export async function getActiveUser(ctx: QueryCtx, email: string) {
   return await ctx.db
@@ -85,16 +106,17 @@ export async function getActiveUser(ctx: QueryCtx, email: string) {
 }
 ```
 
-**File: convex/users.ts (Public API)**
+**File: convex/[feature]/queries.ts (Public API)**
 ```typescript
-import * as Users from './model/users';
+import * as Auth from '../_lib/auth';
+import * as Helpers from './helpers';
 
 export const getMyProfile = query({
   args: {},
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) return null;
-    return await Users.getActiveUser(ctx, identity.email); // Direct call, no overhead
+    const user = await Auth.getCurrentUserOrNull(ctx);
+    if (!user) return null;
+    return await Helpers.getActiveUser(ctx, user.email); // Direct call, no overhead
   },
 });
 ```
@@ -109,7 +131,7 @@ export const performTask = action({
     if (!res.ok) throw new Error("API Failure");
 
     // 2. Internal Mutation (Single Transaction)
-    await ctx.runMutation(internal.feature.saveResult, {
+    await ctx.runMutation(internal.feature.mutations.saveResult, {
       status: "success",
       timestamp: Date.now()
     });
@@ -187,9 +209,10 @@ Before releasing to production, verify:
 - [ ] All `.collect()` calls have bounded result sets (< 1000 docs)
 - [ ] No redundant indexes in schema
 - [ ] All public functions have argument validators
-- [ ] All public functions have access control using `ctx.auth` (not spoofable args)
+- [ ] All public functions have access control using `_lib/auth.ts` (not spoofable args)
 - [ ] All `ctx.run*`, `scheduler`, and `crons` use `internal.*` (never `api.*`)
-- [ ] Business logic is in `convex/model/` helper functions
+- [ ] Business logic is in `convex/[feature]/helpers.ts` functions
+- [ ] Shared auth helpers are in `convex/_lib/auth.ts`
 - [ ] Actions avoid sequential `ctx.runMutation` / `ctx.runQuery` calls
 - [ ] Queries/mutations prefer helper functions over `ctx.run*`
 - [ ] `runAction` only used for Node.js runtime switching

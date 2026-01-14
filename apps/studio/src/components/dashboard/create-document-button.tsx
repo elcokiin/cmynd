@@ -10,7 +10,7 @@ import { useErrorHandler } from "@/hooks/use-error-handler";
 export function CreateDocumentButton() {
   const [isCreating, setIsCreating] = useState(false);
   const { handleError } = useErrorHandler();
-  const createDocument = useMutation(api.documents.create);
+  const createDocument = useMutation(api.documents.mutations.create);
   const navigate = useNavigate();
 
   const handleCreate = async () => {

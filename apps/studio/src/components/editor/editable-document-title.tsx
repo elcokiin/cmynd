@@ -25,7 +25,7 @@ export function EditableDocumentTitle({
   const titleUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { handleErrorSilent } = useErrorHandler();
 
-  const updateTitleMutation = useMutation(api.documents.updateTitle);
+  const updateTitleMutation = useMutation(api.documents.mutations.updateTitle);
 
   // Focus input when editing starts
   useEffect(() => {

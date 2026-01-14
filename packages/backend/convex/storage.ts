@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "./_generated/server";
-import * as Storage from "./model/storage";
+import * as Auth from "./_lib/auth";
 
 /**
  * Generate an upload URL for file storage.
@@ -8,8 +8,9 @@ import * as Storage from "./model/storage";
  */
 export const generateUploadUrl = mutation({
   args: {},
-  handler: async (ctx) => {
-    return await Storage.generateUploadUrl(ctx);
+  handler: async (ctx): Promise<string> => {
+    await Auth.requireAuth(ctx);
+    return await ctx.storage.generateUploadUrl();
   },
 });
 
@@ -18,8 +19,8 @@ export const generateUploadUrl = mutation({
  */
 export const getUrl = mutation({
   args: { storageId: v.id("_storage") },
-  handler: async (ctx, args) => {
-    return await Storage.getUrl(ctx, args.storageId);
+  handler: async (ctx, args): Promise<string | null> => {
+    return await ctx.storage.getUrl(args.storageId);
   },
 });
 
@@ -28,7 +29,8 @@ export const getUrl = mutation({
  */
 export const deleteFile = mutation({
   args: { storageId: v.id("_storage") },
-  handler: async (ctx, args) => {
-    await Storage.deleteFile(ctx, args.storageId);
+  handler: async (ctx, args): Promise<void> => {
+    await Auth.requireAuth(ctx);
+    await ctx.storage.delete(args.storageId);
   },
 });

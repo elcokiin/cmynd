@@ -8,15 +8,13 @@
  * @module
  */
 
+import type * as _lib_auth from "../_lib/auth.js";
 import type * as auth from "../auth.js";
-import type * as controller_documents from "../controller/documents.js";
-import type * as documents from "../documents.js";
+import type * as documents_helpers from "../documents/helpers.js";
+import type * as documents_mutations from "../documents/mutations.js";
+import type * as documents_queries from "../documents/queries.js";
 import type * as healthCheck from "../healthCheck.js";
 import type * as http from "../http.js";
-import type * as model_documents from "../model/documents.js";
-import type * as model_storage from "../model/storage.js";
-import type * as model_users from "../model/users.js";
-import type * as privateData from "../privateData.js";
 import type * as storage from "../storage.js";
 
 import type {
@@ -26,15 +24,13 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "_lib/auth": typeof _lib_auth;
   auth: typeof auth;
-  "controller/documents": typeof controller_documents;
-  documents: typeof documents;
+  "documents/helpers": typeof documents_helpers;
+  "documents/mutations": typeof documents_mutations;
+  "documents/queries": typeof documents_queries;
   healthCheck: typeof healthCheck;
   http: typeof http;
-  "model/documents": typeof model_documents;
-  "model/storage": typeof model_storage;
-  "model/users": typeof model_users;
-  privateData: typeof privateData;
   storage: typeof storage;
 }>;
 

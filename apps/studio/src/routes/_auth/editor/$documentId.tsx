@@ -24,10 +24,10 @@ function EditorRoute() {
   const navigate = useNavigate();
   const { handleErrorSilent } = useErrorHandler();
 
-  const document = useQuery(api.documents.getForEdit, {
+  const document = useQuery(api.documents.queries.getForEdit, {
     documentId: documentId as Id<"documents">,
   });
-  const updateContent = useMutation(api.documents.updateContent);
+  const updateContent = useMutation(api.documents.mutations.updateContent);
   const uploadFn = useConvexImageUpload();
 
   const handleDebouncedUpdate = useCallback(

@@ -21,8 +21,8 @@ export const Route = createFileRoute("/_auth/admin/dashboard")({
 });
 
 function AdminDashboard() {
-  const stats = useQuery(api.documents.getAdminStats, {});
-  const pendingDocuments = useQuery(api.documents.listPendingForAdmin, {});
+  const stats = useQuery(api.documents.queries.getAdminStats, {});
+  const pendingDocuments = useQuery(api.documents.queries.listPendingForAdmin, {});
 
   if (stats === null) {
     throw new Error("You don't have permission to access the admin panel.");

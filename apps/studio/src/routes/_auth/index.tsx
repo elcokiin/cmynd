@@ -17,7 +17,7 @@ export const Route = createFileRoute("/_auth/")({
 });
 
 function DashboardRoute() {
-  const documents = useQuery(api.documents.list);
+  const documents = useQuery(api.documents.queries.list);
   const navigate = useNavigate();
 
   return (

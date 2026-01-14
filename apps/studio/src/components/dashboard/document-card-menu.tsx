@@ -36,7 +36,7 @@ export function DocumentCardMenu({ document, onEdit }: DocumentCardMenuProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const { handleError } = useErrorHandler();
 
-  const removeDocument = useMutation(api.documents.remove);
+  const removeDocument = useMutation(api.documents.mutations.remove);
 
   const handleDelete = async () => {
     setIsDeleting(true);
