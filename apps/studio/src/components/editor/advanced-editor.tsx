@@ -35,7 +35,7 @@ export function AdvancedEditor({
   onUploadError,
 }: AdvancedEditorProps) {
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">(
-    "saved"
+    "saved",
   );
 
   const debouncedUpdate = useDebouncedCallback(async (content: JSONContent) => {
@@ -47,7 +47,6 @@ export function AdvancedEditor({
   return (
     <ImageUploadProvider uploadFn={uploadFn} onError={onUploadError}>
       <div className={cn("relative w-full", className)}>
-        {/* Save status indicator */}
         {onDebouncedUpdate && (
           <div className="absolute top-2 right-2 z-10">
             <span
@@ -57,7 +56,7 @@ export function AdvancedEditor({
                 saveStatus === "saving" &&
                   "text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20",
                 saveStatus === "unsaved" &&
-                  "text-orange-600 bg-orange-50 dark:bg-orange-900/20"
+                  "text-orange-600 bg-orange-50 dark:bg-orange-900/20",
               )}
             >
               {saveStatus === "saved" && "Saved"}
@@ -76,7 +75,7 @@ export function AdvancedEditor({
               "prose prose-neutral dark:prose-invert max-w-none",
               "min-h-[500px] p-8",
               "[&_.ProseMirror]:outline-none",
-              "[&_.ProseMirror]:min-h-[500px]"
+              "[&_.ProseMirror]:min-h-[500px]",
             )}
             onUpdate={({ editor }) => {
               const json = editor.getJSON();
