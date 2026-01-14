@@ -13,7 +13,7 @@ import { useQuery } from "convex/react";
 
 import { authClient } from "@/lib/auth-client";
 
-export default function UserMenu() {
+export function UserMenu(): React.ReactNode {
   const user = useQuery(api.auth.getCurrentUser);
 
   return (

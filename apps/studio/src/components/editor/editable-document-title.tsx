@@ -18,7 +18,7 @@ export function EditableDocumentTitle({
   documentId,
   initialTitle,
   isEditable,
-}: EditableDocumentTitleProps) {
+}: EditableDocumentTitleProps): React.ReactNode {
   const [title, setTitle] = useState(initialTitle);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);

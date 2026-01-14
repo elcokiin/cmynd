@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@elcokiin/ui/dialog";
 import { Label } from "@elcokiin/ui/label";
+import { cn } from "@elcokiin/ui/lib/utils";
 import { useMutation } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -31,7 +32,7 @@ export function DocumentSettingsDialog({
   currentType,
   open,
   onOpenChange,
-}: DocumentSettingsDialogProps) {
+}: DocumentSettingsDialogProps): React.ReactNode {
   const [type, setType] = useState<DocumentType>(currentType);
   const [isSaving, setIsSaving] = useState(false);
   const { handleError } = useErrorHandler();
@@ -82,11 +83,12 @@ export function DocumentSettingsDialog({
                     key={key}
                     type="button"
                     onClick={() => setType(key)}
-                    className={`flex items-start gap-3 p-3 rounded-lg border text-left transition-colors ${
+                    className={cn(
+                      "flex items-start gap-3 p-3 rounded-lg border text-left transition-colors",
                       type === key
                         ? "border-primary bg-primary/5"
-                        : "border-border hover:border-primary/50"
-                    }`}
+                        : "border-border hover:border-primary/50",
+                    )}
                   >
                     <Icon className="h-5 w-5 mt-0.5 shrink-0" />
                     <div>

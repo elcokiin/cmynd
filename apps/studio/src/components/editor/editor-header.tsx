@@ -34,7 +34,7 @@ export function EditorHeader({
   status,
   isEditable,
   rejectionReason,
-}: EditorHeaderProps) {
+}: EditorHeaderProps): React.ReactNode {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { handleError } = useErrorHandler();

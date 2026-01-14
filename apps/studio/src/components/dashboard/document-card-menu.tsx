@@ -31,7 +31,7 @@ type DocumentCardMenuProps = {
   onEdit: () => void;
 };
 
-export function DocumentCardMenu({ document, onEdit }: DocumentCardMenuProps) {
+export function DocumentCardMenu({ document, onEdit }: DocumentCardMenuProps): React.ReactNode {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const { handleError } = useErrorHandler();

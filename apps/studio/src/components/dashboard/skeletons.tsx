@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from "@elcokiin/ui/card";
 import { Skeleton } from "@elcokiin/ui/skeleton";
 
-export function DashboardSkeleton() {
+export function DashboardSkeleton(): React.ReactNode {
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="flex items-center justify-between mb-8">
@@ -19,7 +19,7 @@ export function DashboardSkeleton() {
   );
 }
 
-export function DocumentListSkeleton() {
+export function DocumentListSkeleton(): React.ReactNode {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {Array.from({ length: 6 }).map((_, i) => (

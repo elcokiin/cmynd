@@ -4,8 +4,8 @@ import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
 import { RefreshCwIcon } from "lucide-react";
 import { useState } from "react";
 
-import SignInForm from "@/components/sign-in-form";
-import SignUpForm from "@/components/sign-up-form";
+import { SignInForm } from "@/components/sign-in-form";
+import { SignUpForm } from "@/components/sign-up-form";
 
 export const Route = createFileRoute("/_auth")({
   component: AuthLayout,

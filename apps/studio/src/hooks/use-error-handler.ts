@@ -7,6 +7,11 @@ type ErrorHandlerOptions = {
   showToast?: boolean;
 };
 
+type ErrorHandlerReturn = {
+  handleError: (error: unknown, options?: ErrorHandlerOptions) => string;
+  handleErrorSilent: (error: unknown, context?: string) => string;
+};
+
 /**
  * Hook for consistent error handling across the application.
  *
@@ -21,7 +26,7 @@ type ErrorHandlerOptions = {
  * }
  * ```
  */
-export function useErrorHandler() {
+export function useErrorHandler(): ErrorHandlerReturn {
   const handleError = useCallback(
     (error: unknown, options: ErrorHandlerOptions = {}) => {
       const { context, showToast = true } = options;

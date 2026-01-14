@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from "@elcokiin/ui/card";
 import { Skeleton } from "@elcokiin/ui/skeleton";
 
-export function AdminDashboardSkeleton() {
+export function AdminDashboardSkeleton(): React.ReactNode {
   return (
     <div className="flex flex-col h-full">
       <header className="border-b px-4 py-3">

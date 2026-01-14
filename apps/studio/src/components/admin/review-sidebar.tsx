@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@elcokiin/ui/card";
 import { Label } from "@elcokiin/ui/label";
 import { cn } from "@elcokiin/ui/lib/utils";
 
+import { useErrorHandler } from "@/hooks/use-error-handler";
 import { ReviewSidebarSkeleton } from "./review-skeleton";
 
 type ReviewSidebarProps = {
@@ -25,10 +26,11 @@ export function ReviewSidebar({
   documentTitle,
   onActionComplete,
   isLoading,
-}: ReviewSidebarProps) {
+}: ReviewSidebarProps): React.ReactNode {
   const [observations, setObservations] = useState("");
   const [isApproving, setIsApproving] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
+  const { handleError } = useErrorHandler();
 
   const approveMutation = useMutation(api.documents.mutations.approve);
   const rejectMutation = useMutation(api.documents.mutations.reject);
@@ -46,9 +48,7 @@ export function ReviewSidebar({
       setObservations("");
       onActionComplete();
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Failed to approve document";
-      toast.error(message);
+      handleError(error, { context: "ReviewSidebar.handleApprove" });
     } finally {
       setIsApproving(false);
     }
@@ -64,9 +64,7 @@ export function ReviewSidebar({
       setObservations("");
       onActionComplete();
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Failed to reject document";
-      toast.error(message);
+      handleError(error, { context: "ReviewSidebar.handleReject" });
     } finally {
       setIsRejecting(false);
     }

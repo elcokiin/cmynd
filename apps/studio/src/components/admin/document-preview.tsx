@@ -26,7 +26,7 @@ type DocumentPreviewProps = {
   isLoading: boolean;
 };
 
-export function DocumentPreview({ document, isLoading }: DocumentPreviewProps) {
+export function DocumentPreview({ document, isLoading }: DocumentPreviewProps): React.ReactNode {
   if (isLoading) {
     return (
       <div className="p-6">

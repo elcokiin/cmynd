@@ -1,6 +1,6 @@
 import { Skeleton } from "@elcokiin/ui/skeleton";
 
-function EditorSkeleton() {
+function EditorSkeleton(): React.ReactNode {
   return (
     <div className="flex h-full flex-col">
       {/* Header skeleton */}

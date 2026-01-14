@@ -17,7 +17,7 @@ export function PendingDocumentList({
   documents,
   selectedId,
   onSelect,
-}: PendingDocumentListProps) {
+}: PendingDocumentListProps): React.ReactNode {
   if (documents === undefined) {
     return (
       <div className="p-4">
@@ -82,7 +82,7 @@ function PendingDocumentItem({
   document,
   isSelected,
   onSelect,
-}: PendingDocumentItemProps) {
+}: PendingDocumentItemProps): React.ReactNode {
   const config = documentTypeConfig[document.type];
   const Icon = config?.icon ?? FileTextIcon;
 

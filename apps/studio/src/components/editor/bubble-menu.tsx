@@ -54,7 +54,7 @@ const textFormatItems = [
   },
 ];
 
-function TextButtons() {
+function TextButtons(): React.ReactNode {
   const { editor } = useEditor();
 
   if (!editor) return null;
@@ -80,7 +80,7 @@ type BubbleMenuProps = {
   className?: string;
 };
 
-export function BubbleMenu({ className }: BubbleMenuProps) {
+export function BubbleMenu({ className }: BubbleMenuProps): React.ReactNode {
   return (
     <EditorBubble
       tippyOptions={{

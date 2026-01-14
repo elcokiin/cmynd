@@ -40,7 +40,7 @@ export const list = query({
       .query("documents")
       .withIndex("by_author", (q) => q.eq("authorId", user._id))
       .order("desc")
-      .collect();
+      .take(100);
   },
 });
 
@@ -64,7 +64,7 @@ export const listByStatus = query({
         q.eq("authorId", user._id).eq("status", args.status),
       )
       .order("desc")
-      .collect();
+      .take(100);
   },
 });
 
@@ -84,7 +84,7 @@ export const listPendingForAdmin = query({
       .query("documents")
       .withIndex("by_status", (q) => q.eq("status", "pending"))
       .order("desc")
-      .collect();
+      .take(100);
   },
 });
 
@@ -129,19 +129,28 @@ export const getAdminStats = query({
       return null;
     }
 
-    const allDocuments = await ctx.db.query("documents").collect();
+    // Use separate indexed queries for each status (avoids full table scan)
+    const [buildingDocs, pendingDocs, publishedDocs] = await Promise.all([
+      ctx.db
+        .query("documents")
+        .withIndex("by_status", (q) => q.eq("status", "building"))
+        .collect(),
+      ctx.db
+        .query("documents")
+        .withIndex("by_status", (q) => q.eq("status", "pending"))
+        .collect(),
+      ctx.db
+        .query("documents")
+        .withIndex("by_status", (q) => q.eq("status", "published"))
+        .collect(),
+    ]);
 
-    const stats = {
-      totalDocuments: allDocuments.length,
-      building: 0,
-      pending: 0,
-      published: 0,
+    return {
+      totalDocuments:
+        buildingDocs.length + pendingDocs.length + publishedDocs.length,
+      building: buildingDocs.length,
+      pending: pendingDocs.length,
+      published: publishedDocs.length,
     };
-
-    for (const doc of allDocuments) {
-      stats[doc.status]++;
-    }
-
-    return stats;
   },
 });

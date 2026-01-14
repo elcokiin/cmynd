@@ -17,7 +17,7 @@ type DocumentCardProps = {
   onOpen: () => void;
 };
 
-export function DocumentCard({ document, onOpen }: DocumentCardProps) {
+export function DocumentCard({ document, onOpen }: DocumentCardProps): React.ReactNode {
   const config = documentTypeConfig[document.type];
   const Icon = config.icon;
 

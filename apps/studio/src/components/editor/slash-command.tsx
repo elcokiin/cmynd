@@ -186,7 +186,7 @@ type SlashCommandProps = {
   className?: string;
 };
 
-export function SlashCommand({ className }: SlashCommandProps) {
+export function SlashCommand({ className }: SlashCommandProps): React.ReactNode {
   const { uploadFn, onError } = useImageUpload();
 
   // Create suggestion items with the Image command that has access to uploadFn

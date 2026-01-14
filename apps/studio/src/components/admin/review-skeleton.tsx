@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from "@elcokiin/ui/card";
 import { Skeleton } from "@elcokiin/ui/skeleton";
 
-export function ReviewSkeleton() {
+export function ReviewSkeleton(): React.ReactNode {
   return (
     <div className="flex flex-col h-full">
       <header className="border-b px-4 py-3">
@@ -55,7 +55,7 @@ export function ReviewSkeleton() {
   );
 }
 
-export function ReviewListSkeleton() {
+export function ReviewListSkeleton(): React.ReactNode {
   return (
     <div className="space-y-3">
       {Array.from({ length: 5 }).map((_, i) => (
@@ -71,7 +71,7 @@ export function ReviewListSkeleton() {
   );
 }
 
-export function ReviewPreviewSkeleton() {
+export function ReviewPreviewSkeleton(): React.ReactNode {
   return (
     <div className="space-y-4">
       <Skeleton className="h-8 w-2/3" />
@@ -87,7 +87,7 @@ export function ReviewPreviewSkeleton() {
   );
 }
 
-export function ReviewSidebarSkeleton() {
+export function ReviewSidebarSkeleton(): React.ReactNode {
   return (
     <Card>
       <CardHeader>

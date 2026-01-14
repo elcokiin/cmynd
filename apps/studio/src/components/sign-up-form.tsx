@@ -8,7 +8,11 @@ import { toast } from "sonner";
 
 import { authClient } from "@/lib/auth-client";
 
-export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () => void }) {
+type SignUpFormProps = {
+  onSwitchToSignIn: () => void;
+};
+
+export function SignUpForm({ onSwitchToSignIn }: SignUpFormProps): React.ReactNode {
   const navigate = useNavigate({
     from: "/",
   });

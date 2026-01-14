@@ -33,7 +33,7 @@ export function AdvancedEditor({
   className,
   uploadFn = null,
   onUploadError,
-}: AdvancedEditorProps) {
+}: AdvancedEditorProps): React.ReactNode {
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">(
     "saved",
   );

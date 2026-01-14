@@ -12,7 +12,7 @@ import {
   DocumentListSkeleton,
   EmptyState,
 } from "@/components/dashboard";
-import UserMenu from "@/components/user-menu";
+import { UserMenu } from "@/components/user-menu";
 
 export const Route = createFileRoute("/_auth/")({
   component: DashboardRoute,

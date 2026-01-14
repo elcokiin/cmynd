@@ -7,7 +7,7 @@ import { useState } from "react";
 
 import { useErrorHandler } from "@/hooks/use-error-handler";
 
-export function CreateDocumentButton() {
+export function CreateDocumentButton(): React.ReactNode {
   const [isCreating, setIsCreating] = useState(false);
   const { handleError } = useErrorHandler();
   const createDocument = useMutation(api.documents.mutations.create);
