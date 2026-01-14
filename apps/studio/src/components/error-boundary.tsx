@@ -13,32 +13,10 @@ type ErrorBoundaryState = {
   error: Error | null;
 };
 
-/**
- * Error Boundary component that catches unhandled React errors.
- * 
- * Usage:
- * ```tsx
- * <ErrorBoundary>
- *   <YourApp />
- * </ErrorBoundary>
- * ```
- * 
- * With custom fallback:
- * ```tsx
- * <ErrorBoundary 
- *   fallback={(error, reset) => (
- *     <div>
- *       <h1>Custom Error UI</h1>
- *       <p>{error.message}</p>
- *       <button onClick={reset}>Try Again</button>
- *     </div>
- *   )}
- * >
- *   <YourApp />
- * </ErrorBoundary>
- * ```
- */
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export class ErrorBoundary extends Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -83,7 +61,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 We encountered an unexpected error. Please try again.
               </p>
             </div>
-            
+
             <Button onClick={this.reset} variant="default">
               Try Again
             </Button>

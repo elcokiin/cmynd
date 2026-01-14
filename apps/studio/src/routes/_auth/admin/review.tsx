@@ -2,7 +2,7 @@ import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
 
 import { useState } from "react";
 import { api } from "@elcokiin/backend/convex/_generated/api";
-import { Button, buttonVariants } from "@elcokiin/ui/button";
+import { buttonVariants } from "@elcokiin/ui/button";
 import { cn } from "@elcokiin/ui/lib/utils";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
@@ -45,10 +45,6 @@ function AdminReviewPage() {
   );
 
   const isLoadingDocument = selectedDocId !== undefined && selectedDocument === undefined;
-
-  if (pendingDocuments === null) {
-    return <AccessDenied />;
-  }
 
   function handleSelectDocument(id: Id<"documents">): void {
     navigate({
@@ -208,22 +204,5 @@ function MobileTabButton({
         </span>
       )}
     </button>
-  );
-}
-
-function AccessDenied() {
-  const navigate = useNavigate();
-
-  return (
-    <div className="flex flex-col items-center justify-center h-full gap-4">
-      <h1 className="text-2xl font-bold">Access Denied</h1>
-      <p className="text-muted-foreground max-w-md text-center">
-        You don't have permission to access the admin review panel.
-      </p>
-      <Button onClick={() => navigate({ to: "/" })} variant="outline">
-        <ArrowLeftIcon className="mr-2 h-4 w-4" />
-        Go to Home
-      </Button>
-    </div>
   );
 }

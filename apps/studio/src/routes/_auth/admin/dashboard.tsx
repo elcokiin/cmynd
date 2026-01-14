@@ -1,8 +1,8 @@
 import { api } from "@elcokiin/backend/convex/_generated/api";
-import { Button, buttonVariants } from "@elcokiin/ui/button";
+import { buttonVariants } from "@elcokiin/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@elcokiin/ui/card";
 import { cn } from "@elcokiin/ui/lib/utils";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import {
   ArrowLeftIcon,
@@ -17,16 +17,11 @@ import { AdminDashboardSkeleton } from "@/components/admin/admin-dashboard-skele
 export const Route = createFileRoute("/_auth/admin/dashboard")({
   component: AdminDashboard,
   pendingComponent: AdminDashboardSkeleton,
-  errorComponent: AdminErrorComponent,
 });
 
 function AdminDashboard() {
   const stats = useQuery(api.documents.queries.getAdminStats, {});
   const pendingDocuments = useQuery(api.documents.queries.listPendingForAdmin, {});
-
-  if (stats === null) {
-    throw new Error("You don't have permission to access the admin panel.");
-  }
 
   if (stats === undefined || pendingDocuments === undefined) {
     return <AdminDashboardSkeleton />;
@@ -178,32 +173,6 @@ function AdminDashboard() {
           )}
         </div>
       </main>
-    </div>
-  );
-}
-
-function AdminErrorComponent({
-  error,
-  reset,
-}: {
-  error: Error;
-  reset: () => void;
-}) {
-  const navigate = useNavigate();
-
-  return (
-    <div className="flex flex-col items-center justify-center h-full gap-4">
-      <h1 className="text-2xl font-bold">Access Denied</h1>
-      <p className="text-muted-foreground max-w-md text-center">
-        {error.message}
-      </p>
-      <div className="flex gap-2">
-        <Button onClick={() => navigate({ to: "/" })} variant="outline">
-          <ArrowLeftIcon className="mr-2 h-4 w-4" />
-          Go to Home
-        </Button>
-        <Button onClick={reset}>Try Again</Button>
-      </div>
     </div>
   );
 }

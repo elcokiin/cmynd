@@ -6,10 +6,6 @@ import {
   AdminRequiredError,
 } from "@elcokiin/errors/backend";
 
-/**
- * Get the current authenticated user.
- * Throws an error if the user is not authenticated.
- */
 export async function getCurrentUser(ctx: QueryCtx | MutationCtx) {
   const user = await authComponent.safeGetAuthUser(ctx);
   if (!user) {
@@ -18,9 +14,6 @@ export async function getCurrentUser(ctx: QueryCtx | MutationCtx) {
   return user;
 }
 
-/**
- * Get the current authenticated user or null if not authenticated.
- */
 export async function getCurrentUserOrNull(ctx: QueryCtx | MutationCtx) {
   return await authComponent.safeGetAuthUser(ctx);
 }

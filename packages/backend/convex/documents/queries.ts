@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { documentStatusValidator } from "../../lib/validators/documents";
+import { DocumentNotFoundError } from "@elcokiin/errors/backend";
 import * as Auth from "../_lib/auth";
 import { getByIdForAuthor } from "./helpers";
 
@@ -70,15 +71,12 @@ export const listByStatus = query({
 
 /**
  * List all pending documents (admin only).
- * Returns null if user is not an admin.
+ * Throws AdminRequiredError if user is not an admin.
  */
 export const listPendingForAdmin = query({
   args: {},
   handler: async (ctx) => {
-    const isUserAdmin = await Auth.isAdmin(ctx);
-    if (!isUserAdmin) {
-      return null;
-    }
+    await Auth.requireAdmin(ctx);
 
     return await ctx.db
       .query("documents")
@@ -91,16 +89,18 @@ export const listPendingForAdmin = query({
 /**
  * Get a document for admin review (admin only).
  * Returns the full document content without author info (anonymous review).
- * Returns null if user is not an admin or document is not pending.
+ * Throws AdminRequiredError if user is not an admin.
+ * Throws DocumentNotFoundError if document is not found or not pending.
  */
 export const getForAdminReview = query({
   args: { documentId: v.id("documents") },
   handler: async (ctx, args) => {
-    const isUserAdmin = await Auth.isAdmin(ctx);
-    if (!isUserAdmin) return null;
+    await Auth.requireAdmin(ctx);
 
     const document = await ctx.db.get(args.documentId);
-    if (!document || document.status !== "pending") return null;
+    if (!document || document.status !== "pending") {
+      throw new DocumentNotFoundError();
+    }
 
     return {
       _id: document._id,
@@ -119,15 +119,12 @@ export const getForAdminReview = query({
 /**
  * Get admin statistics (admin only).
  * Returns counts of documents by status.
- * Returns null if user is not an admin.
+ * Throws AdminRequiredError if user is not an admin.
  */
 export const getAdminStats = query({
   args: {},
   handler: async (ctx) => {
-    const isUserAdmin = await Auth.isAdmin(ctx);
-    if (!isUserAdmin) {
-      return null;
-    }
+    await Auth.requireAdmin(ctx);
 
     // Use separate indexed queries for each status (avoids full table scan)
     const [buildingDocs, pendingDocs, publishedDocs] = await Promise.all([
