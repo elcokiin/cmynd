@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
 
-import { Button } from "@elcokiin/ui/button";
+import { Button } from "./button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@elcokiin/ui/dropdown-menu";
+} from "./dropdown-menu";
 import { MonitorIcon, MoonIcon, SunIcon } from "lucide-react";
 import { useTheme } from "next-themes";
 

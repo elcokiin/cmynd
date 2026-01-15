@@ -20,7 +20,8 @@
     "./separator": "./src/components/separator.tsx",
     "./skeleton": "./src/components/skeleton.tsx",
     "./sonner": "./src/components/sonner.tsx",
-    "./theme-provider": "./src/components/theme-provider.tsx"
+    "./theme-provider": "./src/components/theme-provider.tsx",
+    "./theme-toggle": "./src/components/theme-toggle.tsx"
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",

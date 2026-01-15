@@ -17,6 +17,6 @@ export default defineConfig({
     port: 3001,
   },
   ssr: {
-    noExternal: ["@convex-dev/better-auth", "novel", "react-tweet"],
+    noExternal: ["@convex-dev/better-auth", "novel", "react-tweet", "next-themes"],
   },
 });

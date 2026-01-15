@@ -12,8 +12,8 @@ import {
   DocumentListSkeleton,
   EmptyState,
 } from "@/components/dashboard";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
+import { ThemeToggle } from "@elcokiin/ui/theme-toggle";
 
 export const Route = createFileRoute("/_auth/")({
   component: DashboardRoute,

@@ -10,10 +10,9 @@ import {
   BreadcrumbSeparator,
 } from "@elcokiin/ui/breadcrumb";
 import { cn } from "@elcokiin/ui/lib/utils";
+import { ThemeToggle } from "@elcokiin/ui/theme-toggle";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeftIcon } from "lucide-react";
-
-import { ThemeToggle } from "@/components/theme-toggle";
 
 type BreadcrumbItem = {
   label: string;
