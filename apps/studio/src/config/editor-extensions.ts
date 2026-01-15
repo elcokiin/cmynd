@@ -12,7 +12,7 @@ import {
   TiptapUnderline,
   UpdatedImage,
 } from "novel";
-import { cx } from "class-variance-authority";
+import { cn } from "@elcokiin/ui/lib/utils";
 
 const placeholder = Placeholder.configure({
   placeholder: "Press '/' for commands, or start typing...",
@@ -20,7 +20,7 @@ const placeholder = Placeholder.configure({
 
 const tiptapLink = TiptapLink.configure({
   HTMLAttributes: {
-    class: cx(
+    class: cn(
       "text-primary underline underline-offset-[3px] hover:text-primary/80 transition-colors cursor-pointer"
     ),
   },
@@ -29,58 +29,58 @@ const tiptapLink = TiptapLink.configure({
 const tiptapImage = TiptapImage.configure({
   allowBase64: true,
   HTMLAttributes: {
-    class: cx("rounded-lg border border-border"),
+    class: cn("rounded-lg border border-border"),
   },
 });
 
 const taskList = TaskList.configure({
   HTMLAttributes: {
-    class: cx("not-prose pl-2"),
+    class: cn("not-prose pl-2"),
   },
 });
 
 const taskItem = TaskItem.configure({
   HTMLAttributes: {
-    class: cx("flex items-start my-4"),
+    class: cn("flex items-start my-4"),
   },
   nested: true,
 });
 
 const horizontalRule = HorizontalRule.configure({
   HTMLAttributes: {
-    class: cx("mt-4 mb-6 border-t border-muted-foreground"),
+    class: cn("mt-4 mb-6 border-t border-muted-foreground"),
   },
 });
 
 const starterKit = StarterKit.configure({
   bulletList: {
     HTMLAttributes: {
-      class: cx("list-disc list-outside leading-3 -mt-2"),
+      class: cn("list-disc list-outside leading-3 -mt-2"),
     },
   },
   orderedList: {
     HTMLAttributes: {
-      class: cx("list-decimal list-outside leading-3 -mt-2"),
+      class: cn("list-decimal list-outside leading-3 -mt-2"),
     },
   },
   listItem: {
     HTMLAttributes: {
-      class: cx("leading-normal -mb-2"),
+      class: cn("leading-normal -mb-2"),
     },
   },
   blockquote: {
     HTMLAttributes: {
-      class: cx("border-l-4 border-primary"),
+      class: cn("border-l-4 border-primary"),
     },
   },
   codeBlock: {
     HTMLAttributes: {
-      class: cx("rounded-md bg-muted border p-5 font-mono font-medium"),
+      class: cn("rounded-md bg-muted border p-5 font-mono font-medium"),
     },
   },
   code: {
     HTMLAttributes: {
-      class: cx("rounded-md bg-muted px-1.5 py-1 font-mono font-medium"),
+      class: cn("rounded-md bg-muted px-1.5 py-1 font-mono font-medium"),
       spellcheck: "false",
     },
   },
