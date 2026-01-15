@@ -41,14 +41,14 @@ function EditorRoute() {
         handleErrorSilent(error, "EditorRoute.handleDebouncedUpdate");
       }
     },
-    [documentId, updateContent, handleErrorSilent]
+    [documentId, updateContent, handleErrorSilent],
   );
 
   const handleUploadError = useCallback(
     (error: Error) => {
       handleErrorSilent(error, "EditorRoute.handleUploadError");
     },
-    [handleErrorSilent]
+    [handleErrorSilent],
   );
 
   if (document === undefined) {

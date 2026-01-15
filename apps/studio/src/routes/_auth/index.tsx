@@ -12,6 +12,7 @@ import {
   DocumentListSkeleton,
   EmptyState,
 } from "@/components/dashboard";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
 
 export const Route = createFileRoute("/_auth/")({
@@ -53,6 +54,7 @@ function DashboardRoute() {
               Admin
             </Link>
           )}
+          <ThemeToggle />
           <UserMenu />
         </div>
       </div>

@@ -5,7 +5,6 @@ import { cn } from "@elcokiin/ui/lib/utils";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import {
-  ArrowLeftIcon,
   BarChart3Icon,
   FileCheckIcon,
   FileTextIcon,
@@ -13,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { AdminDashboardSkeleton } from "@/components/admin/admin-dashboard-skeleton";
+import { PageHeader } from "@/components/page-header";
 
 export const Route = createFileRoute("/_auth/admin/dashboard")({
   component: AdminDashboard,
@@ -29,17 +29,14 @@ function AdminDashboard() {
 
   return (
     <div className="flex flex-col h-full">
-      <header className="border-b px-4 py-3">
-        <div className="flex items-center gap-4">
-          <Link
-            to="/"
-            className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}
-          >
-            <ArrowLeftIcon className="h-4 w-4" />
-          </Link>
-          <h1 className="text-xl font-bold">Admin Dashboard</h1>
-        </div>
-      </header>
+      <PageHeader
+        title="Admin Dashboard"
+        backTo="/"
+        breadcrumbs={[
+          { label: "Home", to: "/" },
+          { label: "Admin" },
+        ]}
+      />
 
       <main className="flex-1 overflow-auto">
         <div className="container mx-auto p-6 space-y-6">
