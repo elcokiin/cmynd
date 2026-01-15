@@ -68,6 +68,16 @@ const ERROR_MESSAGE_MAP: Record<string, string> = {
     "This action cannot be performed on the document's current status",
   [ErrorCode.VALIDATION_ERROR]: "Please check your input and try again",
   [ErrorCode.ZOD_VALIDATION]: "Please check your input and try again",
+  [ErrorCode.STORAGE_UPLOAD_FAILED]:
+    "Failed to upload file. Please try again.",
+  [ErrorCode.STORAGE_URL_FAILED]:
+    "Failed to get file URL. Please try again.",
+  [ErrorCode.STORAGE_NOT_CONFIGURED]:
+    "Upload functionality is not configured. Please contact support.",
+  [ErrorCode.STORAGE_INVALID_FILE_TYPE]:
+    "Invalid file type. Please upload an image file.",
+  [ErrorCode.CONFIG_MISSING_ENV]:
+    "Application configuration error. Please contact support.",
   [ErrorCode.UNKNOWN]: "Something went wrong. Please try again.",
 };
 

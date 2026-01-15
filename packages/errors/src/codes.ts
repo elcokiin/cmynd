@@ -19,6 +19,15 @@ export const ErrorCode = {
   INVALID_INPUT: "VAL_3002",
   ZOD_VALIDATION: "VAL_3003",
 
+  // Storage Errors (4xxx)
+  STORAGE_UPLOAD_FAILED: "STOR_4001",
+  STORAGE_URL_FAILED: "STOR_4002",
+  STORAGE_NOT_CONFIGURED: "STOR_4003",
+  STORAGE_INVALID_FILE_TYPE: "STOR_4004",
+
+  // Configuration Errors (5xxx)
+  CONFIG_MISSING_ENV: "CFG_5001",
+
   // Unknown Errors (9xxx)
   UNKNOWN: "ERR_9999",
 } as const;

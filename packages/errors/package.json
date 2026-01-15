@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./backend": "./src/backend/index.ts",
+    "./frontend": "./src/frontend/index.ts",
     "./codes": "./src/codes.ts",
     "./utils": "./src/utils.ts",
     "./retry": "./src/retry.ts"
