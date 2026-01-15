@@ -20,8 +20,8 @@ export const Route = createFileRoute("/_auth/admin/dashboard")({
 });
 
 function AdminDashboard() {
-  const stats = useQuery(api.documents.queries.getAdminStats, {});
-  const pendingDocuments = useQuery(api.documents.queries.listPendingForAdmin, {});
+  const stats = useQuery(api.documents.queries.getAdminStats);
+  const pendingDocuments = useQuery(api.documents.queries.getRecentPendingForAdmin, { limit: 5 });
 
   if (stats === undefined || pendingDocuments === undefined) {
     return <AdminDashboardSkeleton />;
@@ -73,7 +73,7 @@ function AdminDashboard() {
                 <FileTextIcon className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.building}</div>
+                <div className="text-2xl font-bold">{stats.buildingCount}</div>
                 <p className="text-xs text-muted-foreground">
                   Documents in progress
                 </p>
@@ -89,7 +89,7 @@ function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-yellow-600">
-                  {stats.pending}
+                  {stats.pendingCount}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Awaiting approval
@@ -104,7 +104,7 @@ function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-green-600">
-                  {stats.published}
+                  {stats.publishedCount}
                 </div>
                 <p className="text-xs text-muted-foreground">Live documents</p>
               </CardContent>

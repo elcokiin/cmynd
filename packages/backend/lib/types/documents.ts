@@ -46,3 +46,24 @@ export const DOCUMENT_TYPES = ["own", "curated", "inspiration"] as const;
  * Use these instead of string literals for better type safety.
  */
 export const DOCUMENT_STATUSES = ["building", "pending", "published"] as const;
+
+/**
+ * Statistics for admin dashboard.
+ * Provides document counts by status and total count.
+ *
+ * Used by:
+ * - convex/documents/queries.ts: getAdminStats query
+ * - apps/studio: Admin dashboard component
+ */
+export type DocumentStats = {
+  totalDocuments: number;
+  buildingCount: number;
+  pendingCount: number;
+  publishedCount: number;
+};
+
+/**
+ * Re-export projection types for frontend use.
+ * These types provide optimized versions of documents for list views.
+ */
+export type { DocumentListItem, PendingDocumentListItem } from "../../convex/documents/projections";

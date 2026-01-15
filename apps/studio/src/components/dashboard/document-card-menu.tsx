@@ -1,4 +1,4 @@
-import type { Doc } from "@elcokiin/backend/convex/_generated/dataModel";
+import type { DocumentListItem } from "@elcokiin/backend/lib/types/documents";
 
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { Button, buttonVariants } from "@elcokiin/ui/button";
@@ -27,7 +27,7 @@ import { toast } from "sonner";
 import { useErrorHandler } from "@/hooks/use-error-handler";
 
 type DocumentCardMenuProps = {
-  document: Doc<"documents">;
+  document: DocumentListItem;
   onEdit: () => void;
 };
 

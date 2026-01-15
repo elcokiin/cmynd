@@ -1,8 +1,8 @@
 import { api } from "@elcokiin/backend/convex/_generated/api";
-import { buttonVariants } from "@elcokiin/ui/button";
+import { Button, buttonVariants } from "@elcokiin/ui/button";
 import { cn } from "@elcokiin/ui/lib/utils";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
+import { useQuery, usePaginatedQuery } from "convex/react";
 import { ShieldIcon } from "lucide-react";
 
 import {
@@ -20,13 +20,21 @@ export const Route = createFileRoute("/_auth/")({
 });
 
 function DashboardRoute() {
-  const documents = useQuery(api.documents.queries.list);
   const isAdmin = useQuery(api.auth.isCurrentUserAdmin);
   const navigate = useNavigate();
 
+  const { results, status, loadMore } = usePaginatedQuery(
+    api.documents.queries.list,
+    {},
+    { initialNumItems: 20 },
+  );
+
+  const isLoading = results === undefined;
+  const canLoadMore = status === "CanLoadMore";
+  const isLoadingMore = status === "LoadingMore";
+
   return (
     <div className="container mx-auto py-8 px-4">
-      {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold">Documents</h1>
@@ -49,23 +57,43 @@ function DashboardRoute() {
         </div>
       </div>
 
-      {/* Document list */}
-      {documents === undefined ? (
+      {isLoading ? (
         <DocumentListSkeleton />
-      ) : documents.length === 0 ? (
+      ) : results.length === 0 ? (
         <EmptyState />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {documents.map((doc) => (
-            <DocumentCard
-              key={doc._id}
-              document={doc}
-              onOpen={() =>
-                navigate({ to: "/editor/$documentId", params: { documentId: doc._id } })
-              }
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {results.map((doc) => (
+              <DocumentCard
+                key={doc._id}
+                document={doc}
+                onOpen={() =>
+                  navigate({
+                    to: "/editor/$documentId",
+                    params: { documentId: doc._id },
+                  })
+                }
+              />
+            ))}
+          </div>
+
+          {(canLoadMore || isLoadingMore) && (
+            <div className="mt-8 flex flex-col items-center gap-4">
+              {isLoadingMore && <DocumentListSkeleton count={3} />}
+              {canLoadMore && (
+                <Button
+                  variant="outline"
+                  onClick={() => loadMore(10)}
+                  disabled={isLoadingMore}
+                  className="w-full md:w-auto min-w-[200px]"
+                >
+                  Show More
+                </Button>
+              )}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

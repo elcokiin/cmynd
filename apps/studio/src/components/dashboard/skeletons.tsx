@@ -19,10 +19,10 @@ export function DashboardSkeleton(): React.ReactNode {
   );
 }
 
-export function DocumentListSkeleton(): React.ReactNode {
+export function DocumentListSkeleton({ count = 6 }: { count?: number }): React.ReactNode {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {Array.from({ length: 6 }).map((_, i) => (
+      {Array.from({ length: count }).map((_, i) => (
         <Card key={i}>
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2 mb-2">

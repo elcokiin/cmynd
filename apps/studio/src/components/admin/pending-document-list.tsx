@@ -1,24 +1,25 @@
-import type { Doc, Id } from "@elcokiin/backend/convex/_generated/dataModel";
+import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
+import type { PendingDocumentListItem } from "@elcokiin/backend/lib/types/documents";
 import { cn } from "@elcokiin/ui/lib/utils";
 import { FileTextIcon, HourglassIcon } from "lucide-react";
 
 import { documentTypeConfig } from "@/components/dashboard/document-type-config";
 import { ReviewListSkeleton } from "./review-skeleton";
 
-type PendingDocument = Doc<"documents">;
-
 type PendingDocumentListProps = {
-  documents: PendingDocument[] | undefined | null;
+  documents: PendingDocumentListItem[] | undefined | null;
   selectedId: Id<"documents"> | null;
   onSelect: (id: Id<"documents">) => void;
+  isLoading?: boolean;
 };
 
 export function PendingDocumentList({
   documents,
   selectedId,
   onSelect,
+  isLoading = false,
 }: PendingDocumentListProps): React.ReactNode {
-  if (documents === undefined) {
+  if (isLoading || documents === undefined) {
     return (
       <div className="p-4">
         <h3 className="font-medium text-sm text-muted-foreground mb-4">
@@ -56,7 +57,7 @@ export function PendingDocumentList({
   return (
     <div className="p-4">
       <h3 className="font-medium text-sm text-muted-foreground mb-4">
-        Pending Review ({documents.length})
+        Pending Review
       </h3>
       <div className="space-y-2">
         {documents.map((doc) => (
@@ -73,7 +74,7 @@ export function PendingDocumentList({
 }
 
 type PendingDocumentItemProps = {
-  document: PendingDocument;
+  document: PendingDocumentListItem;
   isSelected: boolean;
   onSelect: () => void;
 };

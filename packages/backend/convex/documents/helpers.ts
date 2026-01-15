@@ -1,6 +1,10 @@
-import type { Id } from "../_generated/dataModel";
+import type { Id, Doc } from "../_generated/dataModel";
 import type { QueryCtx, MutationCtx } from "../_generated/server";
-import type { CurationData, Reference } from "../../lib/types/documents";
+import type {
+  CurationData,
+  Reference,
+  DocumentStatus,
+} from "../../lib/types/documents";
 import * as Auth from "../_lib/auth";
 import {
   DocumentNotFoundError,
@@ -8,6 +12,8 @@ import {
   DocumentPublishedError,
   DocumentPendingReviewError,
 } from "@elcokiin/errors/backend";
+
+export { paginationOptsValidator } from "convex/server";
 
 /**
  * Input type for updating document metadata.
@@ -90,4 +96,30 @@ export async function updateMetadata(
   }
 
   await ctx.db.patch(documentId, updates);
+}
+
+/**
+ * Count documents by status without loading full document data.
+ * Uses async iteration to count efficiently.
+ *
+ * @param ctx - Query context
+ * @param status - Document status to count
+ * @returns Total count of documents with the given status
+ *
+ * Used by: getAdminStats query
+ */
+export async function countByStatus(
+  ctx: QueryCtx,
+  status: DocumentStatus,
+): Promise<number> {
+  let count = 0;
+  const iterator = ctx.db
+    .query("documents")
+    .withIndex("by_status", (q) => q.eq("status", status));
+
+  for await (const _doc of iterator) {
+    count++;
+  }
+
+  return count;
 }

@@ -3,6 +3,7 @@ import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
 import { useState } from "react";
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { buttonVariants } from "@elcokiin/ui/button";
+import { Pagination } from "@elcokiin/ui/pagination";
 import { cn } from "@elcokiin/ui/lib/utils";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
@@ -17,6 +18,7 @@ import { PendingDocumentList } from "@/components/admin/pending-document-list";
 import { DocumentPreview } from "@/components/admin/document-preview";
 import { ReviewSidebar } from "@/components/admin/review-sidebar";
 import { ReviewSkeleton } from "@/components/admin/review-skeleton";
+import { useManualPagination } from "@/hooks/use-manual-pagination";
 
 type SearchParams = {
   doc?: string;
@@ -38,7 +40,22 @@ function AdminReviewPage() {
 
   const [mobileTab, setMobileTab] = useState<MobileTab>("list");
 
-  const pendingDocuments = useQuery(api.documents.queries.listPendingForAdmin);
+  const {
+    items: pendingDocuments,
+    isLoading: isLoadingDocuments,
+    currentPage,
+    totalPages,
+    hasNextPage,
+    hasPreviousPage,
+    goToPage,
+    nextPage,
+    previousPage,
+  } = useManualPagination(
+    api.documents.queries.listPendingForAdmin,
+    {},
+    20 // Page size
+  );
+
   const selectedDocument = useQuery(
     api.documents.queries.getForAdminReview,
     selectedDocId ? { documentId: selectedDocId as Id<"documents"> } : "skip",
@@ -86,7 +103,6 @@ function AdminReviewPage() {
           onClick={() => setMobileTab("list")}
           icon={ListIcon}
           label="Pending"
-          badge={pendingDocuments?.length}
         />
         <MobileTabButton
           active={mobileTab === "preview"}
@@ -107,57 +123,87 @@ function AdminReviewPage() {
       {/* Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Desktop Layout */}
-        <div className="hidden md:flex flex-1">
-          {/* Document List */}
-          <div className="w-64 border-r overflow-auto">
-            <PendingDocumentList
-              documents={pendingDocuments}
-              selectedId={selectedDocId as Id<"documents"> | null}
-              onSelect={handleSelectDocument}
-            />
-          </div>
+        <div className="hidden md:flex flex-col flex-1">
+          <div className="flex flex-1 overflow-hidden">
+            {/* Document List */}
+            <div className="w-64 border-r flex flex-col">
+              <div className="flex-1 overflow-auto">
+                <PendingDocumentList
+                  documents={pendingDocuments}
+                  selectedId={selectedDocId as Id<"documents"> | null}
+                  onSelect={handleSelectDocument}
+                  isLoading={isLoadingDocuments}
+                />
+              </div>
+              {totalPages > 1 && (
+                <div className="border-t p-2">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={goToPage}
+                    showFirstLast={false}
+                  />
+                </div>
+              )}
+            </div>
 
-          {/* Preview */}
-          <div className="flex-1 overflow-auto">
-            <DocumentPreview
-              document={selectedDocument}
-              isLoading={isLoadingDocument}
-            />
-          </div>
+            {/* Preview */}
+            <div className="flex-1 overflow-auto">
+              <DocumentPreview
+                document={selectedDocument}
+                isLoading={isLoadingDocument}
+              />
+            </div>
 
-          {/* Sidebar */}
-          <div className="w-80 border-l p-4 overflow-auto">
-            <ReviewSidebar
-              documentId={selectedDocId as Id<"documents"> | null}
-              documentTitle={selectedDocument?.title ?? null}
-              onActionComplete={handleActionComplete}
-              isLoading={isLoadingDocument}
-            />
-          </div>
-        </div>
-
-        {/* Mobile Layout */}
-        <div className="md:hidden flex-1 overflow-auto">
-          {mobileTab === "list" && (
-            <PendingDocumentList
-              documents={pendingDocuments}
-              selectedId={selectedDocId as Id<"documents"> | null}
-              onSelect={handleSelectDocument}
-            />
-          )}
-          {mobileTab === "preview" && (
-            <DocumentPreview
-              document={selectedDocument}
-              isLoading={isLoadingDocument}
-            />
-          )}
-          {mobileTab === "actions" && (
-            <div className="p-4">
+            {/* Sidebar */}
+            <div className="w-80 border-l p-4 overflow-auto">
               <ReviewSidebar
                 documentId={selectedDocId as Id<"documents"> | null}
                 documentTitle={selectedDocument?.title ?? null}
                 onActionComplete={handleActionComplete}
                 isLoading={isLoadingDocument}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Layout */}
+        <div className="md:hidden flex flex-col flex-1">
+          <div className="flex-1 overflow-auto">
+            {mobileTab === "list" && (
+              <PendingDocumentList
+                documents={pendingDocuments}
+                selectedId={selectedDocId as Id<"documents"> | null}
+                onSelect={handleSelectDocument}
+                isLoading={isLoadingDocuments}
+              />
+            )}
+            {mobileTab === "preview" && (
+              <DocumentPreview
+                document={selectedDocument}
+                isLoading={isLoadingDocument}
+              />
+            )}
+            {mobileTab === "actions" && (
+              <div className="p-4">
+                <ReviewSidebar
+                  documentId={selectedDocId as Id<"documents"> | null}
+                  documentTitle={selectedDocument?.title ?? null}
+                  onActionComplete={handleActionComplete}
+                  isLoading={isLoadingDocument}
+                />
+              </div>
+            )}
+          </div>
+          
+          {/* Mobile Pagination */}
+          {mobileTab === "list" && totalPages > 1 && (
+            <div className="border-t p-2">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={goToPage}
+                showFirstLast={false}
               />
             </div>
           )}

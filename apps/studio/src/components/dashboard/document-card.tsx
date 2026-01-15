@@ -1,4 +1,4 @@
-import type { Doc } from "@elcokiin/backend/convex/_generated/dataModel";
+import type { DocumentListItem } from "@elcokiin/backend/lib/types/documents";
 
 import {
   Card,
@@ -13,7 +13,7 @@ import { DocumentCardMenu } from "./document-card-menu";
 import { documentTypeConfig } from "./document-type-config";
 
 type DocumentCardProps = {
-  document: Doc<"documents">;
+  document: DocumentListItem;
   onOpen: () => void;
 };
 

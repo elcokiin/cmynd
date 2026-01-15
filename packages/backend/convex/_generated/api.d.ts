@@ -12,6 +12,7 @@ import type * as _lib_auth from "../_lib/auth.js";
 import type * as auth from "../auth.js";
 import type * as documents_helpers from "../documents/helpers.js";
 import type * as documents_mutations from "../documents/mutations.js";
+import type * as documents_projections from "../documents/projections.js";
 import type * as documents_queries from "../documents/queries.js";
 import type * as healthCheck from "../healthCheck.js";
 import type * as http from "../http.js";
@@ -28,6 +29,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   "documents/helpers": typeof documents_helpers;
   "documents/mutations": typeof documents_mutations;
+  "documents/projections": typeof documents_projections;
   "documents/queries": typeof documents_queries;
   healthCheck: typeof healthCheck;
   http: typeof http;

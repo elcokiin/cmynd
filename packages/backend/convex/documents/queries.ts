@@ -1,9 +1,20 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
-import { documentStatusValidator } from "../../lib/validators/documents";
-import { DocumentNotFoundError } from "@elcokiin/errors/backend";
+import {
+  DocumentNotFoundError,
+  UnauthenticatedError,
+} from "@elcokiin/errors/backend";
+import type { DocumentStats } from "../../lib/types/documents";
 import * as Auth from "../_lib/auth";
-import { getByIdForAuthor } from "./helpers";
+import {
+  getByIdForAuthor,
+  countByStatus,
+  paginationOptsValidator,
+} from "./helpers";
+import {
+  projectDocumentListItem,
+  projectPendingDocumentListItem,
+} from "./projections";
 
 /**
  * Get a single document by ID.
@@ -26,63 +37,52 @@ export const getForEdit = query({
 });
 
 /**
- * List all documents for the current user.
- * Returns empty array if not authenticated.
+ * List all documents for the current user with pagination.
+ * Returns projected documents
+ * Throws UnauthenticatedError if not authenticated.
  */
 export const list = query({
-  args: {},
-  handler: async (ctx) => {
-    const user = await Auth.getCurrentUserOrNull(ctx);
-    if (!user) {
-      return [];
-    }
-
-    return await ctx.db
-      .query("documents")
-      .withIndex("by_author", (q) => q.eq("authorId", user._id))
-      .order("desc")
-      .take(100);
-  },
-});
-
-/**
- * List documents by status for the current user.
- * Returns empty array if not authenticated (graceful handling for sign-out).
- */
-export const listByStatus = query({
-  args: {
-    status: documentStatusValidator,
-  },
+  args: { paginationOpts: paginationOptsValidator },
   handler: async (ctx, args) => {
     const user = await Auth.getCurrentUserOrNull(ctx);
     if (!user) {
-      return [];
+      throw new UnauthenticatedError("Please sign in to view your documents");
     }
 
-    return await ctx.db
+    const result = await ctx.db
       .query("documents")
-      .withIndex("by_author_and_status", (q) =>
-        q.eq("authorId", user._id).eq("status", args.status),
-      )
+      .withIndex("by_author", (q) => q.eq("authorId", user._id))
       .order("desc")
-      .take(100);
+      .paginate(args.paginationOpts);
+
+    return {
+      ...result,
+      page: result.page.map(projectDocumentListItem),
+    };
   },
 });
 
 /**
- * List all pending documents (admin only).
+ * List all pending documents for admin review with pagination.
+ * Returns projected documents with minimal fields.
+ *
  * Throws AdminRequiredError if user is not an admin.
  */
 export const listPendingForAdmin = query({
-  args: {},
-  handler: async (ctx) => {
+  args: { paginationOpts: paginationOptsValidator },
+  handler: async (ctx, args) => {
     await Auth.requireAdmin(ctx);
 
-    return await ctx.db
+    const result = await ctx.db
       .query("documents")
       .withIndex("by_status", (q) => q.eq("status", "pending"))
       .order("desc")
-      .take(100);
+      .paginate(args.paginationOpts);
+
+    return {
+      ...result,
+      page: result.page.map(projectPendingDocumentListItem),
+    };
   },
 });
 
@@ -117,37 +117,48 @@ export const getForAdminReview = query({
 });
 
 /**
+ * Get recent pending documents for admin dashboard preview (admin only).
+ * Returns the first N pending documents without pagination.
+ *
+ * Throws AdminRequiredError if user is not an admin.
+ */
+export const getRecentPendingForAdmin = query({
+  args: { limit: v.optional(v.number()) },
+  handler: async (ctx, args) => {
+    await Auth.requireAdmin(ctx);
+
+    const limit = args.limit ?? 5;
+    const documents = await ctx.db
+      .query("documents")
+      .withIndex("by_status", (q) => q.eq("status", "pending"))
+      .order("desc")
+      .take(limit);
+
+    return documents.map(projectPendingDocumentListItem);
+  },
+});
+
+/**
  * Get admin statistics (admin only).
  * Returns counts of documents by status.
  * Throws AdminRequiredError if user is not an admin.
  */
 export const getAdminStats = query({
   args: {},
-  handler: async (ctx) => {
+  handler: async (ctx): Promise<DocumentStats> => {
     await Auth.requireAdmin(ctx);
 
-    // Use separate indexed queries for each status (avoids full table scan)
-    const [buildingDocs, pendingDocs, publishedDocs] = await Promise.all([
-      ctx.db
-        .query("documents")
-        .withIndex("by_status", (q) => q.eq("status", "building"))
-        .collect(),
-      ctx.db
-        .query("documents")
-        .withIndex("by_status", (q) => q.eq("status", "pending"))
-        .collect(),
-      ctx.db
-        .query("documents")
-        .withIndex("by_status", (q) => q.eq("status", "published"))
-        .collect(),
+    const [buildingCount, pendingCount, publishedCount] = await Promise.all([
+      countByStatus(ctx, "building"),
+      countByStatus(ctx, "pending"),
+      countByStatus(ctx, "published"),
     ]);
 
     return {
-      totalDocuments:
-        buildingDocs.length + pendingDocs.length + publishedDocs.length,
-      building: buildingDocs.length,
-      pending: pendingDocs.length,
-      published: publishedDocs.length,
+      totalDocuments: buildingCount + pendingCount + publishedCount,
+      buildingCount,
+      pendingCount,
+      publishedCount,
     };
   },
 });
