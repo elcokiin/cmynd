@@ -1,4 +1,4 @@
-import type { UploadFn } from "@elcokiin/backend/lib/types/storage";
+import type { UploadFn } from "@elcokiin/backend/lib/types";
 
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { StorageUploadError, StorageUrlError } from "@elcokiin/errors/frontend";
@@ -38,7 +38,7 @@ function useConvexImageUpload(): UploadFn {
 
       return url;
     },
-    [generateUploadUrl, getStorageUrl]
+    [generateUploadUrl, getStorageUrl],
   );
 }
 

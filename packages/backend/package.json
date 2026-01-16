@@ -10,7 +10,7 @@
     "./convex/_generated/api.d": "./convex/_generated/api.d.ts",
     "./convex/_generated/dataModel": "./convex/_generated/dataModel.d.ts",
     "./lib/types/documents": "./lib/types/documents.ts",
-    "./lib/types/storage": "./lib/types/storage.ts",
+    "./lib/types": "./lib/types/index.ts",
     "./lib/validators/documents": "./lib/validators/documents.ts",
     "./lib/validators/auth": "./lib/validators/auth.ts"
   },

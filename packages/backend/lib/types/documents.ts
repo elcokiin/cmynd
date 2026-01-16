@@ -1,3 +1,6 @@
+import type { Id } from "../../convex/_generated/dataModel";
+import type { PublicAuthor } from "./authors";
+
 /**
  * Type of document content.
  * - own: Original content created from scratch
@@ -36,18 +39,6 @@ export type Reference = {
 };
 
 /**
- * Constants for document types.
- * Use these instead of string literals for better type safety.
- */
-export const DOCUMENT_TYPES = ["own", "curated", "inspiration"] as const;
-
-/**
- * Constants for document statuses.
- * Use these instead of string literals for better type safety.
- */
-export const DOCUMENT_STATUSES = ["building", "pending", "published"] as const;
-
-/**
  * Statistics for admin dashboard.
  * Provides document counts by status and total count.
  *
@@ -63,7 +54,60 @@ export type DocumentStats = {
 };
 
 /**
- * Re-export projection types for frontend use.
- * These types provide optimized versions of documents for list views.
+ * Document list item for author's document list.
+ * Contains essential document metadata without content.
  */
-export type { DocumentListItem, PendingDocumentListItem } from "../../convex/documents/projections";
+export type DocumentListItem = {
+  _id: Id<"documents">;
+  title: string;
+  type: DocumentType;
+  status: DocumentStatus;
+  coverImageId?: Id<"_storage">;
+  createdAt: number;
+  updatedAt: number;
+  submittedAt?: number;
+  rejectionReason?: string;
+};
+
+/**
+ * Pending document list item for admin review.
+ * Contains minimal metadata for pending documents awaiting review.
+ */
+export type PendingDocumentListItem = {
+  _id: Id<"documents">;
+  title: string;
+  type: DocumentType;
+  submittedAt?: number;
+  createdAt: number;
+  updatedAt: number;
+};
+
+/**
+ * Published document with full content and author information.
+ * Used by public queries that return published documents.
+ */
+export type PublishedDocument = {
+  _id: Id<"documents">;
+  title: string;
+  content: unknown;
+  type: DocumentType;
+  coverImageId?: Id<"_storage">;
+  curation?: CurationData;
+  references?: Reference[];
+  publishedAt: number;
+  author: PublicAuthor;
+};
+
+/**
+ * Published document list item for public document listings.
+ * Contains document metadata with author information but without content.
+ */
+export type PublishedDocumentListItem = {
+  _id: Id<"documents">;
+  title: string;
+  type: DocumentType;
+  coverImageId?: Id<"_storage">;
+  publishedAt: number;
+  author: PublicAuthor;
+};
+

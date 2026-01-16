@@ -1,5 +1,9 @@
 import type { JSONContent } from "novel";
-import type { DocumentType, CurationData, Reference } from "@elcokiin/backend/lib/types/documents";
+import type {
+  DocumentType,
+  CurationData,
+  Reference,
+} from "@elcokiin/backend/lib/types/documents";
 import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@elcokiin/ui/card";
@@ -26,7 +30,10 @@ type DocumentPreviewProps = {
   isLoading: boolean;
 };
 
-export function DocumentPreview({ document, isLoading }: DocumentPreviewProps): React.ReactNode {
+export function DocumentPreview({
+  document,
+  isLoading,
+}: DocumentPreviewProps): React.ReactNode {
   if (isLoading) {
     return (
       <div className="p-6">

@@ -1,4 +1,4 @@
-import type { Id, Doc } from "../_generated/dataModel";
+import type { Id } from "../_generated/dataModel";
 import type { QueryCtx, MutationCtx } from "../_generated/server";
 import type {
   CurationData,
@@ -43,7 +43,8 @@ export async function getByIdForAuthor(
     throw new DocumentNotFoundError();
   }
 
-  if (document.authorId !== userId) {
+  const author = await ctx.db.get(document.authorId);
+  if (!author || author.userId !== userId) {
     throw new DocumentOwnershipError();
   }
 
@@ -123,3 +124,4 @@ export async function countByStatus(
 
   return count;
 }
+

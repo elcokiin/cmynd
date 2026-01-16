@@ -1,5 +1,5 @@
 import type { Editor } from "@tiptap/react";
-import type { UploadFn } from "@elcokiin/backend/lib/types/storage";
+import type { UploadFn } from "@elcokiin/backend/lib/types";
 
 import { getUserFriendlyMessage, parseError } from "@elcokiin/errors";
 import {
@@ -20,7 +20,7 @@ export async function uploadImage(
   uploadFn: UploadFn | null,
   file: File,
   editor: Editor,
-  onError?: (error: Error) => void
+  onError?: (error: Error) => void,
 ): Promise<void> {
   if (!uploadFn) {
     const error = new StorageNotConfiguredError();
@@ -72,7 +72,7 @@ export function handleImagePaste(
   event: ClipboardEvent,
   editor: Editor,
   uploadFn: UploadFn | null,
-  onError?: (error: Error) => void
+  onError?: (error: Error) => void,
 ): boolean {
   const items = event.clipboardData?.items;
   if (!items) return false;
@@ -103,7 +103,7 @@ export function handleImageDrop(
   event: DragEvent,
   editor: Editor,
   uploadFn: UploadFn | null,
-  onError?: (error: Error) => void
+  onError?: (error: Error) => void,
 ): boolean {
   const files = event.dataTransfer?.files;
   if (!files?.length) return false;

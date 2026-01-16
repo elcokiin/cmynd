@@ -1,4 +1,4 @@
-import type { UploadFn } from "@elcokiin/backend/lib/types/storage";
+import type { UploadFn } from "@elcokiin/backend/lib/types";
 
 import { useState } from "react";
 import { EditorContent, EditorRoot, type JSONContent } from "novel";

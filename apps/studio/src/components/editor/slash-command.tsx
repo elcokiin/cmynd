@@ -1,4 +1,4 @@
-import type { UploadFn } from "@elcokiin/backend/lib/types/storage";
+import type { UploadFn } from "@elcokiin/backend/lib/types";
 
 import {
   CheckSquare,
@@ -186,7 +186,9 @@ type SlashCommandProps = {
   className?: string;
 };
 
-export function SlashCommand({ className }: SlashCommandProps): React.ReactNode {
+export function SlashCommand({
+  className,
+}: SlashCommandProps): React.ReactNode {
   const { uploadFn, onError } = useImageUpload();
 
   // Create suggestion items with the Image command that has access to uploadFn

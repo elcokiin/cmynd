@@ -2,13 +2,13 @@ import type { Id } from "../_generated/dataModel";
 import type { DocumentType } from "../../lib/types/documents";
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
-import {
-  documentTypeValidator,
-  curationDataValidator,
-  referenceValidator,
-} from "../../lib/validators/documents";
+import { documentTypeValidator } from "../../lib/validators/documents";
 import * as Auth from "../_lib/auth";
-import { getByIdForAuthor, updateMetadata as updateMetadataHelper } from "./helpers";
+import {
+  getByIdForAuthor,
+  updateMetadata as updateMetadataHelper,
+} from "./helpers";
+import { getOrCreateAuthorForUser } from "../authors/helpers";
 import {
   DocumentNotFoundError,
   DocumentAlreadyPublishedError,
@@ -30,13 +30,14 @@ export const create = mutation({
   },
   handler: async (ctx, args): Promise<Id<"documents">> => {
     const userId = await Auth.requireAuth(ctx);
+    const authorId = await getOrCreateAuthorForUser(ctx, userId);
 
     const now = Date.now();
     return await ctx.db.insert("documents", {
       title: args.title,
       type: args.type,
       status: "building",
-      authorId: userId,
+      authorId,
       content: args.content ?? {},
       createdAt: now,
       updatedAt: now,
@@ -114,23 +115,6 @@ export const updateContent = mutation({
 });
 
 /**
- * Update document metadata.
- */
-export const updateMetadata = mutation({
-  args: {
-    documentId: v.id("documents"),
-    title: v.optional(v.string()),
-    coverImageId: v.optional(v.union(v.id("_storage"), v.null())),
-    curation: v.optional(v.union(curationDataValidator, v.null())),
-    references: v.optional(v.array(referenceValidator)),
-  },
-  handler: async (ctx, args): Promise<void> => {
-    const { documentId, ...input } = args;
-    await updateMetadataHelper(ctx, documentId, input);
-  },
-});
-
-/**
  * Publish a document.
  * Changes status from "building" to "published".
  */
@@ -178,7 +162,9 @@ export const submit = mutation({
     }
 
     if (document.status === "pending") {
-      throw new DocumentInvalidStatusError("Document is already pending review");
+      throw new DocumentInvalidStatusError(
+        "Document is already pending review",
+      );
     }
 
     if (!document.title || document.title.trim() === "") {

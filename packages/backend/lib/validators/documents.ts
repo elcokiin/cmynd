@@ -30,7 +30,7 @@ export const documentValidator = {
   content: v.any(),
   type: documentTypeValidator,
   status: documentStatusValidator,
-  authorId: v.string(),
+  authorId: v.id("authors"),
   coverImageId: v.optional(v.id("_storage")),
   curation: v.optional(curationDataValidator),
   references: v.optional(v.array(referenceValidator)),
