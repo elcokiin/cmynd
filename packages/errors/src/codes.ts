@@ -1,3 +1,10 @@
+/**
+ * Error Code Constants
+ * 
+ * For detailed error messages and descriptions, see the `/messages` folder.
+ * Each error code has a corresponding message file with full context and guidance.
+ */
+
 export const ErrorCode = {
   // Authentication & Authorization (1xxx)
   UNAUTHENTICATED: "AUTH_1001",
@@ -27,6 +34,11 @@ export const ErrorCode = {
 
   // Configuration Errors (5xxx)
   CONFIG_MISSING_ENV: "CFG_5001",
+
+  // Author Errors (6xxx)
+  AUTHOR_NOT_FOUND: "AUTHOR_6001",
+  AUTHOR_OWNERSHIP: "AUTHOR_6002",
+  AUTHOR_INVALID_AVATAR_URL: "AUTHOR_6003",
 
   // Unknown Errors (9xxx)
   UNKNOWN: "ERR_9999",

@@ -29,13 +29,3 @@ export type PublicAuthor = {
   createdAt: number;
   updatedAt: number;
 };
-
-/**
- * Input for creating a guest author (without user account).
- */
-export type CreateGuestAuthorInput = {
-  name: string;
-  avatarUrl?: string;
-  bio?: string;
-  phrases?: Phrase[];
-};

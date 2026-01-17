@@ -332,34 +332,32 @@ function UserList() {
 
 ## 🚨 Error Handling
 
-This project uses a **structured error management system** with the `@elcokiin/errors` package. **You MUST use these error classes and utilities instead of generic `throw new Error()`.**
+This project uses a **lightweight error system** with the `@elcokiin/errors` package. It provides:
+- **Error codes** for consistent identification
+- **`throwConvexError()` helper** for Convex backend functions (with optional default messages)
+- **`getUserFriendlyMessage()`** for user-facing error messages
 
 ---
 
 ### Backend Error Handling (Convex Functions)
 
-#### Rule 1: Use Specific Error Classes
-**You MUST throw specific error classes from `@elcokiin/errors/backend`** instead of generic errors.
+#### Rule 1: Use `throwConvexError()` Helper
+**You MUST use the `throwConvexError()` helper from `@elcokiin/errors`** in all Convex functions.
 
-**Available Error Classes:**
-- **Authentication:** `UnauthenticatedError`, `UnauthorizedError`, `AdminRequiredError`
-- **Documents:** `DocumentNotFoundError`, `DocumentOwnershipError`, `DocumentAlreadyPublishedError`, `DocumentPendingReviewError`, `DocumentPublishedError`, `DocumentValidationError`, `DocumentRateLimitError`, `DocumentInvalidStatusError`
-- **Validation:** `ValidationError`, `ZodValidationError`
-
-**Correct (Backend):**
+**Pattern 1: Use Default Message (Recommended for Most Cases):**
 ```typescript
-import { UnauthenticatedError, DocumentNotFoundError } from "@elcokiin/errors/backend";
+import { ErrorCode, throwConvexError } from "@elcokiin/errors";
 
 export const getDocument = query({
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
-      throw new UnauthenticatedError(); // Specific error
+      throwConvexError(ErrorCode.UNAUTHENTICATED); // Uses default: "Not authenticated"
     }
 
     const document = await ctx.db.get(args.documentId);
     if (!document) {
-      throw new DocumentNotFoundError(); // Specific error
+      throwConvexError(ErrorCode.DOCUMENT_NOT_FOUND); // Uses default: "Document not found"
     }
 
     return document;
@@ -367,23 +365,59 @@ export const getDocument = query({
 });
 ```
 
-**Incorrect (Backend):**
+**Pattern 2: Provide Custom Message (For Dynamic Content or Specific Context):**
 ```typescript
-// NEVER use generic Error in backend
-if (!identity) {
-  throw new Error("Not authenticated"); // FORBIDDEN
-}
+// Use custom messages when you need dynamic IDs or specific business logic context
+export const getDocument = query({
+  handler: async (ctx, args) => {
+    const document = await ctx.db.get(args.documentId);
+    if (!document) {
+      // Custom message with dynamic document ID
+      throwConvexError(ErrorCode.DOCUMENT_NOT_FOUND, `Document ${args.documentId} not found`);
+    }
 
-if (!document) {
-  throw new Error("Document not found"); // FORBIDDEN
-}
+    if (document.status === "draft" && !document.title) {
+      // Custom message explaining specific validation requirement
+      throwConvexError(ErrorCode.DOCUMENT_VALIDATION, "Document must have a title before publishing");
+    }
+
+    return document;
+  },
+});
 ```
 
-#### Rule 2: Error Classes Extend ConvexError
-All backend error classes extend `ConvexError`, which means:
+**Available Error Codes:**
+- **Authentication:** `UNAUTHENTICATED`, `UNAUTHORIZED`, `ADMIN_REQUIRED`
+- **Documents:** `DOCUMENT_NOT_FOUND`, `DOCUMENT_OWNERSHIP`, `DOCUMENT_ALREADY_PUBLISHED`, `DOCUMENT_PENDING_REVIEW`, `DOCUMENT_PUBLISHED`, `DOCUMENT_VALIDATION`, `DOCUMENT_RATE_LIMIT`, `DOCUMENT_INVALID_STATUS`
+- **Validation:** `VALIDATION_ERROR`, `INVALID_INPUT`, `ZOD_VALIDATION`
+- **Storage:** `STORAGE_UPLOAD_FAILED`, `STORAGE_URL_FAILED`, `STORAGE_NOT_CONFIGURED`, `STORAGE_INVALID_FILE_TYPE`
+- **Authors:** `AUTHOR_NOT_FOUND`, `AUTHOR_OWNERSHIP`, `AUTHOR_INVALID_AVATAR_URL`
+
+#### Rule 2: When to Use Default vs Custom Messages
+- **Use defaults (no message parameter):** For static errors with standard messages (e.g., "Not authenticated", "Document not found")
+- **Use custom messages:** When you need:
+  - Dynamic content (IDs, names, dates)
+  - Specific business logic context
+  - Field-specific validation errors
+
+```typescript
+// ✅ Good: Use default for static errors
+throwConvexError(ErrorCode.UNAUTHENTICATED);
+
+// ✅ Good: Use custom for dynamic errors
+throwConvexError(ErrorCode.AUTHOR_NOT_FOUND, `Author ${authorId} not found`);
+
+// ❌ Bad: Don't override defaults with identical messages
+throwConvexError(ErrorCode.UNAUTHENTICATED, "Not authenticated"); // Redundant
+```
+
+#### Rule 3: Why `throwConvexError()` Instead of Classes
+The helper wraps `ConvexError` with structured `{ code, message }` data:
 - Errors are properly serialized across Convex boundaries
 - Errors appear in Convex dashboard with structured data
 - Frontend can parse error codes and display user-friendly messages
+- No class hierarchy overhead
+- Default messages reduce boilerplate
 
 ---
 
@@ -428,7 +462,7 @@ function CreateDocumentButton() {
 
 **Why use `useErrorHandler`:**
 - Parses errors and extracts user-friendly messages
-- Logs full error details (code, statusCode, message)
+- Logs full error details (code, message)
 - `handleError()` shows toast + logs
 - `handleErrorSilent()` only logs (for background operations)
 
@@ -466,17 +500,31 @@ export async function uploadImage(file: File): Promise<string> {
     return url;
   } catch (error) {
     const parsedError = parseError(error);
-    const message = getUserFriendlyMessage(parsedError);
+    const message = getUserFriendlyMessage(error);
     console.error("[uploadImage]", message, {
       code: parsedError.code,
       error: parsedError,
     });
-    throw parsedError; // Re-throw for caller to handle
+    throw new Error(message); // Re-throw for caller to handle
   }
 }
 ```
 
-#### Rule 6: Error Boundary Catches Unhandled Errors
+#### Rule 6: Use Plain `Error` for Frontend-Only Errors
+**For errors that originate in frontend code** (not from Convex), use plain `Error` objects:
+
+```typescript
+// Frontend validation/checks - use plain Error
+if (!file.type.startsWith("image/")) {
+  throw new Error("Invalid file type. Expected an image.");
+}
+
+if (!uploadFn) {
+  throw new Error("Storage upload function not configured");
+}
+```
+
+#### Rule 7: Error Boundary Catches Unhandled Errors
 The root route has an Error Boundary that catches all unhandled React errors:
 
 ```typescript
@@ -495,11 +543,10 @@ The root route has an Error Boundary that catches all unhandled React errors:
 Before submitting code, verify:
 
 **Backend:**
-- [ ] No generic `throw new Error()` statements
-- [ ] All errors use specific classes from `@elcokiin/errors/backend`
-- [ ] Authentication errors use `UnauthenticatedError` / `UnauthorizedError`
-- [ ] Document errors use appropriate `Document*Error` classes
-- [ ] Validation errors use `ValidationError` / `ZodValidationError`
+- [ ] All errors use `throwConvexError(ErrorCode.*)` from `@elcokiin/errors`
+- [ ] Default messages used for static errors (no message parameter)
+- [ ] Custom messages only used for dynamic content or specific business context
+- [ ] Error codes match the error type (e.g., `UNAUTHENTICATED` for auth errors)
 
 **Frontend (React Components):**
 - [ ] Try/catch blocks use `useErrorHandler` hook
@@ -509,7 +556,7 @@ Before submitting code, verify:
 **Frontend (Utilities):**
 - [ ] Non-React files import `parseError`, `getUserFriendlyMessage` directly
 - [ ] Errors are logged with context tags: `[fileName.functionName]`
-- [ ] Log includes error code and full error object
+- [ ] Frontend-only errors use plain `Error` objects
 
 **All Code:**
 - [ ] All async operations have error handling
@@ -638,11 +685,12 @@ Before creating any commit, verify:
 - [ ] Sensitive data is filtered before returning from APIs
 
 **Error Handling:**
-- [ ] Backend errors use specific classes from `@elcokiin/errors/backend`
+- [ ] Backend errors use `throwConvexError(ErrorCode.*)` from `@elcokiin/errors`
+- [ ] Default messages used for static errors; custom messages only for dynamic content
 - [ ] Frontend mutations use `useErrorHandler` for try/catch blocks
 - [ ] All async operations have error handling (try/catch)
 - [ ] Error context includes component/function name
-- [ ] No generic `throw new Error()` in backend code
+- [ ] Frontend-only errors use plain `Error` objects
 
 **Code Quality:**
 - [ ] Code follows single responsibility principle

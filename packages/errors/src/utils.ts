@@ -1,22 +1,37 @@
-import type { AppError, ConvexAppError } from "./base";
-import { ErrorCode } from "./codes";
+import { ConvexError } from "convex/values";
+
+import type { ErrorCode } from "./codes";
+import { ErrorCode as ErrorCodes } from "./codes";
+import { ERROR_DEFAULTS, USER_FRIENDLY_MESSAGES } from "./messages";
 
 /**
- * Type guard to check if error is an AppError
+ * Structured error data for ConvexError
  */
-export function isAppError(error: unknown): error is AppError {
-  return error instanceof Error && "code" in error && "statusCode" in error;
-}
+type ErrorData = {
+  code: ErrorCode;
+  message: string;
+};
 
 /**
- * Type guard to check if error is a ConvexAppError
+ * Throw a structured ConvexError with code and optional message.
+ * Use in all Convex queries, mutations, and actions.
+ *
+ * If no message is provided, a default message is used from ERROR_DEFAULTS.
+ *
+ * @example
+ * ```ts
+ * import { throwConvexError, ErrorCode } from "@elcokiin/errors";
+ *
+ * // Use default message
+ * throwConvexError(ErrorCode.UNAUTHENTICATED);
+ *
+ * // Use custom message (e.g., with dynamic content)
+ * throwConvexError(ErrorCode.DOCUMENT_NOT_FOUND, `Document ${docId} not found`);
+ * ```
  */
-export function isConvexAppError(error: unknown): error is ConvexAppError {
-  return (
-    error instanceof Error &&
-    (error.constructor.name as string).includes("Error") &&
-    "code" in error
-  );
+export function throwConvexError(code: ErrorCode, message?: string): never {
+  const errorMessage = message ?? ERROR_DEFAULTS[code] ?? "An error occurred";
+  throw new ConvexError({ code, message: errorMessage });
 }
 
 /**
@@ -25,16 +40,23 @@ export function isConvexAppError(error: unknown): error is ConvexAppError {
 export function parseError(error: unknown): {
   message: string;
   code?: string;
-  statusCode?: number;
-  context?: Record<string, unknown>;
 } {
-  if (isAppError(error) || isConvexAppError(error)) {
-    return {
-      message: (error as Error).message,
-      code: error.code,
-      statusCode: error.statusCode,
-      context: "context" in error ? (error as AppError).context : undefined,
-    };
+  // Handle ConvexError with our { code, message } structure
+  if (error instanceof ConvexError) {
+    const data = error.data as unknown;
+
+    if (typeof data === "object" && data !== null && "code" in data) {
+      const errorData = data as ErrorData;
+      return {
+        message: errorData.message ?? "An error occurred",
+        code: errorData.code,
+      };
+    }
+
+    // Handle simple string ConvexError
+    if (typeof data === "string") {
+      return { message: data };
+    }
   }
 
   if (error instanceof Error) {
@@ -49,48 +71,31 @@ export function parseError(error: unknown): {
 }
 
 /**
- * User-friendly error message mapping
- */
-const ERROR_MESSAGE_MAP: Record<string, string> = {
-  [ErrorCode.UNAUTHENTICATED]: "Please sign in to continue",
-  [ErrorCode.UNAUTHORIZED]: "You don't have permission to do that",
-  [ErrorCode.ADMIN_REQUIRED]: "This action requires admin privileges",
-  [ErrorCode.DOCUMENT_NOT_FOUND]: "Document not found",
-  [ErrorCode.DOCUMENT_OWNERSHIP]: "You don't have access to this document",
-  [ErrorCode.DOCUMENT_ALREADY_PUBLISHED]: "This document is already published",
-  [ErrorCode.DOCUMENT_PENDING_REVIEW]:
-    "This document is currently under review",
-  [ErrorCode.DOCUMENT_PUBLISHED]: "Published documents cannot be edited",
-  [ErrorCode.DOCUMENT_VALIDATION]: "Please check your input and try again",
-  [ErrorCode.DOCUMENT_RATE_LIMIT]:
-    "You've reached the submission limit. Try again in 24 hours.",
-  [ErrorCode.DOCUMENT_INVALID_STATUS]:
-    "This action cannot be performed on the document's current status",
-  [ErrorCode.VALIDATION_ERROR]: "Please check your input and try again",
-  [ErrorCode.ZOD_VALIDATION]: "Please check your input and try again",
-  [ErrorCode.STORAGE_UPLOAD_FAILED]:
-    "Failed to upload file. Please try again.",
-  [ErrorCode.STORAGE_URL_FAILED]:
-    "Failed to get file URL. Please try again.",
-  [ErrorCode.STORAGE_NOT_CONFIGURED]:
-    "Upload functionality is not configured. Please contact support.",
-  [ErrorCode.STORAGE_INVALID_FILE_TYPE]:
-    "Invalid file type. Please upload an image file.",
-  [ErrorCode.CONFIG_MISSING_ENV]:
-    "Application configuration error. Please contact support.",
-  [ErrorCode.UNKNOWN]: "Something went wrong. Please try again.",
-};
-
-/**
- * Get user-friendly error message
+ * Get user-friendly error message for frontend display.
+ *
+ * @example
+ * ```ts
+ * import { getUserFriendlyMessage } from "@elcokiin/errors";
+ *
+ * try {
+ *   await convex.mutation(api.documents.create, { ... });
+ * } catch (error) {
+ *   const message = getUserFriendlyMessage(error);
+ *   toast.error(message);
+ * }
+ * ```
  */
 export function getUserFriendlyMessage(error: unknown): string {
   const parsed = parseError(error);
 
-  if (parsed.code && parsed.code in ERROR_MESSAGE_MAP) {
-    const message = ERROR_MESSAGE_MAP[parsed.code];
+  if (parsed.code && parsed.code in USER_FRIENDLY_MESSAGES) {
+    const message = USER_FRIENDLY_MESSAGES[parsed.code as ErrorCode];
     if (message) return message;
   }
 
-  return parsed.message ?? ERROR_MESSAGE_MAP[ErrorCode.UNKNOWN] ?? "Something went wrong";
+  return (
+    parsed.message ??
+    USER_FRIENDLY_MESSAGES[ErrorCodes.UNKNOWN] ??
+    "Something went wrong"
+  );
 }

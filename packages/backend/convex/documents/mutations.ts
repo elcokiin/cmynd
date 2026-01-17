@@ -1,23 +1,15 @@
-import type { Id } from "../_generated/dataModel";
 import type { DocumentType } from "../../lib/types/documents";
+
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { documentTypeValidator } from "../../lib/validators/documents";
+import { ErrorCode, throwConvexError } from "@elcokiin/errors";
 import * as Auth from "../_lib/auth";
 import {
   getByIdForAuthor,
   updateMetadata as updateMetadataHelper,
 } from "./helpers";
 import { getOrCreateAuthorForUser } from "../authors/helpers";
-import {
-  DocumentNotFoundError,
-  DocumentAlreadyPublishedError,
-  DocumentPendingReviewError,
-  DocumentPublishedError,
-  DocumentValidationError,
-  DocumentRateLimitError,
-  DocumentInvalidStatusError,
-} from "@elcokiin/errors/backend";
 
 /**
  * Create a new document.
@@ -28,7 +20,7 @@ export const create = mutation({
     type: documentTypeValidator,
     content: v.optional(v.any()),
   },
-  handler: async (ctx, args): Promise<Id<"documents">> => {
+  handler: async (ctx, args) => {
     const userId = await Auth.requireAuth(ctx);
     const authorId = await getOrCreateAuthorForUser(ctx, userId);
 
@@ -53,7 +45,7 @@ export const updateTitle = mutation({
     documentId: v.id("documents"),
     title: v.string(),
   },
-  handler: async (ctx, args): Promise<void> => {
+  handler: async (ctx, args) => {
     await updateMetadataHelper(ctx, args.documentId, {
       title: args.title,
     });
@@ -69,15 +61,15 @@ export const updateType = mutation({
     documentId: v.id("documents"),
     type: documentTypeValidator,
   },
-  handler: async (ctx, args): Promise<void> => {
+  handler: async (ctx, args) => {
     const document = await getByIdForAuthor(ctx, args.documentId);
 
     if (document.status === "published") {
-      throw new DocumentPublishedError();
+      throwConvexError(ErrorCode.DOCUMENT_PUBLISHED);
     }
 
     if (document.status === "pending") {
-      throw new DocumentPendingReviewError();
+      throwConvexError(ErrorCode.DOCUMENT_PENDING_REVIEW);
     }
 
     await ctx.db.patch(args.documentId, {
@@ -96,15 +88,15 @@ export const updateContent = mutation({
     documentId: v.id("documents"),
     content: v.any(),
   },
-  handler: async (ctx, args): Promise<void> => {
+  handler: async (ctx, args) => {
     const document = await getByIdForAuthor(ctx, args.documentId);
 
     if (document.status === "published") {
-      throw new DocumentPublishedError();
+      throwConvexError(ErrorCode.DOCUMENT_PUBLISHED);
     }
 
     if (document.status === "pending") {
-      throw new DocumentPendingReviewError();
+      throwConvexError(ErrorCode.DOCUMENT_PENDING_REVIEW);
     }
 
     await ctx.db.patch(args.documentId, {
@@ -120,21 +112,23 @@ export const updateContent = mutation({
  */
 export const publish = mutation({
   args: { documentId: v.id("documents") },
-  handler: async (ctx, args): Promise<void> => {
+  handler: async (ctx, args) => {
     const document = await getByIdForAuthor(ctx, args.documentId);
 
     if (document.status === "published") {
-      throw new DocumentAlreadyPublishedError();
+      throwConvexError(ErrorCode.DOCUMENT_ALREADY_PUBLISHED);
     }
 
     if (!document.title || document.title.trim() === "") {
-      throw new DocumentValidationError(
+      throwConvexError(
+        ErrorCode.DOCUMENT_VALIDATION,
         "Document must have a title to be published",
       );
     }
 
     if (document.type === "curated" && !document.curation) {
-      throw new DocumentValidationError(
+      throwConvexError(
+        ErrorCode.DOCUMENT_VALIDATION,
         "Curated documents must have curation data",
       );
     }
@@ -154,27 +148,30 @@ export const publish = mutation({
  */
 export const submit = mutation({
   args: { documentId: v.id("documents") },
-  handler: async (ctx, args): Promise<void> => {
+  handler: async (ctx, args) => {
     const document = await getByIdForAuthor(ctx, args.documentId);
 
     if (document.status === "published") {
-      throw new DocumentAlreadyPublishedError();
+      throwConvexError(ErrorCode.DOCUMENT_ALREADY_PUBLISHED);
     }
 
     if (document.status === "pending") {
-      throw new DocumentInvalidStatusError(
+      throwConvexError(
+        ErrorCode.DOCUMENT_INVALID_STATUS,
         "Document is already pending review",
       );
     }
 
     if (!document.title || document.title.trim() === "") {
-      throw new DocumentValidationError(
+      throwConvexError(
+        ErrorCode.DOCUMENT_VALIDATION,
         "Document must have a title to be submitted",
       );
     }
 
     if (document.type === "curated" && !document.curation) {
-      throw new DocumentValidationError(
+      throwConvexError(
+        ErrorCode.DOCUMENT_VALIDATION,
         "Curated documents must have curation data",
       );
     }
@@ -189,7 +186,7 @@ export const submit = mutation({
     );
 
     if (recentSubmissions.length >= 3) {
-      throw new DocumentRateLimitError();
+      throwConvexError(ErrorCode.DOCUMENT_RATE_LIMIT);
     }
 
     const updatedHistory = [...submissionHistory, now];
@@ -210,16 +207,17 @@ export const submit = mutation({
  */
 export const approve = mutation({
   args: { documentId: v.id("documents") },
-  handler: async (ctx, args): Promise<void> => {
+  handler: async (ctx, args) => {
     await Auth.requireAdmin(ctx);
 
     const document = await ctx.db.get(args.documentId);
     if (!document) {
-      throw new DocumentNotFoundError();
+      throwConvexError(ErrorCode.DOCUMENT_NOT_FOUND);
     }
 
     if (document.status !== "pending") {
-      throw new DocumentInvalidStatusError(
+      throwConvexError(
+        ErrorCode.DOCUMENT_INVALID_STATUS,
         "Only pending documents can be approved",
       );
     }
@@ -241,22 +239,26 @@ export const reject = mutation({
     documentId: v.id("documents"),
     reason: v.string(),
   },
-  handler: async (ctx, args): Promise<void> => {
+  handler: async (ctx, args) => {
     await Auth.requireAdmin(ctx);
 
     const document = await ctx.db.get(args.documentId);
     if (!document) {
-      throw new DocumentNotFoundError();
+      throwConvexError(ErrorCode.DOCUMENT_NOT_FOUND);
     }
 
     if (document.status !== "pending") {
-      throw new DocumentInvalidStatusError(
+      throwConvexError(
+        ErrorCode.DOCUMENT_INVALID_STATUS,
         "Only pending documents can be rejected",
       );
     }
 
     if (!args.reason || args.reason.trim() === "") {
-      throw new DocumentValidationError("Rejection reason is required");
+      throwConvexError(
+        ErrorCode.DOCUMENT_VALIDATION,
+        "Rejection reason is required",
+      );
     }
 
     await ctx.db.patch(args.documentId, {
@@ -273,7 +275,7 @@ export const reject = mutation({
  */
 export const remove = mutation({
   args: { documentId: v.id("documents") },
-  handler: async (ctx, args): Promise<void> => {
+  handler: async (ctx, args) => {
     await getByIdForAuthor(ctx, args.documentId);
     await ctx.db.delete(args.documentId);
   },

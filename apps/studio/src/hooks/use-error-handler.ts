@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { toast } from "sonner";
-import { parseError, getUserFriendlyMessage } from "@elcokiin/errors/utils";
+import { parseError, getUserFriendlyMessage } from "@elcokiin/errors";
 
 type ErrorHandlerOptions = {
   context?: string;
@@ -38,8 +38,6 @@ export function useErrorHandler(): ErrorHandlerReturn {
       console.error(logPrefix, {
         message: parsed.message,
         code: parsed.code,
-        statusCode: parsed.statusCode,
-        context: parsed.context,
         error,
       });
 

@@ -1,73 +1,30 @@
-import { v } from "convex/values";
-import { query } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
-import {
-  DocumentNotFoundError,
-  DocumentOwnershipError,
-  UnauthenticatedError,
-} from "@elcokiin/errors/backend";
 import type {
   DocumentStats,
-  DocumentListItem,
-  PendingDocumentListItem,
   PublishedDocument,
   PublishedDocumentListItem,
 } from "../../lib/types/documents";
-import type { PublicAuthor } from "../../lib/types/authors";
+
+import { v } from "convex/values";
+import { query } from "../_generated/server";
+import { ErrorCode, throwConvexError } from "@elcokiin/errors";
 import * as Auth from "../_lib/auth";
 import {
   getByIdForAuthor,
   countByStatus,
   paginationOptsValidator,
 } from "./helpers";
-
-/**
- * Convert a full author record to public author data.
- */
-function toPublicAuthor(author: Doc<"authors">): PublicAuthor {
-  return {
-    _id: author._id,
-    name: author.name,
-    avatarUrl: author.avatarUrl,
-    bio: author.bio,
-    phrases: author.phrases,
-    createdAt: author.createdAt,
-    updatedAt: author.updatedAt,
-  };
-}
-
-/**
- * Project document to list item (for author's own document list).
- */
-function toDocumentListItem(doc: Doc<"documents">): DocumentListItem {
-  return {
-    _id: doc._id,
-    title: doc.title,
-    type: doc.type,
-    status: doc.status,
-    coverImageId: doc.coverImageId,
-    createdAt: doc.createdAt,
-    updatedAt: doc.updatedAt,
-    submittedAt: doc.submittedAt,
-    rejectionReason: doc.rejectionReason,
-  };
-}
-
-/**
- * Project document to pending list item (for admin review list).
- */
-function toPendingDocumentListItem(
-  doc: Doc<"documents">
-): PendingDocumentListItem {
-  return {
-    _id: doc._id,
-    title: doc.title,
-    type: doc.type,
-    submittedAt: doc.submittedAt,
-    createdAt: doc.createdAt,
-    updatedAt: doc.updatedAt,
-  };
-}
+import {
+  toDocumentListItem,
+  toPendingDocumentListItem,
+  toPublicAuthor,
+  toPublishedDocumentListItem,
+} from "./projections";
+import {
+  paginatedDocumentListValidator,
+  paginatedPendingDocumentListValidator,
+  paginatedPublishedDocumentListValidator,
+} from "../../lib/validators/documents";
 
 /**
  * Get a single document by ID with author check.
@@ -84,19 +41,19 @@ export const get = query({
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
-      throw new UnauthenticatedError("Authentication required");
+      throwConvexError(ErrorCode.UNAUTHENTICATED);
     }
 
     const document = await ctx.db.get(args.documentId);
     if (!document) {
-      throw new DocumentNotFoundError();
+      throwConvexError(ErrorCode.DOCUMENT_NOT_FOUND);
     }
 
     const author = await ctx.db.get(document.authorId);
     const isAuthor = author?.userId === identity.subject;
 
     if (!isAuthor && document.status !== "published") {
-      throw new DocumentOwnershipError();
+      throwConvexError(ErrorCode.DOCUMENT_OWNERSHIP);
     }
 
     return document;
@@ -141,6 +98,7 @@ export const getPublished = query({
  */
 export const listPublished = query({
   args: { paginationOpts: paginationOptsValidator },
+  returns: paginatedPublishedDocumentListValidator,
   handler: async (ctx, args) => {
     const result = await ctx.db
       .query("documents")
@@ -148,7 +106,7 @@ export const listPublished = query({
       .order("desc")
       .paginate(args.paginationOpts);
 
-    const pageWithAuthors: PublishedDocumentListItem[] = [];
+    const pageWithAuthors = [];
 
     for (const doc of result.page) {
       if (!doc.publishedAt) continue;
@@ -156,14 +114,7 @@ export const listPublished = query({
       const author = await ctx.db.get(doc.authorId);
       if (!author) continue;
 
-      pageWithAuthors.push({
-        _id: doc._id,
-        title: doc.title,
-        type: doc.type,
-        coverImageId: doc.coverImageId,
-        publishedAt: doc.publishedAt,
-        author: toPublicAuthor(author),
-      });
+      pageWithAuthors.push(toPublishedDocumentListItem(doc, author));
     }
 
     return {
@@ -191,10 +142,11 @@ export const getForEdit = query({
  */
 export const list = query({
   args: { paginationOpts: paginationOptsValidator },
+  returns: paginatedDocumentListValidator,
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
-      throw new UnauthenticatedError("Please sign in to view your documents");
+      throwConvexError(ErrorCode.UNAUTHENTICATED);
     }
 
     const author = await ctx.db
@@ -231,6 +183,7 @@ export const list = query({
  */
 export const listPendingForAdmin = query({
   args: { paginationOpts: paginationOptsValidator },
+  returns: paginatedPendingDocumentListValidator,
   handler: async (ctx, args) => {
     await Auth.requireAdmin(ctx);
 
@@ -261,7 +214,7 @@ export const getForAdminReview = query({
 
     const document = await ctx.db.get(args.documentId);
     if (!document || document.status !== "pending") {
-      throw new DocumentNotFoundError();
+      throwConvexError(ErrorCode.DOCUMENT_NOT_FOUND);
     }
 
     return {

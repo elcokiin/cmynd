@@ -5,13 +5,9 @@ import type {
   Reference,
   DocumentStatus,
 } from "../../lib/types/documents";
+
 import * as Auth from "../_lib/auth";
-import {
-  DocumentNotFoundError,
-  DocumentOwnershipError,
-  DocumentPublishedError,
-  DocumentPendingReviewError,
-} from "@elcokiin/errors/backend";
+import { ErrorCode, throwConvexError } from "@elcokiin/errors";
 
 export { paginationOptsValidator } from "convex/server";
 
@@ -37,15 +33,15 @@ export async function getByIdForAuthor(
   documentId: Id<"documents">,
 ) {
   const userId = await Auth.requireAuth(ctx);
-  const document = await ctx.db.get(documentId);
+  const document = await ctx.db.get("documents", documentId);
 
   if (!document) {
-    throw new DocumentNotFoundError();
+    throwConvexError(ErrorCode.DOCUMENT_NOT_FOUND);
   }
 
-  const author = await ctx.db.get(document.authorId);
+  const author = await ctx.db.get("authors", document.authorId);
   if (!author || author.userId !== userId) {
-    throw new DocumentOwnershipError();
+    throwConvexError(ErrorCode.DOCUMENT_OWNERSHIP);
   }
 
   return document;
@@ -65,11 +61,11 @@ export async function updateMetadata(
   const document = await getByIdForAuthor(ctx, documentId);
 
   if (document.status === "published") {
-    throw new DocumentPublishedError();
+    throwConvexError(ErrorCode.DOCUMENT_PUBLISHED);
   }
 
   if (document.status === "pending") {
-    throw new DocumentPendingReviewError();
+    throwConvexError(ErrorCode.DOCUMENT_PENDING_REVIEW);
   }
 
   const updates: Record<string, unknown> = {
@@ -124,4 +120,3 @@ export async function countByStatus(
 
   return count;
 }
-

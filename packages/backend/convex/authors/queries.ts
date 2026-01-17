@@ -1,23 +1,9 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { getAuthorById } from "./helpers";
+import { toPublicAuthor } from "./projections";
 import type { PublicAuthor } from "../../lib/types/authors";
-import type { Doc } from "../_generated/dataModel";
-
-/**
- * Convert a full author record to public author data.
- */
-function toPublicAuthor(author: Doc<"authors">): PublicAuthor {
-  return {
-    _id: author._id,
-    name: author.name,
-    avatarUrl: author.avatarUrl,
-    bio: author.bio,
-    phrases: author.phrases,
-    createdAt: author.createdAt,
-    updatedAt: author.updatedAt,
-  };
-}
+import { paginatedAuthorsValidator } from "../../lib/validators/authors";
 
 /**
  * Get a single author by ID.
@@ -26,8 +12,7 @@ function toPublicAuthor(author: Doc<"authors">): PublicAuthor {
 export const get = query({
   args: { authorId: v.id("authors") },
   handler: async (ctx, args): Promise<PublicAuthor> => {
-    const author = await getAuthorById(ctx, args.authorId);
-    return toPublicAuthor(author);
+    return await getAuthorById(ctx, args.authorId);
   },
 });
 
@@ -36,16 +21,22 @@ export const get = query({
  * Returns public author data only.
  */
 export const list = query({
-  args: { paginationOpts: v.object({ numItems: v.number(), cursor: v.union(v.string(), v.null()) }) },
+  args: {
+    paginationOpts: v.object({
+      numItems: v.number(),
+      cursor: v.union(v.string(), v.null()),
+    }),
+  },
+  returns: paginatedAuthorsValidator,
   handler: async (ctx, args) => {
-    const results = await ctx.db
+    const result = await ctx.db
       .query("authors")
       .order("desc")
       .paginate(args.paginationOpts);
 
     return {
-      ...results,
-      page: results.page.map(toPublicAuthor),
+      ...result,
+      page: result.page.map(toPublicAuthor),
     };
   },
 });

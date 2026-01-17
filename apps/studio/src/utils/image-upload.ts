@@ -2,11 +2,6 @@ import type { Editor } from "@tiptap/react";
 import type { UploadFn } from "@elcokiin/backend/lib/types";
 
 import { getUserFriendlyMessage, parseError } from "@elcokiin/errors";
-import {
-  StorageNotConfiguredError,
-  StorageInvalidFileTypeError,
-  StorageUploadError,
-} from "@elcokiin/errors/frontend";
 
 /**
  * Upload an image and insert it into the editor.
@@ -23,14 +18,14 @@ export async function uploadImage(
   onError?: (error: Error) => void,
 ): Promise<void> {
   if (!uploadFn) {
-    const error = new StorageNotConfiguredError();
+    const error = new Error("Storage upload function not configured");
     onError?.(error);
     console.error(error.message);
     return;
   }
 
   if (!file.type.startsWith("image/")) {
-    const error = new StorageInvalidFileTypeError(file.type);
+    const error = new Error(`Invalid file type: ${file.type}. Expected an image.`);
     onError?.(error);
     console.error(error.message);
     return;
@@ -49,8 +44,8 @@ export async function uploadImage(
       .run();
   } catch (error) {
     const parsedError = parseError(error);
-    const message = getUserFriendlyMessage(parsedError);
-    const uploadError = new StorageUploadError(message);
+    const message = getUserFriendlyMessage(error);
+    const uploadError = new Error(message);
 
     onError?.(uploadError);
     console.error("[image-upload.uploadImage]", message, {

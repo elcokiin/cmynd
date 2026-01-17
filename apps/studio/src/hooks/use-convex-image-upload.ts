@@ -1,7 +1,6 @@
 import type { UploadFn } from "@elcokiin/backend/lib/types";
 
 import { api } from "@elcokiin/backend/convex/_generated/api";
-import { StorageUploadError, StorageUrlError } from "@elcokiin/errors/frontend";
 import { useMutation } from "convex/react";
 import { useCallback } from "react";
 
@@ -26,14 +25,14 @@ function useConvexImageUpload(): UploadFn {
       });
 
       if (!response.ok) {
-        throw new StorageUploadError();
+        throw new Error("Failed to upload file");
       }
 
       const { storageId } = await response.json();
 
       const url = await getStorageUrl({ storageId });
       if (!url) {
-        throw new StorageUrlError();
+        throw new Error("Failed to get file URL");
       }
 
       return url;
