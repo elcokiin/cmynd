@@ -1,8 +1,6 @@
-import type { Doc } from "../_generated/dataModel";
 import type {
   DocumentStats,
   PublishedDocument,
-  PublishedDocumentListItem,
 } from "../../lib/types/documents";
 
 import { v } from "convex/values";
@@ -28,11 +26,11 @@ import {
 
 /**
  * Get a single document by ID with author check.
- * 
+ *
  * Authentication required.
  * Authors see full document (any status).
  * Non-authors only see published documents.
- * 
+ *
  * @throws DocumentNotFoundError if document not found
  * @throws DocumentOwnershipError if not author and document not published
  */
@@ -137,7 +135,7 @@ export const getForEdit = query({
 /**
  * List all documents for the current user with pagination.
  * Returns projected documents without content.
- * 
+ *
  * @throws UnauthenticatedError if not authenticated.
  */
 export const list = query({
@@ -203,7 +201,7 @@ export const listPendingForAdmin = query({
 /**
  * Get a document for admin review (admin only).
  * Returns the full document content without author info (anonymous review).
- * 
+ *
  * @throws AdminRequiredError if user is not an admin.
  * @throws DocumentNotFoundError if document is not found or not pending.
  */
@@ -232,31 +230,9 @@ export const getForAdminReview = query({
 });
 
 /**
- * Get recent pending documents for admin dashboard preview (admin only).
- * Returns the first N pending documents without pagination.
- *
- * @throws AdminRequiredError if user is not an admin.
- */
-export const getRecentPendingForAdmin = query({
-  args: { limit: v.optional(v.number()) },
-  handler: async (ctx, args) => {
-    await Auth.requireAdmin(ctx);
-
-    const limit = args.limit ?? 5;
-    const documents = await ctx.db
-      .query("documents")
-      .withIndex("by_status", (q) => q.eq("status", "pending"))
-      .order("desc")
-      .take(limit);
-
-    return documents.map(toPendingDocumentListItem);
-  },
-});
-
-/**
  * Get admin statistics (admin only).
  * Returns counts of documents by status.
- * 
+ *
  * @throws AdminRequiredError if user is not an admin.
  */
 export const getAdminStats = query({

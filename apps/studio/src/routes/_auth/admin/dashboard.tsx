@@ -1,8 +1,10 @@
+import { useEffect } from "react";
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { buttonVariants } from "@elcokiin/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@elcokiin/ui/card";
+import { Pagination } from "@elcokiin/ui/pagination";
 import { cn } from "@elcokiin/ui/lib/utils";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import {
   BarChart3Icon,
@@ -13,29 +15,61 @@ import {
 
 import { AdminDashboardSkeleton } from "@/components/admin/admin-dashboard-skeleton";
 import { PageHeader } from "@/components/page-header";
+import { useManualPagination } from "@/hooks/use-manual-pagination";
+
+type DashboardSearch = {
+  page?: number;
+};
 
 export const Route = createFileRoute("/_auth/admin/dashboard")({
   component: AdminDashboard,
   pendingComponent: AdminDashboardSkeleton,
+  validateSearch: (search: Record<string, unknown>): DashboardSearch => {
+    return {
+      page: Number(search.page) || 1,
+    };
+  },
 });
 
 function AdminDashboard() {
+  const navigate = useNavigate({ from: Route.fullPath });
+  const { page: urlPage = 1 } = Route.useSearch();
   const stats = useQuery(api.documents.queries.getAdminStats);
-  const pendingDocuments = useQuery(api.documents.queries.getRecentPendingForAdmin, { limit: 5 });
+  const ITEMS_PER_PAGE = 5;
 
-  if (stats === undefined || pendingDocuments === undefined) {
+  const pagination = useManualPagination(
+    api.documents.queries.listPendingForAdmin,
+    {},
+    ITEMS_PER_PAGE,
+  );
+
+  useEffect(() => {
+    if (pagination.currentPage !== urlPage) {
+      pagination.goToPage(urlPage);
+    }
+  }, [urlPage, pagination]);
+
+  useEffect(() => {
+    if (pagination.currentPage !== urlPage && !pagination.isLoading) {
+      navigate({
+        search: { page: pagination.currentPage },
+      });
+    }
+  }, [pagination.currentPage, urlPage, pagination.isLoading, navigate]);
+
+  const isLoading = stats === undefined || pagination.isLoading;
+  if (isLoading) {
     return <AdminDashboardSkeleton />;
   }
+
+  const pendingDocuments = pagination.items;
 
   return (
     <div className="flex flex-col h-full">
       <PageHeader
         title="Admin Dashboard"
         backTo="/"
-        breadcrumbs={[
-          { label: "Home", to: "/" },
-          { label: "Admin" },
-        ]}
+        breadcrumbs={[{ label: "Home", to: "/" }, { label: "Admin" }]}
       />
 
       <main className="flex-1 overflow-auto">
@@ -108,12 +142,12 @@ function AdminDashboard() {
             </Card>
           </div>
 
-          {/* Recent Pending Documents */}
+          {/* Pending Documents with Pagination */}
           {pendingDocuments && pendingDocuments.length > 0 && (
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle>Recent Pending Documents</CardTitle>
+                  <CardTitle>Pending Documents</CardTitle>
                   <Link
                     to="/admin/review"
                     className={cn(
@@ -121,14 +155,14 @@ function AdminDashboard() {
                       "gap-2",
                     )}
                   >
-                    View All
+                    Review All
                     <FileCheckIcon className="h-4 w-4" />
                   </Link>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
                 <div className="space-y-3">
-                  {pendingDocuments.slice(0, 5).map((doc) => (
+                  {pendingDocuments.map((doc) => (
                     <Link
                       key={doc._id}
                       to="/admin/review"
@@ -154,20 +188,33 @@ function AdminDashboard() {
                     </Link>
                   ))}
                 </div>
+
+                {/* Pagination Controls */}
+                {pagination.totalPages > 1 && (
+                  <Pagination
+                    currentPage={pagination.currentPage}
+                    totalPages={pagination.totalPages}
+                    onPageChange={pagination.goToPage}
+                    showFirstLast={false}
+                    className="pt-2 border-t"
+                  />
+                )}
               </CardContent>
             </Card>
           )}
 
-          {pendingDocuments && pendingDocuments.length === 0 && (
-            <Card>
-              <CardContent className="py-10 text-center">
-                <HourglassIcon className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
-                <p className="text-muted-foreground">
-                  No documents pending review
-                </p>
-              </CardContent>
-            </Card>
-          )}
+          {pendingDocuments &&
+            pendingDocuments.length === 0 &&
+            pagination.currentPage === 1 && (
+              <Card>
+                <CardContent className="py-10 text-center">
+                  <HourglassIcon className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-muted-foreground">
+                    No documents pending review
+                  </p>
+                </CardContent>
+              </Card>
+            )}
         </div>
       </main>
     </div>

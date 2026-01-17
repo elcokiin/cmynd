@@ -28,7 +28,7 @@ export const referenceValidator = v.object({
 });
 
 // Schema validator - used by defineTable() in schema.ts
-// WARNING: Changes require database migrations
+//Changes require database migrations
 export const documentValidator = {
   title: v.string(),
   content: v.any(),
@@ -59,8 +59,8 @@ export const publicAuthorValidator = v.object({
         source: v.optional(v.string()),
         year: v.optional(v.number()),
         context: v.optional(v.string()),
-      })
-    )
+      }),
+    ),
   ),
   createdAt: v.number(),
   updatedAt: v.number(),
@@ -101,13 +101,13 @@ export const publishedDocumentListItemValidator = v.object({
 
 // Paginated wrappers
 export const paginatedDocumentListValidator = paginatedValidator(
-  documentListItemValidator
+  documentListItemValidator,
 );
 
 export const paginatedPendingDocumentListValidator = paginatedValidator(
-  pendingDocumentListItemValidator
+  pendingDocumentListItemValidator,
 );
 
 export const paginatedPublishedDocumentListValidator = paginatedValidator(
-  publishedDocumentListItemValidator
+  publishedDocumentListItemValidator,
 );

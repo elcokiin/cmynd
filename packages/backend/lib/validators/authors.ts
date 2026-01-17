@@ -10,7 +10,7 @@ export const phraseValidator = v.object({
 });
 
 // Schema validator - used by defineTable() in schema.ts
-// WARNING: Changes require database migrations
+// Changes require database migrations
 export const authorValidator = v.object({
   name: v.string(),
   avatarUrl: v.optional(v.string()),
@@ -35,5 +35,5 @@ export const publicAuthorValidator = v.object({
 
 // Paginated wrappers
 export const paginatedAuthorsValidator = paginatedValidator(
-  publicAuthorValidator
+  publicAuthorValidator,
 );
