@@ -2,6 +2,7 @@ import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
 
 import { useState } from "react";
 import { useMutation } from "convex/react";
+import { useNavigate } from "@tanstack/react-router";
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { toast } from "sonner";
 import { CheckIcon, XIcon, LoaderIcon } from "lucide-react";
@@ -12,21 +13,17 @@ import { Label } from "@elcokiin/ui/label";
 import { cn } from "@elcokiin/ui/lib/utils";
 
 import { useErrorHandler } from "@/hooks/use-error-handler";
-import { ReviewSidebarSkeleton } from "./review-skeleton";
 
 type ReviewSidebarProps = {
   documentId: Id<"documents"> | null;
-  documentTitle: string | null;
-  onActionComplete: () => void;
-  isLoading: boolean;
+  onActionComplete?: () => void;
 };
 
 export function ReviewSidebar({
   documentId,
-  documentTitle,
   onActionComplete,
-  isLoading,
 }: ReviewSidebarProps): React.ReactNode {
+  const navigate = useNavigate();
   const [observations, setObservations] = useState("");
   const [isApproving, setIsApproving] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
@@ -38,6 +35,15 @@ export function ReviewSidebar({
   const isProcessing = isApproving || isRejecting;
   const canReject = observations.trim().length > 0;
 
+  function actionCompleted() {
+    navigate({
+      to: "/admin/review",
+      search: {},
+      replace: true,
+    });
+    if (onActionComplete) onActionComplete();
+  }
+
   async function handleApprove(): Promise<void> {
     if (!documentId) return;
 
@@ -46,7 +52,7 @@ export function ReviewSidebar({
       await approveMutation({ documentId });
       toast.success("Document approved and published");
       setObservations("");
-      onActionComplete();
+      actionCompleted();
     } catch (error) {
       handleError(error, { context: "ReviewSidebar.handleApprove" });
     } finally {
@@ -61,17 +67,12 @@ export function ReviewSidebar({
     try {
       await rejectMutation({ documentId, reason: observations.trim() });
       toast.success("Document rejected with feedback");
-      setObservations("");
-      onActionComplete();
+      actionCompleted();
     } catch (error) {
       handleError(error, { context: "ReviewSidebar.handleReject" });
     } finally {
       setIsRejecting(false);
     }
-  }
-
-  if (isLoading) {
-    return <ReviewSidebarSkeleton />;
   }
 
   if (!documentId) {
@@ -93,11 +94,6 @@ export function ReviewSidebar({
     <Card>
       <CardHeader>
         <CardTitle className="text-sm">Review Actions</CardTitle>
-        {documentTitle && (
-          <p className="text-xs text-muted-foreground line-clamp-1">
-            {documentTitle}
-          </p>
-        )}
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">

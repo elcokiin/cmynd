@@ -4,21 +4,46 @@ import { cn } from "@elcokiin/ui/lib/utils";
 import { FileTextIcon, HourglassIcon } from "lucide-react";
 
 import { documentTypeConfig } from "@/components/dashboard/document-type-config";
+import { Pagination } from "@elcokiin/ui/pagination";
 import { ReviewListSkeleton } from "./review-skeleton";
 
+import { api } from "@elcokiin/backend/convex/_generated/api";
+import { useManualPagination } from "@/hooks/use-manual-pagination";
+import { useNavigate } from "@tanstack/react-router";
+
 type PendingDocumentListProps = {
-  documents: PendingDocumentListItem[] | undefined | null;
   selectedId: Id<"documents"> | null;
-  onSelect: (id: Id<"documents">) => void;
-  isLoading?: boolean;
+  onSelect: () => void;
 };
 
 export function PendingDocumentList({
-  documents,
   selectedId,
   onSelect,
-  isLoading = false,
 }: PendingDocumentListProps): React.ReactNode {
+  const navigate = useNavigate();
+  const PAGE_SIZE = 20;
+
+  const {
+    items: documents,
+    isLoading,
+    currentPage,
+    totalPages,
+    goToPage,
+  } = useManualPagination(
+    api.documents.queries.listPendingForAdmin,
+    {},
+    PAGE_SIZE,
+  );
+
+  function handleSelectDocument(id: Id<"documents">): void {
+    navigate({
+      to: "/admin/review",
+      search: { doc: id },
+      replace: true,
+    });
+    onSelect();
+  }
+
   if (isLoading || documents === undefined) {
     return (
       <div className="p-4">
@@ -55,20 +80,34 @@ export function PendingDocumentList({
   }
 
   return (
-    <div className="p-4">
-      <h3 className="font-medium text-sm text-muted-foreground mb-4">
-        Pending Review
-      </h3>
-      <div className="space-y-2">
-        {documents.map((doc) => (
-          <PendingDocumentItem
-            key={doc._id}
-            document={doc}
-            isSelected={selectedId === doc._id}
-            onSelect={() => onSelect(doc._id)}
-          />
-        ))}
+    <div className="w-64 border-r flex flex-col">
+      <div className="flex-1 overflow-auto">
+        <div className="p-4">
+          <h3 className="font-medium text-sm text-muted-foreground mb-4">
+            Pending Review
+          </h3>
+          <div className="space-y-2">
+            {documents.map((doc) => (
+              <PendingDocumentItem
+                key={doc._id}
+                document={doc}
+                isSelected={selectedId === doc._id}
+                onSelect={() => handleSelectDocument(doc._id)}
+              />
+            ))}
+          </div>
+        </div>
       </div>
+      {totalPages > 1 && (
+        <div className="border-t p-2">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={goToPage}
+            showFirstLast={false}
+          />
+        </div>
+      )}
     </div>
   );
 }

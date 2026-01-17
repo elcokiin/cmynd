@@ -1,10 +1,8 @@
 import type { JSONContent } from "novel";
-import type {
-  DocumentType,
-  CurationData,
-  Reference,
-} from "@elcokiin/backend/lib/types/documents";
 import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
+
+import { api } from "@elcokiin/backend/convex/_generated/api";
+import { useQuery } from "convex/react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@elcokiin/ui/card";
 import { FileTextIcon, LinkIcon } from "lucide-react";
@@ -13,28 +11,19 @@ import { AdvancedEditor } from "@/components/editor/advanced-editor";
 import { documentTypeConfig } from "@/components/dashboard/document-type-config";
 import { ReviewPreviewSkeleton } from "./review-skeleton";
 
-type ReviewDocument = {
-  _id: Id<"documents">;
-  title: string;
-  type: DocumentType;
-  content: JSONContent;
-  curation?: CurationData;
-  references?: Reference[];
-  coverImageId?: Id<"_storage">;
-  submittedAt?: number;
-  createdAt: number;
-};
-
 type DocumentPreviewProps = {
-  document: ReviewDocument | undefined | null;
-  isLoading: boolean;
+  documentId: Id<"documents"> | null;
 };
 
 export function DocumentPreview({
-  document,
-  isLoading,
+  documentId,
 }: DocumentPreviewProps): React.ReactNode {
-  if (isLoading) {
+  const document = useQuery(
+    api.documents.queries.getForAdminReview,
+    documentId ? { documentId: documentId as Id<"documents"> } : "skip",
+  );
+
+  if (!document) {
     return (
       <div className="p-6">
         <div className="max-w-3xl mx-auto">

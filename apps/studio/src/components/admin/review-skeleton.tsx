@@ -1,4 +1,3 @@
-import { Card, CardContent, CardHeader } from "@elcokiin/ui/card";
 import { Skeleton } from "@elcokiin/ui/skeleton";
 
 export function ReviewSkeleton(): React.ReactNode {
@@ -84,22 +83,5 @@ export function ReviewPreviewSkeleton(): React.ReactNode {
         <Skeleton className="h-4 w-5/6" />
       </div>
     </div>
-  );
-}
-
-export function ReviewSidebarSkeleton(): React.ReactNode {
-  return (
-    <Card>
-      <CardHeader>
-        <Skeleton className="h-5 w-28" />
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <Skeleton className="h-32 w-full" />
-        <div className="flex gap-2">
-          <Skeleton className="h-10 flex-1" />
-          <Skeleton className="h-10 flex-1" />
-        </div>
-      </CardContent>
-    </Card>
   );
 }

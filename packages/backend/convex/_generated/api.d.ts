@@ -10,6 +10,10 @@
 
 import type * as _lib_auth from "../_lib/auth.js";
 import type * as auth from "../auth.js";
+import type * as authors_helpers from "../authors/helpers.js";
+import type * as authors_mutations from "../authors/mutations.js";
+import type * as authors_projections from "../authors/projections.js";
+import type * as authors_queries from "../authors/queries.js";
 import type * as documents_helpers from "../documents/helpers.js";
 import type * as documents_mutations from "../documents/mutations.js";
 import type * as documents_projections from "../documents/projections.js";
@@ -27,6 +31,10 @@ import type {
 declare const fullApi: ApiFromModules<{
   "_lib/auth": typeof _lib_auth;
   auth: typeof auth;
+  "authors/helpers": typeof authors_helpers;
+  "authors/mutations": typeof authors_mutations;
+  "authors/projections": typeof authors_projections;
+  "authors/queries": typeof authors_queries;
   "documents/helpers": typeof documents_helpers;
   "documents/mutations": typeof documents_mutations;
   "documents/projections": typeof documents_projections;
