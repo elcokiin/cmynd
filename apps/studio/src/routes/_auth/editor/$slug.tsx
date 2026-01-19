@@ -1,12 +1,12 @@
 import type { JSONContent } from "novel";
 
 import { api } from "@elcokiin/backend/convex/_generated/api";
-import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
 import { Button } from "@elcokiin/ui/button";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { ArrowLeftIcon } from "lucide-react";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
+import { toast } from "sonner";
 
 import { AdvancedEditor } from "@/components/editor/advanced-editor";
 import { EditorHeader } from "@/components/editor/editor-header";
@@ -14,34 +14,53 @@ import { EditorSkeleton } from "@/components/editor/editor-skeleton";
 import { useConvexImageUpload } from "@/hooks/use-convex-image-upload";
 import { useErrorHandler } from "@/hooks/use-error-handler";
 
-export const Route = createFileRoute("/_auth/editor/$documentId")({
+export const Route = createFileRoute("/_auth/editor/$slug")({
   component: EditorRoute,
   pendingComponent: EditorSkeleton,
 });
 
 function EditorRoute() {
-  const { documentId } = Route.useParams();
+  const { slug } = Route.useParams();
   const navigate = useNavigate();
   const { handleErrorSilent } = useErrorHandler();
 
-  const document = useQuery(api.documents.queries.getForEdit, {
-    documentId: documentId as Id<"documents">,
+  const document = useQuery(api.documents.queries.getBySlug, {
+    slug,
   });
   const updateContent = useMutation(api.documents.mutations.updateContent);
   const uploadFn = useConvexImageUpload();
 
+  // Handle slug redirects
+  useEffect(() => {
+    if (document && "isRedirect" in document && document.isRedirect) {
+      // This is an old slug - redirect to current slug
+      toast.info("Redirecting to current URL...", {
+        description: `This article is now at: /editor/${document.currentSlug}`,
+      });
+
+      // Navigate to the current slug
+      navigate({
+        to: "/editor/$slug",
+        params: { slug: document.currentSlug },
+        replace: true, // Replace history so back button works correctly
+      });
+    }
+  }, [document, navigate]);
+
   const handleDebouncedUpdate = useCallback(
     async (content: JSONContent) => {
+      if (!document) return;
+      
       try {
         await updateContent({
-          documentId: documentId as Id<"documents">,
+          documentId: document._id,
           content,
         });
       } catch (error) {
         handleErrorSilent(error, "EditorRoute.handleDebouncedUpdate");
       }
     },
-    [documentId, updateContent, handleErrorSilent],
+    [document, updateContent, handleErrorSilent],
   );
 
   const handleUploadError = useCallback(

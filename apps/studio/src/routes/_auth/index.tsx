@@ -72,8 +72,8 @@ function DashboardRoute() {
                 document={doc}
                 onOpen={() =>
                   navigate({
-                    to: "/editor/$documentId",
-                    params: { documentId: doc._id },
+                    to: "/editor/$slug",
+                    params: { slug: doc.slug },
                   })
                 }
               />

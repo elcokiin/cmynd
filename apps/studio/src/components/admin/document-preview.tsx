@@ -1,5 +1,4 @@
 import type { JSONContent } from "novel";
-import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
 
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { useQuery } from "convex/react";
@@ -12,28 +11,18 @@ import { documentTypeConfig } from "@/components/dashboard/document-type-config"
 import { ReviewPreviewSkeleton } from "./review-skeleton";
 
 type DocumentPreviewProps = {
-  documentId: Id<"documents"> | null;
+  slug: string | null | undefined;
 };
 
 export function DocumentPreview({
-  documentId,
+  slug,
 }: DocumentPreviewProps): React.ReactNode {
   const document = useQuery(
-    api.documents.queries.getForAdminReview,
-    documentId ? { documentId: documentId as Id<"documents"> } : "skip",
+    api.documents.queries.getForAdminReviewBySlug,
+    slug ? { slug } : "skip",
   );
 
-  if (!document) {
-    return (
-      <div className="p-6">
-        <div className="max-w-3xl mx-auto">
-          <ReviewPreviewSkeleton />
-        </div>
-      </div>
-    );
-  }
-
-  if (!document) {
+  if (!slug) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center p-6">
         <FileTextIcon className="h-12 w-12 text-muted-foreground mb-4" />
@@ -41,6 +30,16 @@ export function DocumentPreview({
         <p className="text-sm text-muted-foreground max-w-sm">
           Select a document from the list to preview its content
         </p>
+      </div>
+    );
+  }
+
+  if (document === undefined) {
+    return (
+      <div className="p-6">
+        <div className="max-w-3xl mx-auto">
+          <ReviewPreviewSkeleton />
+        </div>
       </div>
     );
   }

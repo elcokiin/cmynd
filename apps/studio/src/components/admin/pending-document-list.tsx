@@ -1,4 +1,3 @@
-import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
 import type { PendingDocumentListItem } from "@elcokiin/backend/lib/types/documents";
 import { cn } from "@elcokiin/ui/lib/utils";
 import { FileTextIcon, HourglassIcon } from "lucide-react";
@@ -12,12 +11,12 @@ import { useManualPagination } from "@/hooks/use-manual-pagination";
 import { useNavigate } from "@tanstack/react-router";
 
 type PendingDocumentListProps = {
-  selectedId: Id<"documents"> | null;
+  selectedSlug: string | null | undefined;
   onSelect: () => void;
 };
 
 export function PendingDocumentList({
-  selectedId,
+  selectedSlug,
   onSelect,
 }: PendingDocumentListProps): React.ReactNode {
   const navigate = useNavigate();
@@ -35,10 +34,10 @@ export function PendingDocumentList({
     PAGE_SIZE,
   );
 
-  function handleSelectDocument(id: Id<"documents">): void {
+  function handleSelectDocument(slug: string): void {
     navigate({
       to: "/admin/review",
-      search: { doc: id },
+      search: { slug },
       replace: true,
     });
     onSelect();
@@ -91,8 +90,8 @@ export function PendingDocumentList({
               <PendingDocumentItem
                 key={doc._id}
                 document={doc}
-                isSelected={selectedId === doc._id}
-                onSelect={() => handleSelectDocument(doc._id)}
+                isSelected={selectedSlug === doc.slug}
+                onSelect={() => handleSelectDocument(doc.slug)}
               />
             ))}
           </div>

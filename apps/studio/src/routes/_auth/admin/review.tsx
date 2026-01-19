@@ -1,5 +1,3 @@
-import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
-
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { FileTextIcon, ListIcon, MessageSquareIcon } from "lucide-react";
@@ -13,20 +11,19 @@ import { ReviewSidebar } from "@/components/admin/review-sidebar";
 import { ReviewSkeleton } from "@/components/admin/review-skeleton";
 
 type SearchParams = {
-  doc?: string;
+  slug?: string;
 };
 
 export const Route = createFileRoute("/_auth/admin/review")({
   component: AdminReviewPage,
   pendingComponent: ReviewSkeleton,
   validateSearch: (search: Record<string, unknown>): SearchParams => ({
-    doc: typeof search.doc === "string" ? search.doc : undefined,
+    slug: typeof search.slug === "string" ? search.slug : undefined,
   }),
 });
 
 function AdminReviewPage() {
-  const { doc: selectedDocId } = Route.useSearch();
-  const documentId = selectedDocId as Id<"documents"> | null;
+  const { slug: selectedSlug } = Route.useSearch();
 
   const [mobileTab, setMobileTab] = useState<MobileTab>("list");
 
@@ -58,13 +55,13 @@ function AdminReviewPage() {
             id: "preview",
             label: "Preview",
             icon: FileTextIcon,
-            disabled: !documentId,
+            disabled: !selectedSlug,
           },
           {
             id: "actions",
             label: "Actions",
             icon: MessageSquareIcon,
-            disabled: !documentId,
+            disabled: !selectedSlug,
           },
         ]}
         activeTab={mobileTab}
@@ -78,19 +75,19 @@ function AdminReviewPage() {
           <div className="flex flex-1 overflow-hidden">
             {/* Document List */}
             <PendingDocumentList
-              selectedId={documentId}
+              selectedSlug={selectedSlug}
               onSelect={() => setMobileTab("preview")}
             />
 
             {/* Preview */}
             <div className="flex-1 overflow-auto">
-              <DocumentPreview documentId={documentId} />
+              <DocumentPreview slug={selectedSlug} />
             </div>
 
             {/* Sidebar */}
             <div className="w-80 border-l p-4 overflow-auto">
               <ReviewSidebar
-                documentId={documentId}
+                slug={selectedSlug}
                 onActionComplete={() => setMobileTab("list")}
               />
             </div>
@@ -102,17 +99,17 @@ function AdminReviewPage() {
           <div className="flex-1 overflow-auto">
             {mobileTab === "list" && (
               <PendingDocumentList
-                selectedId={documentId}
+                selectedSlug={selectedSlug}
                 onSelect={() => setMobileTab("preview")}
               />
             )}
             {mobileTab === "preview" && (
-              <DocumentPreview documentId={documentId} />
+              <DocumentPreview slug={selectedSlug} />
             )}
             {mobileTab === "actions" && (
               <div className="p-4">
                 <ReviewSidebar
-                  documentId={documentId}
+                  slug={selectedSlug}
                   onActionComplete={() => setMobileTab("list")}
                 />
               </div>

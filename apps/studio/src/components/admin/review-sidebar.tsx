@@ -1,7 +1,5 @@
-import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
-
 import { useState } from "react";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { useNavigate } from "@tanstack/react-router";
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { toast } from "sonner";
@@ -15,12 +13,12 @@ import { cn } from "@elcokiin/ui/lib/utils";
 import { useErrorHandler } from "@/hooks/use-error-handler";
 
 type ReviewSidebarProps = {
-  documentId: Id<"documents"> | null;
+  slug: string | null | undefined;
   onActionComplete?: () => void;
 };
 
 export function ReviewSidebar({
-  documentId,
+  slug,
   onActionComplete,
 }: ReviewSidebarProps): React.ReactNode {
   const navigate = useNavigate();
@@ -28,6 +26,12 @@ export function ReviewSidebar({
   const [isApproving, setIsApproving] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
   const { handleError } = useErrorHandler();
+
+  // Fetch document to get ID for mutations
+  const document = useQuery(
+    api.documents.queries.getForAdminReviewBySlug,
+    slug ? { slug } : "skip",
+  );
 
   const approveMutation = useMutation(api.documents.mutations.approve);
   const rejectMutation = useMutation(api.documents.mutations.reject);
@@ -45,11 +49,11 @@ export function ReviewSidebar({
   }
 
   async function handleApprove(): Promise<void> {
-    if (!documentId) return;
+    if (!document) return;
 
     setIsApproving(true);
     try {
-      await approveMutation({ documentId });
+      await approveMutation({ documentId: document._id });
       toast.success("Document approved and published");
       setObservations("");
       actionCompleted();
@@ -61,11 +65,11 @@ export function ReviewSidebar({
   }
 
   async function handleReject(): Promise<void> {
-    if (!documentId || !canReject) return;
+    if (!document || !canReject) return;
 
     setIsRejecting(true);
     try {
-      await rejectMutation({ documentId, reason: observations.trim() });
+      await rejectMutation({ documentId: document._id, reason: observations.trim() });
       toast.success("Document rejected with feedback");
       actionCompleted();
     } catch (error) {
@@ -75,7 +79,7 @@ export function ReviewSidebar({
     }
   }
 
-  if (!documentId) {
+  if (!slug) {
     return (
       <Card>
         <CardHeader>
