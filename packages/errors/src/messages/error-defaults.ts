@@ -22,6 +22,9 @@ export const ERROR_DEFAULTS: Record<ErrorCode, string> = {
   [ErrorCodes.DOCUMENT_VALIDATION]: "Document validation failed",
   [ErrorCodes.DOCUMENT_RATE_LIMIT]: "Rate limit exceeded: You can only submit a document 3 times per 24 hours",
   [ErrorCodes.DOCUMENT_INVALID_STATUS]: "Invalid document status for this operation",
+  [ErrorCodes.DOCUMENT_INVALID_TITLE]: "Document title is invalid: cannot be 'Untitled' or empty",
+  [ErrorCodes.DOCUMENT_EMPTY]: "Cannot save document: no valid title and no content",
+  [ErrorCodes.DOCUMENT_SLUG_DELETION_REQUIRED]: "Changing this title will break an old URL. User confirmation required",
 
   // Validation Errors (3xxx)
   [ErrorCodes.VALIDATION_ERROR]: "Validation failed",

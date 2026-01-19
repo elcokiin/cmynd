@@ -19,6 +19,9 @@ export const USER_FRIENDLY_MESSAGES: Record<ErrorCode, string> = {
   [ErrorCode.DOCUMENT_VALIDATION]: "Document validation failed",
   [ErrorCode.DOCUMENT_RATE_LIMIT]: "Too many document operations. Please try again later",
   [ErrorCode.DOCUMENT_INVALID_STATUS]: "Invalid document status",
+  [ErrorCode.DOCUMENT_INVALID_TITLE]: "Please provide a valid title for your document",
+  [ErrorCode.DOCUMENT_EMPTY]: "Your document needs either a title or some content to be saved",
+  [ErrorCode.DOCUMENT_SLUG_DELETION_REQUIRED]: "Changing this title will break an existing URL. Please confirm to continue",
 
   // Validation Errors
   [ErrorCode.VALIDATION_ERROR]: "Some fields contain invalid data",
