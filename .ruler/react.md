@@ -1,10 +1,7 @@
-# AI Agent React Patterns
-
-**Audience**: This document defines React component patterns for AI agents. Follow these rules when creating or modifying React components.
-
----
+# React Patterns
 
 ## Project Configuration
+
 - **React Version**: React 19
 - **Router**: TanStack Router
 - **Data Fetching**: TanStack Query + Convex
@@ -16,10 +13,11 @@
 ## Component Structure (MANDATORY)
 
 ### Rule 1: Use Function Declarations with Named Exports
+
 **Never use arrow functions or default exports for components.**
 
-**Correct:**
 ```typescript
+// ✅ Correct
 import type { VariantProps } from "class-variance-authority";
 import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { cn } from "@/lib/utils";
@@ -32,7 +30,6 @@ function Button({
 }: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
   return (
     <ButtonPrimitive
-      data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}
     />
@@ -40,22 +37,16 @@ function Button({
 }
 
 export { Button, buttonVariants };
-```
 
-**Incorrect:**
-```typescript
-// Arrow function with default export
+// ❌ Incorrect
 const Button = ({ className, variant, size, ...props }) => {
   return <ButtonPrimitive {...props} />;
 };
-
 export default Button;
 ```
 
 ### Rule 2: Use `type` for Component Props
-Define props using `type` (not `interface`).
 
-**Correct:**
 ```typescript
 type ButtonProps = {
   variant?: "default" | "outline" | "ghost";
@@ -70,6 +61,7 @@ function Button({ variant = "default", size = "default", ...props }: ButtonProps
 ```
 
 ### Rule 3: Keep Components Under 200 Lines
+
 If a component exceeds 200 lines:
 1. Extract logic into custom hooks
 2. Split into smaller sub-components
@@ -80,6 +72,7 @@ If a component exceeds 200 lines:
 ## Navigation (TanStack Router)
 
 ### Route Definition
+
 ```typescript
 import { createFileRoute } from "@tanstack/react-router";
 
@@ -93,6 +86,7 @@ function Dashboard() {
 ```
 
 ### Navigation Patterns
+
 ```typescript
 import { Link, useNavigate } from "@tanstack/react-router";
 
@@ -112,9 +106,9 @@ function Navigation() {
 
 ---
 
-## Data Fetching (TanStack Query + Convex)
+## Data Fetching (Convex)
 
-**You MUST use `useConvexQuery` for all Convex data fetching.**
+**Use `useConvexQuery` from `@convex-dev/react-query` for all Convex data fetching.**
 
 ```typescript
 import { useConvexQuery } from "@convex-dev/react-query";
@@ -139,7 +133,6 @@ function UserProfile() {
 
 Extract reusable component logic into custom hooks prefixed with `use`.
 
-**Example:**
 ```typescript
 function useAuth() {
   const { data: session, isLoading } = useSession();
@@ -183,162 +176,9 @@ function UserMenu() {
 3. **Context** for deeply nested shared state (themes, auth)
 4. **Avoid global state managers** (Redux, Zustand) unless absolutely necessary
 
-**Examples:**
-```typescript
-// Local state for UI
-function SearchInput() {
-  const [query, setQuery] = useState("");
-  return <input value={query} onChange={(e) => setQuery(e.target.value)} />;
-}
-
-// Server state with Convex
-function UserList() {
-  const { data: users } = useConvexQuery(api.users.list);
-  return <ul>{users?.map(u => <li key={u.id}>{u.name}</li>)}</ul>;
-}
-```
-
----
-
-## Component Composition
-
-### Compound Components
-Use for related UI elements that work together:
-
-```typescript
-function Card({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={cn("rounded-lg border", className)}>{children}</div>;
-}
-
-function CardHeader({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={cn("p-4", className)}>{children}</div>;
-}
-
-function CardContent({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={cn("p-4 pt-0", className)}>{children}</div>;
-}
-
-export { Card, CardHeader, CardContent };
-```
-
-### Render Props Pattern
-Use for flexible, reusable list components:
-
-```typescript
-type DataListProps<T> = {
-  data: T[];
-  renderItem: (item: T) => React.ReactNode;
-  renderEmpty?: () => React.ReactNode;
-};
-
-function DataList<T>({ data, renderItem, renderEmpty }: DataListProps<T>) {
-  if (data.length === 0) {
-    return renderEmpty?.() ?? <div>No items</div>;
-  }
-
-  return <ul>{data.map(renderItem)}</ul>;
-}
-```
-
----
-
-## Performance
-
-### Use `useMemo` for Expensive Calculations
-```typescript
-function ExpensiveComponent({ data }: { data: ComplexData }) {
-  const processedData = useMemo(() => {
-    return data.items.map(item => expensiveOperation(item));
-  }, [data.items]);
-
-  return <div>{processedData.length} items</div>;
-}
-```
-
-### Use `React.lazy()` for Code Splitting
-```typescript
-import { lazy } from "react";
-
-const Dashboard = lazy(() => import("./routes/dashboard"));
-
-export const Route = createFileRoute("/dashboard")({
-  component: Dashboard,
-});
-```
-
----
-
-## JSX Best Practices
-
-### Rule: Extract Complex Logic from JSX
-**Never write complex conditionals or filtering directly in JSX.**
-
-**Correct:**
-```typescript
-function UserList() {
-  const { data: users = [] } = useConvexQuery(api.users.list, {});
-  const activeUsers = users.filter(u => u.status === "active");
-  const hasActiveUsers = activeUsers.length > 0;
-
-  if (!hasActiveUsers) {
-    return <div>No active users</div>;
-  }
-
-  return (
-    <ul>
-      {activeUsers.map(user => (
-        <li key={user.id}>{user.name}</li>
-      ))}
-    </ul>
-  );
-}
-```
-
-**Incorrect:**
-```typescript
-function UserList() {
-  const { data: users = [] } = useConvexQuery(api.users.list, {});
-
-  return (
-    <ul>
-      {users.filter(u => u.status === "active").length > 0
-        ? users.filter(u => u.status === "active").map(user => (
-            <li key={user.id}>{user.name}</li>
-          ))
-        : <div>No active users</div>}
-    </ul>
-  );
-}
-```
-
-### Rule: Avoid Prop Drilling
-Use Context for deeply nested state:
-
-```typescript
-import { createContext, useContext, useState } from "react";
-
-const ThemeContext = createContext<"light" | "dark">("light");
-
-function useTheme() {
-  return useContext(ThemeContext);
-}
-
-function App() {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
-
-  return (
-    <ThemeContext.Provider value={theme}>
-      <Dashboard />
-    </ThemeContext.Provider>
-  );
-}
-```
-
 ---
 
 ## Forms with TanStack Form (MANDATORY PATTERNS)
-
-This project uses **TanStack Form** (`@tanstack/react-form`).
 
 ### Core Rules
 
@@ -350,7 +190,6 @@ This project uses **TanStack Form** (`@tanstack/react-form`).
 
 ### Basic Form Pattern
 
-**Correct:**
 ```typescript
 import { useForm } from "@tanstack/react-form";
 import { zodValidator } from "@tanstack/zod-form-adapter";
@@ -400,49 +239,11 @@ function LoginForm() {
         )}
       </form.Field>
 
-      <form.Field
-        name="password"
-        validators={{
-          onChange: z.string().min(8, "Password must be at least 8 characters"),
-        }}
-        validatorAdapter={zodValidator()}
-      >
-        {(field) => (
-          <div>
-            <label htmlFor={field.name}>Password</label>
-            <input
-              id={field.name}
-              type="password"
-              value={field.state.value}
-              onBlur={field.handleBlur}
-              onChange={(e) => field.handleChange(e.target.value)}
-            />
-            {field.state.meta.errors.length > 0 && (
-              <span>{field.state.meta.errors[0]}</span>
-            )}
-          </div>
-        )}
-      </form.Field>
-
       <button type="submit" disabled={form.state.isSubmitting}>
         {form.state.isSubmitting ? "Logging in..." : "Login"}
       </button>
     </form>
   );
-}
-```
-
-**Incorrect:**
-```typescript
-interface LoginFormValues {
-  email: string;
-  password: string;
-}
-
-function BadLoginForm() {
-  const form = useForm<LoginFormValues>({  // NEVER use generics
-    // ...
-  });
 }
 ```
 
@@ -532,10 +333,10 @@ Use `onChangeAsyncDebounceMs` for expensive validation (e.g., checking username 
 
 ### Reusable Field Components (RECOMMENDED)
 
-**You should create reusable field components** to reduce boilerplate:
+Create reusable field components to reduce boilerplate:
 
 ```typescript
-// components/forms/TextField.tsx
+// components/forms/text-field.tsx
 import type { FieldApi } from "@tanstack/react-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -629,50 +430,70 @@ Choose appropriate validation strategy:
 - **`onSubmit`**: Cross-field validation (password confirmation)
 - **`onChangeAsync`**: API calls (username availability)
 
-```typescript
-// Instant validation
-<form.Field
-  name="email"
-  validators={{ onChange: z.string().email("Invalid email") }}
-  validatorAdapter={zodValidator()}
->
-  {(field) => /* ... */}
-</form.Field>
-
-// Blur validation
-<form.Field
-  name="password"
-  validators={{ onBlur: z.string().min(8) }}
-  validatorAdapter={zodValidator()}
->
-  {(field) => /* ... */}
-</form.Field>
-
-// Cross-field validation
-<form.Field
-  name="confirmPassword"
-  validators={{
-    onSubmit: ({ value, fieldApi }) => {
-      const password = fieldApi.form.getFieldValue("password");
-      return value === password ? undefined : "Passwords must match";
-    },
-  }}
->
-  {(field) => /* ... */}
-</form.Field>
-```
-
 ---
 
-## Form Checklist
+## JSX Best Practices
 
-Before submitting a form implementation, verify:
+### Extract Complex Logic from JSX
 
-- [ ] No generics passed to `useForm`
-- [ ] `defaultValues` are defined
-- [ ] All fields use controlled inputs
-- [ ] Zod validation on all fields
-- [ ] Error messages are displayed
-- [ ] Submit button shows loading state (`form.state.isSubmitting`)
-- [ ] Form prevents default submit behavior
-- [ ] Reusable field components created for repeated patterns
+**Never write complex conditionals or filtering directly in JSX.**
+
+```typescript
+// ✅ Correct
+function UserList() {
+  const { data: users = [] } = useConvexQuery(api.users.list, {});
+  const activeUsers = users.filter(u => u.status === "active");
+  const hasActiveUsers = activeUsers.length > 0;
+
+  if (!hasActiveUsers) {
+    return <div>No active users</div>;
+  }
+
+  return (
+    <ul>
+      {activeUsers.map(user => (
+        <li key={user.id}>{user.name}</li>
+      ))}
+    </ul>
+  );
+}
+
+// ❌ Incorrect
+function UserList() {
+  const { data: users = [] } = useConvexQuery(api.users.list, {});
+
+  return (
+    <ul>
+      {users.filter(u => u.status === "active").length > 0
+        ? users.filter(u => u.status === "active").map(user => (
+            <li key={user.id}>{user.name}</li>
+          ))
+        : <div>No active users</div>}
+    </ul>
+  );
+}
+```
+
+### Avoid Prop Drilling
+
+Use Context for deeply nested state:
+
+```typescript
+import { createContext, useContext, useState } from "react";
+
+const ThemeContext = createContext<"light" | "dark">("light");
+
+function useTheme() {
+  return useContext(ThemeContext);
+}
+
+function App() {
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+
+  return (
+    <ThemeContext.Provider value={theme}>
+      <Dashboard />
+    </ThemeContext.Provider>
+  );
+}
+```

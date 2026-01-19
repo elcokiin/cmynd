@@ -1,10 +1,7 @@
-# AI Agent Styling Guidelines
-
-**Audience**: This document defines styling patterns for AI agents working with TailwindCSS and shadcn/ui.
-
----
+# Styling Guidelines
 
 ## Tech Stack
+
 - **TailwindCSS 4** - Utility-first CSS framework
 - **shadcn/ui** - Component library
 - **class-variance-authority (cva)** - Component variants
@@ -12,13 +9,16 @@
 
 ---
 
-## Rule 1: ALWAYS Use `cn()` for className Management
+## Core Rules
+
+### Rule 1: ALWAYS Use `cn()` for className Management
+
 **Never use string concatenation or template literals for classNames.**
 
-**Correct:**
 ```typescript
 import { cn } from "@/lib/utils";
 
+// ✅ Correct
 function Button({ className, isActive }: { className?: string; isActive: boolean }) {
   return (
     <button
@@ -33,23 +33,16 @@ function Button({ className, isActive }: { className?: string; isActive: boolean
     </button>
   );
 }
-```
 
-**Incorrect:**
-```typescript
-// String concatenation
+// ❌ Incorrect
 className={"px-4 py-2 " + (isActive ? "bg-blue-500" : "bg-gray-200")}
-
-// Template literals
 className={`px-4 py-2 ${isActive ? "bg-blue-500" : "bg-gray-200"}`}
 ```
 
----
+### Rule 2: Use CVA for Component Variants
 
-## Rule 2: Use CVA for Component Variants
 **When a component has 2+ style variants, use class-variance-authority (cva).**
 
-**Pattern:**
 ```typescript
 import { cva, type VariantProps } from "class-variance-authority";
 
@@ -94,7 +87,7 @@ function Button({
 }
 ```
 
-### Compound Variants (Advanced)
+**Compound Variants (Advanced):**
 Use when styles depend on multiple variant combinations:
 
 ```typescript
@@ -107,13 +100,12 @@ compoundVariants: [
 ],
 ```
 
----
+### Rule 3: Utility-First Approach
 
-## Rule 3: Utility-First Approach
 **ALWAYS prefer Tailwind utilities over custom CSS classes.**
 
-**Correct:**
 ```typescript
+// ✅ Correct
 function Card() {
   return (
     <div className="rounded-lg border bg-card p-6 shadow-sm">
@@ -122,22 +114,17 @@ function Card() {
     </div>
   );
 }
-```
 
-**Incorrect:**
-```typescript
-// Custom CSS classes
+// ❌ Incorrect - Custom CSS classes
 <div className="custom-card">
   <h2 className="custom-title">Title</h2>
 </div>
 ```
 
----
+### Rule 4: Mobile-First Responsive Design
 
-## Rule 4: Mobile-First Responsive Design
 **Use Tailwind responsive prefixes in order: sm → md → lg → xl → 2xl**
 
-**Examples:**
 ```typescript
 // Grid layout: mobile (1 col) → tablet (2 col) → desktop (3 col)
 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -152,12 +139,10 @@ function Card() {
 </h1>
 ```
 
----
+### Rule 5: ALWAYS Include Dark Mode Support
 
-## Rule 5: ALWAYS Include Dark Mode Support
 **Use `dark:` prefix for all background, text, and border colors.**
 
-**Correct:**
 ```typescript
 function Card() {
   return (
@@ -168,9 +153,8 @@ function Card() {
 }
 ```
 
----
+### Rule 6: Use Design Tokens (Semantic Colors)
 
-## Rule 6: Use Design Tokens (Semantic Colors)
 **Prefer semantic tokens over hardcoded colors for theme consistency.**
 
 **Available Design Tokens:**
@@ -179,8 +163,8 @@ function Card() {
 - **Background**: `background`, `card`, `popover`
 - **Border**: `border`, `input`, `ring`
 
-**Correct:**
 ```typescript
+// ✅ Correct
 function Alert() {
   return (
     <div className="border-border bg-background text-foreground">
@@ -188,11 +172,8 @@ function Alert() {
     </div>
   );
 }
-```
 
-**Incorrect:**
-```typescript
-// Hardcoded colors
+// ❌ Incorrect - Hardcoded colors
 <div className="border-gray-200 bg-white text-black">
   <p className="text-gray-500">Info message</p>
 </div>
@@ -253,7 +234,6 @@ function Alert() {
 
 ### Tailwind Transitions
 
-**Common patterns:**
 ```jsx
 // Color transitions (most common)
 <button className="transition-colors duration-200 hover:bg-primary">
@@ -265,6 +245,7 @@ function Alert() {
 ```
 
 ### tw-animate-css (Complex Animations)
+
 ```typescript
 import "tw-animate-css";
 
@@ -280,6 +261,7 @@ import "tw-animate-css";
 ## Spacing & Accessibility
 
 ### Consistent Spacing Scale
+
 **Use Tailwind's spacing scale consistently: 0, 1, 2, 3, 4, 6, 8, 10, 12, 16, 20, 24, 32**
 
 ```jsx
@@ -297,9 +279,9 @@ import "tw-animate-css";
 ```
 
 ### Focus States (MANDATORY for Accessibility)
+
 **You MUST include focus states for all interactive elements.**
 
-**Patterns:**
 ```jsx
 // All focus (mouse + keyboard)
 <input className="focus:outline-none focus:ring-2 focus:ring-primary" />
@@ -315,29 +297,32 @@ import "tw-animate-css";
 ## Anti-Patterns (FORBIDDEN)
 
 ### ❌ Magic Numbers (Arbitrary Values)
+
 ```jsx
-// INCORRECT
+// ❌ INCORRECT
 <div className="w-[347px] h-[234px]" />
 
-// CORRECT
+// ✅ CORRECT
 <div className="w-80 h-64" />
 ```
 
 ### ❌ Inline Styles
+
 ```jsx
-// INCORRECT
+// ❌ INCORRECT
 <div style={{ marginTop: "20px", color: "red" }} />
 
-// CORRECT
+// ✅ CORRECT
 <div className="mt-5 text-red-500" />
 ```
 
 ### ❌ Using !important
+
 ```jsx
-// INCORRECT
+// ❌ INCORRECT
 <div className="!mt-10" />
 
-// CORRECT - Fix specificity properly
+// ✅ CORRECT - Fix specificity properly
 <div className="mt-10" />
 ```
 
@@ -359,21 +344,3 @@ import "tw-animate-css";
   }
 }
 ```
-
----
-
-## Styling Checklist
-
-Before submitting styled components, verify:
-
-- [ ] All classNames use `cn()` utility
-- [ ] Components with 2+ variants use CVA
-- [ ] No custom CSS classes (use Tailwind utilities)
-- [ ] Mobile-first responsive design (sm → md → lg → xl → 2xl)
-- [ ] Dark mode support included (`dark:` prefix)
-- [ ] Semantic design tokens used (not hardcoded colors)
-- [ ] Focus states on all interactive elements
-- [ ] Consistent spacing scale used
-- [ ] No magic numbers or arbitrary values
-- [ ] No inline styles
-- [ ] No `!important` modifiers
