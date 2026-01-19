@@ -31,6 +31,7 @@ export const referenceValidator = v.object({
 //Changes require database migrations
 export const documentValidator = {
   title: v.string(),
+  slug: v.string(),
   content: v.any(),
   type: documentTypeValidator,
   status: documentStatusValidator,
@@ -70,6 +71,7 @@ export const publicAuthorValidator = v.object({
 export const documentListItemValidator = v.object({
   _id: v.id("documents"),
   title: v.string(),
+  slug: v.string(),
   type: documentTypeValidator,
   status: documentStatusValidator,
   coverImageId: v.optional(v.id("_storage")),
@@ -83,6 +85,7 @@ export const documentListItemValidator = v.object({
 export const pendingDocumentListItemValidator = v.object({
   _id: v.id("documents"),
   title: v.string(),
+  slug: v.string(),
   type: documentTypeValidator,
   submittedAt: v.optional(v.number()),
   createdAt: v.number(),
@@ -93,6 +96,7 @@ export const pendingDocumentListItemValidator = v.object({
 export const publishedDocumentListItemValidator = v.object({
   _id: v.id("documents"),
   title: v.string(),
+  slug: v.string(),
   type: documentTypeValidator,
   coverImageId: v.optional(v.id("_storage")),
   publishedAt: v.number(),

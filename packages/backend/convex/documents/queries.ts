@@ -23,6 +23,7 @@ import {
   paginatedPendingDocumentListValidator,
   paginatedPublishedDocumentListValidator,
 } from "../../lib/validators/documents";
+import { getDocumentByOldSlug } from "../slugRedirects/helpers";
 
 /**
  * Get a single document by ID with author check.
@@ -79,6 +80,7 @@ export const getPublished = query({
     return {
       _id: document._id,
       title: document.title,
+      slug: document.slug,
       content: document.content,
       type: document.type,
       coverImageId: document.coverImageId,
@@ -124,11 +126,69 @@ export const listPublished = query({
 
 /**
  * Get a document for editing (author only).
+ * Accepts either document ID or slug.
  */
 export const getForEdit = query({
   args: { documentId: v.id("documents") },
   handler: async (ctx, args) => {
     return await getByIdForAuthor(ctx, args.documentId);
+  },
+});
+
+/**
+ * Get a document for editing by slug (author only).
+ * Automatically handles slug redirects (checks old slugs if current slug not found).
+ * Returns document with redirect information.
+ * Returns null if document not found.
+ * 
+ * @throws DocumentOwnershipError if user doesn't own the document.
+ */
+export const getBySlug = query({
+  args: { slug: v.string() },
+  handler: async (ctx, args) => {
+    const { slug } = args;
+
+    const userId = await Auth.requireAuth(ctx);
+    
+    // Try direct slug lookup first
+    let document = await ctx.db
+      .query("documents")
+      .withIndex("by_slug", (q) => q.eq("slug", slug))
+      .unique();
+
+    let isRedirect = false;
+    let currentSlug = slug;
+
+    // If not found by current slug, check slug redirects
+    if (!document) {
+      const documentId = await getDocumentByOldSlug(ctx, slug);
+      
+      if (documentId) {
+        document = await ctx.db.get(documentId);
+        
+        if (document) {
+          isRedirect = true;
+          currentSlug = document.slug;
+        }
+      }
+    }
+
+    // Return null for not found (graceful, expected case)
+    if (!document) {
+      return null;
+    }
+
+    // Throw error for unauthorized access (security event, needs logging)
+    const author = await ctx.db.get(document.authorId);
+    if (!author || author.userId !== userId) {
+      throwConvexError(ErrorCode.DOCUMENT_OWNERSHIP);
+    }
+
+    return {
+      ...document,
+      isRedirect,
+      currentSlug,
+    };
   },
 });
 
@@ -218,6 +278,55 @@ export const getForAdminReview = query({
     return {
       _id: document._id,
       title: document.title,
+      slug: document.slug,
+      type: document.type,
+      content: document.content,
+      curation: document.curation,
+      references: document.references,
+      coverImageId: document.coverImageId,
+      submittedAt: document.submittedAt,
+      createdAt: document.createdAt,
+    };
+  },
+});
+
+/**
+ * Get a document for admin review by slug (admin only).
+ * Automatically handles slug redirects (checks old slugs if current slug not found).
+ * Returns the full document content without author info (anonymous review).
+ * Returns null if document not found or not pending.
+ *
+ * @throws AdminRequiredError if user is not an admin.
+ */
+export const getForAdminReviewBySlug = query({
+  args: { slug: v.string() },
+  handler: async (ctx, args) => {
+    await Auth.requireAdmin(ctx);
+
+    // Try direct slug lookup first
+    let document = await ctx.db
+      .query("documents")
+      .withIndex("by_slug", (q) => q.eq("slug", args.slug))
+      .unique();
+
+    // If not found by current slug, check slug redirects
+    if (!document) {
+      const documentId = await getDocumentByOldSlug(ctx, args.slug);
+      
+      if (documentId) {
+        document = await ctx.db.get(documentId);
+      }
+    }
+
+    // Return null for not found or non-pending documents (graceful)
+    if (!document || document.status !== "pending") {
+      return null;
+    }
+
+    return {
+      _id: document._id,
+      title: document.title,
+      slug: document.slug,
       type: document.type,
       content: document.content,
       curation: document.curation,

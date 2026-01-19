@@ -8,7 +8,6 @@ import type { PublicAuthor } from "../../lib/types/authors";
 
 /**
  * Convert a full author record to public author data.
- * Excludes userId field for security.
  */
 export function toPublicAuthor(author: Doc<"authors">): PublicAuthor {
   return {
@@ -24,12 +23,13 @@ export function toPublicAuthor(author: Doc<"authors">): PublicAuthor {
 
 /**
  * Project document to list item (for author's own document list).
- * Excludes 'content' field for performance and security.
+ * Excludes 'content' field for performance.
  */
 export function toDocumentListItem(doc: Doc<"documents">): DocumentListItem {
   return {
     _id: doc._id,
     title: doc.title,
+    slug: doc.slug,
     type: doc.type,
     status: doc.status,
     coverImageId: doc.coverImageId,
@@ -45,11 +45,12 @@ export function toDocumentListItem(doc: Doc<"documents">): DocumentListItem {
  * Contains minimal metadata for pending documents awaiting review.
  */
 export function toPendingDocumentListItem(
-  doc: Doc<"documents">
+  doc: Doc<"documents">,
 ): PendingDocumentListItem {
   return {
     _id: doc._id,
     title: doc.title,
+    slug: doc.slug,
     type: doc.type,
     submittedAt: doc.submittedAt,
     createdAt: doc.createdAt,
@@ -63,11 +64,12 @@ export function toPendingDocumentListItem(
  */
 export function toPublishedDocumentListItem(
   doc: Doc<"documents">,
-  author: Doc<"authors">
+  author: Doc<"authors">,
 ): PublishedDocumentListItem {
   return {
     _id: doc._id,
     title: doc.title,
+    slug: doc.slug,
     type: doc.type,
     coverImageId: doc.coverImageId,
     publishedAt: doc.publishedAt!,

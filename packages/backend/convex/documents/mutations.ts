@@ -8,11 +8,27 @@ import * as Auth from "../_lib/auth";
 import {
   getByIdForAuthor,
   updateMetadata as updateMetadataHelper,
+  slugExists,
 } from "./helpers";
 import { getOrCreateAuthorForUser } from "../authors/helpers";
+import { generateUniqueSlug, generateSlugWithId } from "../../lib/utils/slug";
+import {
+  isValidTitle,
+  extractFirstHeading,
+  hasContent,
+  type JSONContent,
+} from "../../lib/utils/title";
+import {
+  addSlugRedirect,
+  checkSlugRedirectLimit,
+  deleteAllRedirectsForDocument,
+} from "../slugRedirects/helpers";
 
 /**
  * Create a new document.
+ * Validates title and generates a unique slug without ID suffix if possible.
+ * 
+ * Returns { documentId, slug } instead of just documentId.
  */
 export const create = mutation({
   args: {
@@ -21,12 +37,23 @@ export const create = mutation({
     content: v.optional(v.any()),
   },
   handler: async (ctx, args) => {
+    // Validate title
+    if (!isValidTitle(args.title)) {
+      throwConvexError(
+        ErrorCode.DOCUMENT_INVALID_TITLE,
+        "Title cannot be 'Untitled' or empty"
+      );
+    }
+
     const userId = await Auth.requireAuth(ctx);
     const authorId = await getOrCreateAuthorForUser(ctx, userId);
 
     const now = Date.now();
-    return await ctx.db.insert("documents", {
+    
+    // Insert document with temporary slug
+    const documentId = await ctx.db.insert("documents", {
       title: args.title,
+      slug: "temp", // Temporary slug, will be updated immediately
       type: args.type,
       status: "building",
       authorId,
@@ -34,21 +61,91 @@ export const create = mutation({
       createdAt: now,
       updatedAt: now,
     });
+
+    // Generate unique slug (without ID suffix if possible)
+    const slug = await generateUniqueSlug(
+      args.title,
+      documentId,
+      async (checkSlug) => await slugExists(ctx, checkSlug)
+    );
+    await ctx.db.patch(documentId, { slug });
+
+    return { documentId, slug };
   },
 });
 
 /**
  * Update document title (auto-save).
+ * If status is "building", regenerates the slug and manages slug redirects.
+ * 
+ * Returns { slug, slugDeleted } where slugDeleted is the old URL that will break (if any).
  */
 export const updateTitle = mutation({
   args: {
     documentId: v.id("documents"),
     title: v.string(),
+    confirmSlugDeletion: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    await updateMetadataHelper(ctx, args.documentId, {
+    // Validate title
+    if (!isValidTitle(args.title)) {
+      throwConvexError(
+        ErrorCode.DOCUMENT_INVALID_TITLE,
+        "Title cannot be 'Untitled' or empty"
+      );
+    }
+
+    const document = await getByIdForAuthor(ctx, args.documentId);
+    
+    const updates: Record<string, unknown> = {
       title: args.title,
-    });
+      updatedAt: Date.now(),
+    };
+
+    let slugDeleted: string | null = null;
+    let newSlug: string | null = null;
+
+    // Regenerate slug only if document is still in building status
+    if (document.status === "building") {
+      // Generate new unique slug
+      newSlug = await generateUniqueSlug(
+        args.title,
+        args.documentId,
+        async (checkSlug) => await slugExists(ctx, checkSlug, args.documentId)
+      );
+
+      // Only proceed with slug change if it's actually different
+      if (newSlug !== document.slug) {
+        // Check if we need user confirmation for slug deletion
+        const redirectCheck = await checkSlugRedirectLimit(ctx, args.documentId);
+        
+        if (redirectCheck.wouldDelete && !args.confirmSlugDeletion) {
+          // User must confirm that old URL will break
+          throwConvexError(
+            ErrorCode.DOCUMENT_SLUG_DELETION_REQUIRED,
+            `Changing this title will break the URL: /article/${redirectCheck.wouldDelete}`
+          );
+        }
+
+        // Add old slug to redirects (and delete oldest if limit exceeded)
+        const redirectResult = await addSlugRedirect(
+          ctx,
+          args.documentId,
+          document.slug
+        );
+        slugDeleted = redirectResult.deletedSlug;
+
+        // Update slug
+        updates.slug = newSlug;
+      }
+    }
+
+    await ctx.db.patch(args.documentId, updates);
+
+    return { 
+      slug: newSlug ?? document.slug, 
+      slugDeleted 
+    };
   },
 });
 
@@ -82,6 +179,9 @@ export const updateType = mutation({
 /**
  * Update document content (auto-save).
  * Only allowed for documents in "building" status.
+ * 
+ * Auto-extracts title from first heading if current title is invalid.
+ * Throws error if no valid title and no content.
  */
 export const updateContent = mutation({
   args: {
@@ -99,10 +199,39 @@ export const updateContent = mutation({
       throwConvexError(ErrorCode.DOCUMENT_PENDING_REVIEW);
     }
 
-    await ctx.db.patch(args.documentId, {
+    const updates: Record<string, unknown> = {
       content: args.content,
       updatedAt: Date.now(),
-    });
+    };
+
+    // Check if current title is invalid and content has a heading we can extract
+    if (!isValidTitle(document.title)) {
+      const contentHasText = hasContent(args.content as JSONContent);
+      
+      // Try to extract title from content
+      const extractedTitle = extractFirstHeading(args.content as JSONContent);
+      
+      if (extractedTitle && isValidTitle(extractedTitle)) {
+        // Update title and regenerate slug
+        updates.title = extractedTitle;
+        
+        const newSlug = await generateUniqueSlug(
+          extractedTitle,
+          args.documentId,
+          async (checkSlug) => await slugExists(ctx, checkSlug, args.documentId)
+        );
+        
+        updates.slug = newSlug;
+      } else if (!contentHasText) {
+        // No valid title and no content - cannot save
+        throwConvexError(
+          ErrorCode.DOCUMENT_EMPTY,
+          "Document must have either a valid title or content to be saved"
+        );
+      }
+    }
+
+    await ctx.db.patch(args.documentId, updates);
   },
 });
 
@@ -271,12 +400,18 @@ export const reject = mutation({
 
 /**
  * Delete a document.
+ * Cleans up associated slug redirects.
  * Soft delete is not implemented; this is a hard delete.
  */
 export const remove = mutation({
   args: { documentId: v.id("documents") },
   handler: async (ctx, args) => {
     await getByIdForAuthor(ctx, args.documentId);
+    
+    // Clean up slug redirects first
+    await deleteAllRedirectsForDocument(ctx, args.documentId);
+    
+    // Delete the document
     await ctx.db.delete(args.documentId);
   },
 });

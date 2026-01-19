@@ -60,6 +60,7 @@ export type DocumentStats = {
 export type DocumentListItem = {
   _id: Id<"documents">;
   title: string;
+  slug: string;
   type: DocumentType;
   status: DocumentStatus;
   coverImageId?: Id<"_storage">;
@@ -76,6 +77,7 @@ export type DocumentListItem = {
 export type PendingDocumentListItem = {
   _id: Id<"documents">;
   title: string;
+  slug: string;
   type: DocumentType;
   submittedAt?: number;
   createdAt: number;
@@ -89,6 +91,7 @@ export type PendingDocumentListItem = {
 export type PublishedDocument = {
   _id: Id<"documents">;
   title: string;
+  slug: string;
   content: unknown;
   type: DocumentType;
   coverImageId?: Id<"_storage">;
@@ -105,6 +108,7 @@ export type PublishedDocument = {
 export type PublishedDocumentListItem = {
   _id: Id<"documents">;
   title: string;
+  slug: string;
   type: DocumentType;
   coverImageId?: Id<"_storage">;
   publishedAt: number;
