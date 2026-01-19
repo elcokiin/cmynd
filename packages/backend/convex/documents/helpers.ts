@@ -120,3 +120,43 @@ export async function countByStatus(
 
   return count;
 }
+
+/**
+ * Check if a slug already exists in the database.
+ * Optionally exclude a specific document from the check.
+ *
+ * @param ctx - Query context
+ * @param slug - The slug to check for existence
+ * @param excludeDocumentId - Optional document ID to exclude from the check
+ * @returns true if slug exists (on a different document), false otherwise
+ *
+ * Used by: create and updateTitle mutations to ensure slug uniqueness
+ *
+ * @example
+ * // Check if "my-article" exists
+ * const exists = await slugExists(ctx, "my-article");
+ *
+ * // Check if "my-article" exists, ignoring the current document
+ * const exists = await slugExists(ctx, "my-article", currentDocId);
+ */
+export async function slugExists(
+  ctx: QueryCtx,
+  slug: string,
+  excludeDocumentId?: Id<"documents">,
+): Promise<boolean> {
+  const existingDoc = await ctx.db
+    .query("documents")
+    .withIndex("by_slug", (q) => q.eq("slug", slug))
+    .unique();
+
+  if (!existingDoc) {
+    return false;
+  }
+
+  // If we're excluding a document (updating existing), check if it's the same one
+  if (excludeDocumentId && existingDoc._id === excludeDocumentId) {
+    return false;
+  }
+
+  return true;
+}
