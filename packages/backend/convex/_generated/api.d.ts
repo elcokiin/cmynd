@@ -20,6 +20,7 @@ import type * as documents_projections from "../documents/projections.js";
 import type * as documents_queries from "../documents/queries.js";
 import type * as healthCheck from "../healthCheck.js";
 import type * as http from "../http.js";
+import type * as slugRedirects_helpers from "../slugRedirects/helpers.js";
 import type * as storage from "../storage.js";
 
 import type {
@@ -41,6 +42,7 @@ declare const fullApi: ApiFromModules<{
   "documents/queries": typeof documents_queries;
   healthCheck: typeof healthCheck;
   http: typeof http;
+  "slugRedirects/helpers": typeof slugRedirects_helpers;
   storage: typeof storage;
 }>;
 

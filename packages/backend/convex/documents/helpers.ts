@@ -48,54 +48,6 @@ export async function getByIdForAuthor(
 }
 
 /**
- * Update document metadata (title, cover, curation, references).
- * Only allowed for documents in "building" status.
- *
- * Used by: updateTitle, updateMetadata mutations
- */
-export async function updateMetadata(
-  ctx: MutationCtx,
-  documentId: Id<"documents">,
-  input: UpdateDocumentInput,
-): Promise<void> {
-  const document = await getByIdForAuthor(ctx, documentId);
-
-  if (document.status === "published") {
-    throwConvexError(ErrorCode.DOCUMENT_PUBLISHED);
-  }
-
-  if (document.status === "pending") {
-    throwConvexError(ErrorCode.DOCUMENT_PENDING_REVIEW);
-  }
-
-  const updates: Record<string, unknown> = {
-    updatedAt: Date.now(),
-  };
-
-  if (input.title !== undefined) {
-    updates.title = input.title;
-  }
-
-  if (input.content !== undefined) {
-    updates.content = input.content;
-  }
-
-  if (input.coverImageId !== undefined) {
-    updates.coverImageId = input.coverImageId ?? undefined;
-  }
-
-  if (input.curation !== undefined) {
-    updates.curation = input.curation ?? undefined;
-  }
-
-  if (input.references !== undefined) {
-    updates.references = input.references;
-  }
-
-  await ctx.db.patch(documentId, updates);
-}
-
-/**
  * Count documents by status without loading full document data.
  * Uses async iteration to count efficiently.
  *

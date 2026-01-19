@@ -21,7 +21,8 @@
     "./skeleton": "./src/components/skeleton.tsx",
     "./sonner": "./src/components/sonner.tsx",
     "./theme-provider": "./src/components/theme-provider.tsx",
-    "./theme-toggle": "./src/components/theme-toggle.tsx"
+    "./theme-toggle": "./src/components/theme-toggle.tsx",
+    "./alert-dialog": "./src/components/alert-dialog.tsx"
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",

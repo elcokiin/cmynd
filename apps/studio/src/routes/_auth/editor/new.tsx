@@ -40,19 +40,6 @@ function NewDocumentRoute() {
   );
 
   const handleSave = useCallback(async () => {
-    // Validate title
-    const trimmedTitle = title.trim().toLowerCase();
-    if (trimmedTitle === "" || trimmedTitle === "untitled") {
-      toast.error("Please provide a valid title for your document");
-      return;
-    }
-
-    // Check if there's any content
-    if (!content) {
-      toast.error("Please add some content to your document");
-      return;
-    }
-
     setIsSaving(true);
 
     try {
@@ -64,7 +51,6 @@ function NewDocumentRoute() {
 
       toast.success("Document created successfully");
 
-      // Navigate to the editor with the new slug
       navigate({
         to: "/editor/$slug",
         params: { slug: result.slug },
@@ -101,11 +87,7 @@ function NewDocumentRoute() {
             <div className="text-sm text-muted-foreground">
               Draft - Not saved
             </div>
-            <Button
-              onClick={handleSave}
-              disabled={isSaving}
-              size="sm"
-            >
+            <Button onClick={handleSave} disabled={isSaving} size="sm">
               <SaveIcon className="mr-2 h-4 w-4" />
               {isSaving ? "Saving..." : "Save Document"}
             </Button>

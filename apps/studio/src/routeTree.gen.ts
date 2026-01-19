@@ -13,6 +13,7 @@ import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as AuthIndexRouteImport } from './routes/_auth/index'
 import { Route as AuthAdminRouteRouteImport } from './routes/_auth/admin/route'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as AuthEditorNewRouteImport } from './routes/_auth/editor/new'
 import { Route as AuthEditorSlugRouteImport } from './routes/_auth/editor/$slug'
 import { Route as AuthAdminReviewRouteImport } from './routes/_auth/admin/review'
 import { Route as AuthAdminDashboardRouteImport } from './routes/_auth/admin/dashboard'
@@ -36,6 +37,11 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthEditorNewRoute = AuthEditorNewRouteImport.update({
+  id: '/editor/new',
+  path: '/editor/new',
+  getParentRoute: () => AuthRouteRoute,
+} as any)
 const AuthEditorSlugRoute = AuthEditorSlugRouteImport.update({
   id: '/editor/$slug',
   path: '/editor/$slug',
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/admin/dashboard': typeof AuthAdminDashboardRoute
   '/admin/review': typeof AuthAdminReviewRoute
   '/editor/$slug': typeof AuthEditorSlugRoute
+  '/editor/new': typeof AuthEditorNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/admin/dashboard': typeof AuthAdminDashboardRoute
   '/admin/review': typeof AuthAdminReviewRoute
   '/editor/$slug': typeof AuthEditorSlugRoute
+  '/editor/new': typeof AuthEditorNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesById {
@@ -76,6 +84,7 @@ export interface FileRoutesById {
   '/_auth/admin/dashboard': typeof AuthAdminDashboardRoute
   '/_auth/admin/review': typeof AuthAdminReviewRoute
   '/_auth/editor/$slug': typeof AuthEditorSlugRoute
+  '/_auth/editor/new': typeof AuthEditorNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
@@ -86,6 +95,7 @@ export interface FileRouteTypes {
     | '/admin/dashboard'
     | '/admin/review'
     | '/editor/$slug'
+    | '/editor/new'
     | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -94,6 +104,7 @@ export interface FileRouteTypes {
     | '/admin/dashboard'
     | '/admin/review'
     | '/editor/$slug'
+    | '/editor/new'
     | '/api/auth/$'
   id:
     | '__root__'
@@ -103,6 +114,7 @@ export interface FileRouteTypes {
     | '/_auth/admin/dashboard'
     | '/_auth/admin/review'
     | '/_auth/editor/$slug'
+    | '/_auth/editor/new'
     | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
@@ -140,6 +152,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_auth/editor/new': {
+      id: '/_auth/editor/new'
+      path: '/editor/new'
+      fullPath: '/editor/new'
+      preLoaderRoute: typeof AuthEditorNewRouteImport
+      parentRoute: typeof AuthRouteRoute
     }
     '/_auth/editor/$slug': {
       id: '/_auth/editor/$slug'
@@ -183,12 +202,14 @@ interface AuthRouteRouteChildren {
   AuthAdminRouteRoute: typeof AuthAdminRouteRouteWithChildren
   AuthIndexRoute: typeof AuthIndexRoute
   AuthEditorSlugRoute: typeof AuthEditorSlugRoute
+  AuthEditorNewRoute: typeof AuthEditorNewRoute
 }
 
 const AuthRouteRouteChildren: AuthRouteRouteChildren = {
   AuthAdminRouteRoute: AuthAdminRouteRouteWithChildren,
   AuthIndexRoute: AuthIndexRoute,
   AuthEditorSlugRoute: AuthEditorSlugRoute,
+  AuthEditorNewRoute: AuthEditorNewRoute,
 }
 
 const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(

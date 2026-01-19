@@ -7,11 +7,10 @@ import { ErrorCode, throwConvexError } from "@elcokiin/errors";
 import * as Auth from "../_lib/auth";
 import {
   getByIdForAuthor,
-  updateMetadata as updateMetadataHelper,
   slugExists,
 } from "./helpers";
 import { getOrCreateAuthorForUser } from "../authors/helpers";
-import { generateUniqueSlug, generateSlugWithId } from "../../lib/utils/slug";
+import { generateUniqueSlug } from "../../lib/utils/slug";
 import {
   isValidTitle,
   extractFirstHeading,
@@ -20,7 +19,6 @@ import {
 } from "../../lib/utils/title";
 import {
   addSlugRedirect,
-  checkSlugRedirectLimit,
   deleteAllRedirectsForDocument,
 } from "../slugRedirects/helpers";
 
@@ -78,13 +76,15 @@ export const create = mutation({
  * Update document title (auto-save).
  * If status is "building", regenerates the slug and manages slug redirects.
  * 
- * Returns { slug, slugDeleted } where slugDeleted is the old URL that will break (if any).
+ * Automatically maintains the last 3 slug redirects by deleting the oldest
+ * when a 4th redirect is added.
+ * 
+ * Returns { slug, slugDeleted } where slugDeleted is the old URL that was removed (if any).
  */
 export const updateTitle = mutation({
   args: {
     documentId: v.id("documents"),
     title: v.string(),
-    confirmSlugDeletion: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     // Validate title
@@ -116,18 +116,7 @@ export const updateTitle = mutation({
 
       // Only proceed with slug change if it's actually different
       if (newSlug !== document.slug) {
-        // Check if we need user confirmation for slug deletion
-        const redirectCheck = await checkSlugRedirectLimit(ctx, args.documentId);
-        
-        if (redirectCheck.wouldDelete && !args.confirmSlugDeletion) {
-          // User must confirm that old URL will break
-          throwConvexError(
-            ErrorCode.DOCUMENT_SLUG_DELETION_REQUIRED,
-            `Changing this title will break the URL: /article/${redirectCheck.wouldDelete}`
-          );
-        }
-
-        // Add old slug to redirects (and delete oldest if limit exceeded)
+        // Add old slug to redirects (automatically deletes oldest if limit exceeded)
         const redirectResult = await addSlugRedirect(
           ctx,
           args.documentId,
