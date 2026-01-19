@@ -5,10 +5,7 @@ import { mutation } from "../_generated/server";
 import { documentTypeValidator } from "../../lib/validators/documents";
 import { ErrorCode, throwConvexError } from "@elcokiin/errors";
 import * as Auth from "../_lib/auth";
-import {
-  getByIdForAuthor,
-  slugExists,
-} from "./helpers";
+import { getByIdForAuthor } from "./helpers";
 import { getOrCreateAuthorForUser } from "../authors/helpers";
 import { generateUniqueSlug } from "../../lib/utils/slug";
 import {
@@ -18,9 +15,15 @@ import {
   type JSONContent,
 } from "../../lib/utils/title";
 import {
+  slugExists,
   addSlugRedirect,
   deleteAllRedirectsForDocument,
-} from "../slugRedirects/helpers";
+} from "./slug-helpers";
+import {
+  incrementStatusCount,
+  decrementStatusCount,
+  updateStatusCount,
+} from "./stats-helpers";
 
 /**
  * Create a new document.
@@ -67,6 +70,9 @@ export const create = mutation({
       async (checkSlug) => await slugExists(ctx, checkSlug)
     );
     await ctx.db.patch(documentId, { slug });
+
+    // Increment building count
+    await incrementStatusCount(ctx, "building");
 
     return { documentId, slug };
   },
@@ -256,6 +262,9 @@ export const publish = mutation({
       publishedAt: Date.now(),
       updatedAt: Date.now(),
     });
+
+    // Update status counts (building -> published)
+    await updateStatusCount(ctx, document.status, "published");
   },
 });
 
@@ -316,6 +325,9 @@ export const submit = mutation({
       rejectionReason: undefined,
       updatedAt: now,
     });
+
+    // Update status counts (building -> pending)
+    await updateStatusCount(ctx, "building", "pending");
   },
 });
 
@@ -345,6 +357,9 @@ export const approve = mutation({
       publishedAt: Date.now(),
       updatedAt: Date.now(),
     });
+
+    // Update status counts (pending -> published)
+    await updateStatusCount(ctx, "pending", "published");
   },
 });
 
@@ -384,6 +399,9 @@ export const reject = mutation({
       rejectionReason: args.reason,
       updatedAt: Date.now(),
     });
+
+    // Update status counts (pending -> building)
+    await updateStatusCount(ctx, "pending", "building");
   },
 });
 
@@ -395,12 +413,15 @@ export const reject = mutation({
 export const remove = mutation({
   args: { documentId: v.id("documents") },
   handler: async (ctx, args) => {
-    await getByIdForAuthor(ctx, args.documentId);
-    
+    const document = await getByIdForAuthor(ctx, args.documentId);
+
     // Clean up slug redirects first
     await deleteAllRedirectsForDocument(ctx, args.documentId);
-    
+
     // Delete the document
     await ctx.db.delete(args.documentId);
+
+    // Decrement the status count
+    await decrementStatusCount(ctx, document.status);
   },
 });

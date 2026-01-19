@@ -1,5 +1,6 @@
 import type { DocumentListItem } from "@elcokiin/backend/lib/types/documents";
 
+import { memo } from "react";
 import {
   Card,
   CardContent,
@@ -17,7 +18,10 @@ type DocumentCardProps = {
   onOpen: () => void;
 };
 
-export function DocumentCard({ document, onOpen }: DocumentCardProps): React.ReactNode {
+export const DocumentCard = memo(function DocumentCard({
+  document,
+  onOpen,
+}: DocumentCardProps): React.ReactNode {
   const config = documentTypeConfig[document.type];
   const Icon = config.icon;
 
@@ -61,4 +65,4 @@ export function DocumentCard({ document, onOpen }: DocumentCardProps): React.Rea
       </CardContent>
     </Card>
   );
-}
+});

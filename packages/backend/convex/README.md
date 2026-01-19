@@ -12,7 +12,16 @@ convex/
 ├── documents/              # Documents feature
 │   ├── queries.ts          # Document query functions (public API)
 │   ├── mutations.ts        # Document mutation functions (public API)
-│   └── helpers.ts          # Shared document helpers (getByIdForAuthor, updateMetadata)
+│   ├── projections.ts      # Data projection helpers (toDocumentListItem, etc.)
+│   ├── helpers.ts          # General document helpers (getByIdForAuthor)
+│   ├── slug-helpers.ts     # Slug management (slugExists, redirects)
+│   └── stats-helpers.ts    # Document statistics (O(1) counts)
+│
+├── authors/                # Authors feature
+│   ├── queries.ts          # Author query functions
+│   ├── mutations.ts        # Author mutation functions
+│   ├── helpers.ts          # Author helpers
+│   └── projections.ts      # Author data projections
 │
 ├── storage.ts              # Storage mutations (generateUploadUrl, getUrl, deleteFile)
 │
@@ -29,18 +38,21 @@ convex/
 
 ### Feature-Based Organization
 
-- **documents/** - Document feature with queries and mutations
+- **documents/** - Document feature with queries, mutations, and helpers
+- **authors/** - Author feature with queries and mutations
 - **storage.ts** - Simple storage mutations (no helpers needed)
 - **_lib/** - Shared internal utilities
 
 ### Helpers Strategy
 
-Helpers are only created when logic is genuinely reused:
+Helpers are organized by concern within each feature folder:
 
-| Helper | Location | Used By |
-|--------|----------|---------|
-| `getByIdForAuthor` | `documents/helpers.ts` | 7 mutations (edit, publish, submit, etc.) |
-| `updateMetadata` | `documents/helpers.ts` | 2 mutations (updateTitle, updateMetadata) |
+| File | Location | Purpose |
+|------|----------|---------|
+| `helpers.ts` | `documents/` | General helpers (`getByIdForAuthor`) |
+| `slug-helpers.ts` | `documents/` | Slug validation and redirects |
+| `stats-helpers.ts` | `documents/` | O(1) document count statistics |
+| `projections.ts` | `documents/` | Data projections for API responses |
 
 Single-use logic is inlined directly into query/mutation handlers.
 
@@ -75,14 +87,23 @@ const getUrl = useMutation(api.storage.getUrl);
 ### Backend Helper Usage
 
 ```typescript
-// In mutations.ts - using shared helpers
+// In mutations.ts - using helpers from different files
 import * as Auth from "../_lib/auth";
-import { getByIdForAuthor, updateMetadata } from "./helpers";
+import { getByIdForAuthor } from "./helpers";
+import { slugExists, addSlugRedirect } from "./slug-helpers";
+import { incrementStatusCount, updateStatusCount } from "./stats-helpers";
 
 export const updateTitle = mutation({
   args: { documentId: v.id("documents"), title: v.string() },
   handler: async (ctx, args) => {
-    await updateMetadata(ctx, args.documentId, { title: args.title });
+    const document = await getByIdForAuthor(ctx, args.documentId);
+    
+    // Generate new slug if needed
+    const slug = await generateUniqueSlug(args.title, args.documentId, 
+      async (s) => await slugExists(ctx, s, args.documentId)
+    );
+    
+    await ctx.db.patch(args.documentId, { title: args.title, slug });
   },
 });
 
@@ -91,7 +112,7 @@ export const create = mutation({
   args: { title: v.string(), type: documentTypeValidator },
   handler: async (ctx, args) => {
     const userId = await Auth.requireAuth(ctx);
-    return await ctx.db.insert("documents", {
+    const documentId = await ctx.db.insert("documents", {
       title: args.title,
       type: args.type,
       status: "building",
@@ -99,6 +120,11 @@ export const create = mutation({
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
+    
+    // Update stats
+    await incrementStatusCount(ctx, "building");
+    
+    return documentId;
   },
 });
 ```
@@ -107,8 +133,9 @@ export const create = mutation({
 
 1. **Inline single-use logic** directly into handlers
 2. **Create helpers only** when logic is used by 2+ functions
-3. **Shared auth helpers** go in `_lib/auth.ts`
-4. Always use `withIndex()` instead of `.filter()` for database queries
-5. Always validate authentication in protected functions using `_lib/auth.ts`
+3. **Organize helpers by concern** (slug-helpers, stats-helpers, etc.)
+4. **Shared auth helpers** go in `_lib/auth.ts`
+5. Always use `withIndex()` instead of `.filter()` for database queries
+6. Always validate authentication in protected functions using `_lib/auth.ts`
 
-See `.ruler/convex-backend.md` for detailed coding guidelines.
+See `.ruler/convex.md` for detailed coding guidelines.

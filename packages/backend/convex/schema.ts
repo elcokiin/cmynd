@@ -18,4 +18,11 @@ export default defineSchema({
   })
     .index("by_old_slug", ["oldSlug"])
     .index("by_document_id", ["documentId"]),
+
+  documentStats: defineTable({
+    buildingCount: v.number(),
+    pendingCount: v.number(),
+    publishedCount: v.number(),
+    updatedAt: v.number(),
+  }),
 });

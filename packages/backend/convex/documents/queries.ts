@@ -9,7 +9,6 @@ import { ErrorCode, throwConvexError } from "@elcokiin/errors";
 import * as Auth from "../_lib/auth";
 import {
   getByIdForAuthor,
-  countByStatus,
   paginationOptsValidator,
 } from "./helpers";
 import {
@@ -23,7 +22,8 @@ import {
   paginatedPendingDocumentListValidator,
   paginatedPublishedDocumentListValidator,
 } from "../../lib/validators/documents";
-import { getDocumentByOldSlug } from "../slugRedirects/helpers";
+import { getDocumentByOldSlug } from "./slug-helpers";
+import { getDocumentStats } from "./stats-helpers";
 
 /**
  * Get a single document by ID with author check.
@@ -106,16 +106,32 @@ export const listPublished = query({
       .order("desc")
       .paginate(args.paginationOpts);
 
-    const pageWithAuthors = [];
+    // Filter documents with publishedAt
+    const publishedDocs = result.page.filter((doc) => doc.publishedAt);
 
-    for (const doc of result.page) {
-      if (!doc.publishedAt) continue;
+    // Batch fetch all unique authors in parallel (fixes N+1 query)
+    const uniqueAuthorIds = [
+      ...new Set(publishedDocs.map((doc) => doc.authorId)),
+    ];
+    const authors = await Promise.all(
+      uniqueAuthorIds.map((id) => ctx.db.get(id)),
+    );
+    const authorMap = new Map(
+      authors
+        .filter((author): author is NonNullable<typeof author> => !!author)
+        .map((author) => [author._id, author]),
+    );
 
-      const author = await ctx.db.get(doc.authorId);
-      if (!author) continue;
-
-      pageWithAuthors.push(toPublishedDocumentListItem(doc, author));
-    }
+    // Map documents with their authors
+    const pageWithAuthors = publishedDocs
+      .map((doc) => {
+        const author = authorMap.get(doc.authorId);
+        if (!author) return null;
+        return toPublishedDocumentListItem(doc, author);
+      })
+      .filter(
+        (item): item is NonNullable<typeof item> => item !== null,
+      );
 
     return {
       ...result,
@@ -340,7 +356,7 @@ export const getForAdminReviewBySlug = query({
 
 /**
  * Get admin statistics (admin only).
- * Returns counts of documents by status.
+ * Returns counts of documents by status using O(1) lookup.
  *
  * @throws AdminRequiredError if user is not an admin.
  */
@@ -349,17 +365,14 @@ export const getAdminStats = query({
   handler: async (ctx): Promise<DocumentStats> => {
     await Auth.requireAdmin(ctx);
 
-    const [buildingCount, pendingCount, publishedCount] = await Promise.all([
-      countByStatus(ctx, "building"),
-      countByStatus(ctx, "pending"),
-      countByStatus(ctx, "published"),
-    ]);
+    const stats = await getDocumentStats(ctx);
 
     return {
-      totalDocuments: buildingCount + pendingCount + publishedCount,
-      buildingCount,
-      pendingCount,
-      publishedCount,
+      totalDocuments:
+        stats.buildingCount + stats.pendingCount + stats.publishedCount,
+      buildingCount: stats.buildingCount,
+      pendingCount: stats.pendingCount,
+      publishedCount: stats.publishedCount,
     };
   },
 });

@@ -1,5 +1,6 @@
 import type { UploadFn } from "@elcokiin/backend/lib/types";
 
+import { useMemo } from "react";
 import {
   CheckSquare,
   Code,
@@ -191,12 +192,15 @@ export function SlashCommand({
 }: SlashCommandProps): React.ReactNode {
   const { uploadFn, onError } = useImageUpload();
 
-  // Create suggestion items with the Image command that has access to uploadFn
-  const suggestionItems = [
-    ...baseSuggestionItems.slice(0, 9), // Items before Divider
-    createImageSuggestionItem(uploadFn, onError),
-    ...baseSuggestionItems.slice(9), // Divider and after
-  ];
+  // Memoize suggestion items to prevent array recreation on every render
+  const suggestionItems = useMemo(
+    () => [
+      ...baseSuggestionItems.slice(0, 9), // Items before Divider
+      createImageSuggestionItem(uploadFn, onError),
+      ...baseSuggestionItems.slice(9), // Divider and after
+    ],
+    [uploadFn, onError],
+  );
 
   return (
     <EditorCommand

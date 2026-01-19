@@ -3,6 +3,7 @@ import { Button, buttonVariants } from "@elcokiin/ui/button";
 import { cn } from "@elcokiin/ui/lib/utils";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, usePaginatedQuery } from "convex/react";
+import { useCallback } from "react";
 import { ShieldIcon } from "lucide-react";
 
 import {
@@ -33,6 +34,14 @@ function DashboardRoute() {
   const isLoading = results === undefined;
   const canLoadMore = status === "CanLoadMore";
   const isLoadingMore = status === "LoadingMore";
+
+  // Memoized navigation handler to prevent function recreation on each render
+  const handleOpenDocument = useCallback(
+    (slug: string) => {
+      navigate({ to: "/editor/$slug", params: { slug } });
+    },
+    [navigate],
+  );
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -70,12 +79,7 @@ function DashboardRoute() {
               <DocumentCard
                 key={doc._id}
                 document={doc}
-                onOpen={() =>
-                  navigate({
-                    to: "/editor/$slug",
-                    params: { slug: doc.slug },
-                  })
-                }
+                onOpen={() => handleOpenDocument(doc.slug)}
               />
             ))}
           </div>

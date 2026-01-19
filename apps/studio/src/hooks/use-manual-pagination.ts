@@ -1,5 +1,5 @@
 import { useQuery } from "convex/react";
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useEffect } from "react";
 import type { FunctionReference } from "convex/server";
 import type { PaginationResult } from "convex/server";
 
@@ -35,7 +35,8 @@ export function useManualPagination<
     },
   } as any) as PaginationResult<any> | undefined;
 
-  useMemo(() => {
+  // Store cursor for next page when a new cursor is received
+  useEffect(() => {
     if (result?.continueCursor && !cursorMap.has(currentPage + 1)) {
       setCursorMap((prev) => {
         const next = new Map(prev);

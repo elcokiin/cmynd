@@ -1,6 +1,7 @@
 import type { PendingDocumentListItem } from "@elcokiin/backend/lib/types/documents";
 import { cn } from "@elcokiin/ui/lib/utils";
 import { FileTextIcon, HourglassIcon } from "lucide-react";
+import { memo } from "react";
 
 import { documentTypeConfig } from "@/components/dashboard/document-type-config";
 import { Pagination } from "@elcokiin/ui/pagination";
@@ -9,6 +10,14 @@ import { ReviewListSkeleton } from "./review-skeleton";
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { useManualPagination } from "@/hooks/use-manual-pagination";
 import { useNavigate } from "@tanstack/react-router";
+
+// Shared formatter instance to avoid recreation on each render
+const submittedDateFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
 
 type PendingDocumentListProps = {
   selectedSlug: string | null | undefined;
@@ -117,7 +126,7 @@ type PendingDocumentItemProps = {
   onSelect: () => void;
 };
 
-function PendingDocumentItem({
+const PendingDocumentItem = memo(function PendingDocumentItem({
   document,
   isSelected,
   onSelect,
@@ -126,12 +135,7 @@ function PendingDocumentItem({
   const Icon = config?.icon ?? FileTextIcon;
 
   const submittedDate = document.submittedAt
-    ? new Intl.DateTimeFormat("en-US", {
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      }).format(new Date(document.submittedAt))
+    ? submittedDateFormatter.format(new Date(document.submittedAt))
     : null;
 
   return (
@@ -158,4 +162,4 @@ function PendingDocumentItem({
       </div>
     </button>
   );
-}
+});

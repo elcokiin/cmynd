@@ -9,7 +9,11 @@ export function paginatedValidator<T>(itemValidator: Validator<T, any, any>) {
     continueCursor: v.string(),
     // Convex v1.31+ fields for split pagination
     pageStatus: v.optional(
-      v.union(v.literal("SplitRecommended"), v.literal("SplitRequired"), v.null())
+      v.union(
+        v.literal("SplitRecommended"),
+        v.literal("SplitRequired"),
+        v.null(),
+      ),
     ),
     splitCursor: v.optional(v.union(v.string(), v.null())),
   });
@@ -23,6 +27,3 @@ export type PaginatedResult<T> = {
   pageStatus?: "SplitRecommended" | "SplitRequired" | null;
   splitCursor?: string | null;
 };
-
-// Schema validators used by defineTable() - require migration planning
-export const SCHEMA_VALIDATORS = ["documentValidator", "authorValidator"] as const;

@@ -1,26 +1,14 @@
+/**
+ * General document helpers.
+ */
+
 import type { Id } from "../_generated/dataModel";
 import type { QueryCtx, MutationCtx } from "../_generated/server";
-import type {
-  CurationData,
-  Reference,
-  DocumentStatus,
-} from "../../lib/types/documents";
 
 import * as Auth from "../_lib/auth";
 import { ErrorCode, throwConvexError } from "@elcokiin/errors";
 
 export { paginationOptsValidator } from "convex/server";
-
-/**
- * Input type for updating document metadata.
- */
-export type UpdateDocumentInput = {
-  title?: string;
-  content?: Record<string, unknown>;
-  coverImageId?: Id<"_storage"> | null;
-  curation?: CurationData | null;
-  references?: Reference[];
-};
 
 /**
  * Get a document by ID with author verification.
@@ -45,70 +33,4 @@ export async function getByIdForAuthor(
   }
 
   return document;
-}
-
-/**
- * Count documents by status without loading full document data.
- * Uses async iteration to count efficiently.
- *
- * @param ctx - Query context
- * @param status - Document status to count
- * @returns Total count of documents with the given status
- *
- * Used by: getAdminStats query
- */
-export async function countByStatus(
-  ctx: QueryCtx,
-  status: DocumentStatus,
-): Promise<number> {
-  let count = 0;
-  const iterator = ctx.db
-    .query("documents")
-    .withIndex("by_status", (q) => q.eq("status", status));
-
-  for await (const _doc of iterator) {
-    count++;
-  }
-
-  return count;
-}
-
-/**
- * Check if a slug already exists in the database.
- * Optionally exclude a specific document from the check.
- *
- * @param ctx - Query context
- * @param slug - The slug to check for existence
- * @param excludeDocumentId - Optional document ID to exclude from the check
- * @returns true if slug exists (on a different document), false otherwise
- *
- * Used by: create and updateTitle mutations to ensure slug uniqueness
- *
- * @example
- * // Check if "my-article" exists
- * const exists = await slugExists(ctx, "my-article");
- *
- * // Check if "my-article" exists, ignoring the current document
- * const exists = await slugExists(ctx, "my-article", currentDocId);
- */
-export async function slugExists(
-  ctx: QueryCtx,
-  slug: string,
-  excludeDocumentId?: Id<"documents">,
-): Promise<boolean> {
-  const existingDoc = await ctx.db
-    .query("documents")
-    .withIndex("by_slug", (q) => q.eq("slug", slug))
-    .unique();
-
-  if (!existingDoc) {
-    return false;
-  }
-
-  // If we're excluding a document (updating existing), check if it's the same one
-  if (excludeDocumentId && existingDoc._id === excludeDocumentId) {
-    return false;
-  }
-
-  return true;
 }

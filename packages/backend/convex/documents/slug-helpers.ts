@@ -1,9 +1,11 @@
 /**
- * Slug redirect management helpers for document slug history.
+ * Slug management helpers for documents.
  *
- * This module manages the slug redirect system which allows up to 3 valid slugs
- * per document (current slug + 2 old redirects). When a 4th slug change occurs,
- * the oldest redirect is deleted.
+ * This module manages:
+ * - Slug uniqueness validation
+ * - Slug redirect system (allows up to 3 valid slugs per document)
+ *
+ * When a 4th slug change occurs, the oldest redirect is deleted.
  */
 
 import type { QueryCtx, MutationCtx } from "../_generated/server";
@@ -14,6 +16,46 @@ import type { Id } from "../_generated/dataModel";
  * Total valid slugs = current slug + MAX_REDIRECTS = 3 slugs.
  */
 const MAX_REDIRECTS_PER_DOCUMENT = 2;
+
+/**
+ * Check if a slug already exists in the database.
+ * Optionally exclude a specific document from the check.
+ *
+ * @param ctx - Query context
+ * @param slug - The slug to check for existence
+ * @param excludeDocumentId - Optional document ID to exclude from the check
+ * @returns true if slug exists (on a different document), false otherwise
+ *
+ * Used by: create and updateTitle mutations to ensure slug uniqueness
+ *
+ * @example
+ * // Check if "my-article" exists
+ * const exists = await slugExists(ctx, "my-article");
+ *
+ * // Check if "my-article" exists, ignoring the current document
+ * const exists = await slugExists(ctx, "my-article", currentDocId);
+ */
+export async function slugExists(
+  ctx: QueryCtx,
+  slug: string,
+  excludeDocumentId?: Id<"documents">,
+): Promise<boolean> {
+  const existingDoc = await ctx.db
+    .query("documents")
+    .withIndex("by_slug", (q) => q.eq("slug", slug))
+    .unique();
+
+  if (!existingDoc) {
+    return false;
+  }
+
+  // If we're excluding a document (updating existing), check if it's the same one
+  if (excludeDocumentId && existingDoc._id === excludeDocumentId) {
+    return false;
+  }
+
+  return true;
+}
 
 /**
  * Add a slug redirect when a document's slug changes.
@@ -37,7 +79,7 @@ const MAX_REDIRECTS_PER_DOCUMENT = 2;
 export async function addSlugRedirect(
   ctx: MutationCtx,
   documentId: Id<"documents">,
-  oldSlug: string
+  oldSlug: string,
 ): Promise<{ deletedSlug: string | null }> {
   // Query existing redirects for this document
   const existingRedirects = await ctx.db
@@ -51,7 +93,7 @@ export async function addSlugRedirect(
   if (existingRedirects.length >= MAX_REDIRECTS_PER_DOCUMENT) {
     // Sort by createdAt ascending (oldest first)
     const sortedRedirects = existingRedirects.sort(
-      (a, b) => a.createdAt - b.createdAt
+      (a, b) => a.createdAt - b.createdAt,
     );
 
     // Delete the oldest redirect
@@ -94,7 +136,7 @@ export async function addSlugRedirect(
  */
 export async function checkSlugRedirectLimit(
   ctx: QueryCtx,
-  documentId: Id<"documents">
+  documentId: Id<"documents">,
 ): Promise<{ wouldDelete: string | null; count: number }> {
   // Query existing redirects for this document
   const existingRedirects = await ctx.db
@@ -109,7 +151,7 @@ export async function checkSlugRedirectLimit(
   if (count >= MAX_REDIRECTS_PER_DOCUMENT) {
     // Sort by createdAt ascending (oldest first)
     const sortedRedirects = existingRedirects.sort(
-      (a, b) => a.createdAt - b.createdAt
+      (a, b) => a.createdAt - b.createdAt,
     );
 
     const oldestRedirect = sortedRedirects[0];
@@ -139,7 +181,7 @@ export async function checkSlugRedirectLimit(
  */
 export async function getDocumentByOldSlug(
   ctx: QueryCtx,
-  oldSlug: string
+  oldSlug: string,
 ): Promise<Id<"documents"> | null> {
   const redirect = await ctx.db
     .query("slugRedirects")
@@ -160,7 +202,7 @@ export async function getDocumentByOldSlug(
  */
 export async function deleteAllRedirectsForDocument(
   ctx: MutationCtx,
-  documentId: Id<"documents">
+  documentId: Id<"documents">,
 ): Promise<number> {
   const redirects = await ctx.db
     .query("slugRedirects")
