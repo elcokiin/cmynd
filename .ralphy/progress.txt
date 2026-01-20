@@ -2,3 +2,6 @@
 
 Mon Jan 19 09:33:49 PM -05 2026
 Implemented cover image upload in document settings dialog
+- Added email verification configuration to Better Auth in `packages/backend/convex/auth.ts`.
+- Configured verification codes to be logged to the console in development mode.
+- Enabled email verification requirement.

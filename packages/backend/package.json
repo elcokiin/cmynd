@@ -19,7 +19,8 @@
     "dev:setup": "convex dev --configure --until-success",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "check-types": "tsc --noEmit"
   },
   "dependencies": {
     "@convex-dev/better-auth": "catalog:",

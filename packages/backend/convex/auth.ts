@@ -21,7 +21,18 @@ function createAuth(ctx: GenericCtx<DataModel>) {
     database: authComponent.adapter(ctx),
     emailAndPassword: {
       enabled: true,
-      requireEmailVerification: false,
+      requireEmailVerification: true,
+    },
+    emailVerification: {
+      sendOnSignUp: true,
+      autoSignInAfterVerification: true,
+      sendVerificationEmail: async ({ user, url, token }) => {
+        if (env.NODE_ENV === "development") {
+          console.log(
+            `\nVerify your email by clicking here: ${url}\nToken: ${token}\n`,
+          );
+        }
+      },
     },
     plugins: [
       convex({
