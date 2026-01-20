@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import { SignInForm } from "@/components/sign-in-form";
 import { SignUpForm } from "@/components/sign-up-form";
+import { Layout } from "@/components/layout/layout";
 
 export const Route = createFileRoute("/_auth")({
   component: AuthLayout,
@@ -18,7 +19,9 @@ function AuthLayout() {
   return (
     <>
       <Authenticated>
-        <Outlet />
+        <Layout>
+          <Outlet />
+        </Layout>
       </Authenticated>
       <Unauthenticated>
         <div className="flex items-center justify-center h-full">

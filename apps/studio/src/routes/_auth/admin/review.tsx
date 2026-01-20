@@ -2,7 +2,6 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { FileTextIcon, ListIcon, MessageSquareIcon } from "lucide-react";
 
-import { PageHeader } from "@/components/page-header";
 import { MobileTabBar } from "@/components/admin/mobile-tab-bar";
 import type { MobileTab } from "@/components/admin/review-page-layout";
 import { PendingDocumentList } from "@/components/admin/pending-document-list";
@@ -33,16 +32,6 @@ function AdminReviewPage() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <PageHeader
-        title="Review Documents"
-        backTo="/admin/dashboard"
-        breadcrumbs={[
-          { label: "Admin", to: "/admin/dashboard" },
-          { label: "Review" },
-        ]}
-      />
-
       {/* Mobile Tab Bar */}
       <MobileTabBar
         tabs={[

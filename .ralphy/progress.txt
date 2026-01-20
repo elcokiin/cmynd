@@ -5,3 +5,11 @@ Implemented cover image upload in document settings dialog
 - Added email verification configuration to Better Auth in `packages/backend/convex/auth.ts`.
 - Configured verification codes to be logged to the console in development mode.
 - Enabled email verification requirement.
+
+Mon Jan 19 2026
+Add general navigation sidebar and reorganize header information into it
+- Created `AppSidebar` component in `apps/studio/src/components/layout/app-sidebar.tsx`.
+- Created `Layout` wrapper component in `apps/studio/src/components/layout/layout.tsx`.
+- Wrapped `_auth` route with the new `Layout` component.
+- Removed deprecated `PageHeader` component and its usages.
+- Integrated `UserMenu` and `ThemeToggle` into the sidebar.

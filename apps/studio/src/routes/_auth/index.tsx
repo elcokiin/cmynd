@@ -1,10 +1,8 @@
 import { api } from "@elcokiin/backend/convex/_generated/api";
-import { Button, buttonVariants } from "@elcokiin/ui/button";
-import { cn } from "@elcokiin/ui/lib/utils";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Button } from "@elcokiin/ui/button";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, usePaginatedQuery } from "convex/react";
 import { useCallback } from "react";
-import { ShieldIcon } from "lucide-react";
 
 import {
   CreateDocumentButton,
@@ -13,8 +11,6 @@ import {
   DocumentListSkeleton,
   EmptyState,
 } from "@/components/dashboard";
-import { UserMenu } from "@/components/user-menu";
-import { ThemeToggle } from "@elcokiin/ui/theme-toggle";
 
 export const Route = createFileRoute("/_auth/")({
   component: DashboardRoute,
@@ -54,17 +50,6 @@ function DashboardRoute() {
         </div>
         <div className="flex items-center gap-4">
           <CreateDocumentButton />
-          {isAdmin && (
-            <Link
-              to="/admin/dashboard"
-              className={cn(buttonVariants({ variant: "secondary" }))}
-            >
-              <ShieldIcon className="h-4 w-4 mr-2" />
-              Admin
-            </Link>
-          )}
-          <ThemeToggle />
-          <UserMenu />
         </div>
       </div>
 
