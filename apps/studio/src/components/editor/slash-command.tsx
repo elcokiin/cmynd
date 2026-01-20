@@ -1,6 +1,7 @@
 import type { UploadFn } from "@elcokiin/backend/lib/types";
 
 import { useMemo } from "react";
+import { useCurrentEditor } from "@tiptap/react";
 import {
   CheckSquare,
   Code,
@@ -190,6 +191,7 @@ type SlashCommandProps = {
 export function SlashCommand({
   className,
 }: SlashCommandProps): React.ReactNode {
+  const editor = (useCurrentEditor() as any).editor;
   const { uploadFn, onError } = useImageUpload();
 
   // Memoize suggestion items to prevent array recreation on every render
@@ -202,36 +204,49 @@ export function SlashCommand({
     [uploadFn, onError],
   );
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && editor) {
+      e.preventDefault();
+      e.stopPropagation();
+      const range = editor.state.selection;
+      suggestionItems[0]?.command?.({ editor, range });
+    }
+  };
+
   return (
-    <EditorCommand
+    <div
+      onKeyDown={handleKeyDown}
       className={
         className ??
         "z-50 h-auto max-h-[330px] w-72 overflow-y-auto rounded-md border border-border bg-popover px-1 py-2 shadow-md transition-all"
       }
+      tabIndex={-1}
     >
-      <EditorCommandEmpty className="px-2 text-muted-foreground">
-        No results
-      </EditorCommandEmpty>
-      <EditorCommandList>
-        {suggestionItems.map((item) => (
-          <EditorCommandItem
-            key={item.title}
-            value={item.title}
-            onCommand={(val) => item.command?.(val)}
-            className="flex w-full items-center space-x-2 rounded-md px-2 py-1 text-left text-sm hover:bg-accent aria-selected:bg-accent"
-          >
-            <div className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-background">
-              {item.icon}
-            </div>
-            <div>
-              <p className="font-medium">{item.title}</p>
-              <p className="text-xs text-muted-foreground">
-                {item.description}
-              </p>
-            </div>
-          </EditorCommandItem>
-        ))}
-      </EditorCommandList>
-    </EditorCommand>
+      <EditorCommand>
+        <EditorCommandEmpty className="px-2 text-muted-foreground">
+          No results
+        </EditorCommandEmpty>
+        <EditorCommandList>
+          {suggestionItems.map((item) => (
+            <EditorCommandItem
+              key={item.title}
+              value={item.title}
+              onCommand={(val) => item.command?.(val)}
+              className="flex w-full items-center space-x-2 rounded-md px-2 py-1 text-left text-sm hover:bg-accent aria-selected:bg-accent"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-background">
+                {item.icon}
+              </div>
+              <div>
+                <p className="font-medium">{item.title}</p>
+                <p className="text-xs text-muted-foreground">
+                  {item.description}
+                </p>
+              </div>
+            </EditorCommandItem>
+          ))}
+        </EditorCommandList>
+      </EditorCommand>
+    </div>
   );
 }
