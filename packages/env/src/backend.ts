@@ -21,6 +21,8 @@ export const env = createEnv({
       .transform((val) =>
         val ? val.split(",").map((email) => email.trim().toLowerCase()) : []
       ),
+    GOOGLE_CLIENT_ID: z.string().min(1),
+    GOOGLE_CLIENT_SECRET: z.string().min(1),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,

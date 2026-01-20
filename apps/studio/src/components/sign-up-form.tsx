@@ -141,6 +141,21 @@ export function SignUpForm({ onSwitchToSignIn }: SignUpFormProps): React.ReactNo
         </form.Subscribe>
       </form>
 
+      <div className="mt-4">
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={async () => {
+            await authClient.signIn.social({
+              provider: "google",
+              callbackURL: "/",
+            });
+          }}
+        >
+          Sign up with Google
+        </Button>
+      </div>
+
       <div className="mt-4 text-center">
         <Button
           variant="link"
