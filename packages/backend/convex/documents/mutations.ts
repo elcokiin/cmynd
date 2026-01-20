@@ -172,6 +172,33 @@ export const updateType = mutation({
 });
 
 /**
+ * Update document cover image.
+ * Only allowed for documents in "building" status.
+ */
+export const updateCoverImage = mutation({
+  args: {
+    documentId: v.id("documents"),
+    coverImageId: v.optional(v.id("_storage")),
+  },
+  handler: async (ctx, args) => {
+    const document = await getByIdForAuthor(ctx, args.documentId);
+
+    if (document.status === "published") {
+      throwConvexError(ErrorCode.DOCUMENT_PUBLISHED);
+    }
+
+    if (document.status === "pending") {
+      throwConvexError(ErrorCode.DOCUMENT_PENDING_REVIEW);
+    }
+
+    await ctx.db.patch(args.documentId, {
+      coverImageId: args.coverImageId,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+/**
  * Update document content (auto-save).
  * Only allowed for documents in "building" status.
  * 
