@@ -13,3 +13,6 @@ Add general navigation sidebar and reorganize header information into it
 - Wrapped `_auth` route with the new `Layout` component.
 - Removed deprecated `PageHeader` component and its usages.
 - Integrated `UserMenu` and `ThemeToggle` into the sidebar.
+
+Review and improve breadcrumb implementation do something more like layout
+
