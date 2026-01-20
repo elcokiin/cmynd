@@ -27,7 +27,6 @@ function AdminDashboard() {
       <PageHeader
         title="Admin Dashboard"
         backTo="/"
-        breadcrumbs={[{ label: "Home", to: "/" }, { label: "Admin" }]}
       />
 
       <main className="flex-1 overflow-auto">

@@ -1,27 +1,13 @@
 import type { ReactNode } from "react";
 
 import { buttonVariants } from "@elcokiin/ui/button";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@elcokiin/ui/breadcrumb";
-import { cn } from "@elcokiin/ui/lib/utils";
-import { ThemeToggle } from "@elcokiin/ui/theme-toggle";
-import { Link } from "@tanstack/react-router";
-import { ArrowLeftIcon } from "lucide-react";
-
-type BreadcrumbItem = {
-  label: string;
-  to?: string;
-};
+import { Breadcrumbs } from "./breadcrumbs";
 
 type PageHeaderProps = {
   title: string;
-  breadcrumbs?: BreadcrumbItem[];
+  // Deprecated: breadcrumbs are now handled automatically by the Breadcrumbs component
+  // but keeping for backward compat if needed, though we will ignore it in the new design
+  breadcrumbs?: { label: string; to?: string }[];
   backTo?: string;
   showThemeToggle?: boolean;
   children?: ReactNode;
@@ -29,7 +15,6 @@ type PageHeaderProps = {
 
 function PageHeader({
   title,
-  breadcrumbs,
   backTo,
   showThemeToggle = true,
   children,
@@ -48,35 +33,7 @@ function PageHeader({
           )}
 
           <div className="min-w-0 flex-1">
-            {breadcrumbs && breadcrumbs.length > 0 && (
-              <Breadcrumb className="mb-1">
-                <BreadcrumbList>
-                  {breadcrumbs.map((item, index) => {
-                    const isLast = index === breadcrumbs.length - 1;
-
-                    return (
-                      <div key={index} className="contents">
-                        <BreadcrumbItem>
-                          {isLast || !item.to ? (
-                            <BreadcrumbPage>{item.label}</BreadcrumbPage>
-                          ) : (
-                            <BreadcrumbLink
-                              render={(props) => (
-                                <Link to={item.to} {...props}>
-                                  {item.label}
-                                </Link>
-                              )}
-                            />
-                          )}
-                        </BreadcrumbItem>
-                        {!isLast && <BreadcrumbSeparator />}
-                      </div>
-                    );
-                  })}
-                </BreadcrumbList>
-              </Breadcrumb>
-            )}
-
+            <Breadcrumbs />
             <h1 className="text-xl font-bold truncate">{title}</h1>
           </div>
         </div>

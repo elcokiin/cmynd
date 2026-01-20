@@ -37,10 +37,6 @@ function AdminReviewPage() {
       <PageHeader
         title="Review Documents"
         backTo="/admin/dashboard"
-        breadcrumbs={[
-          { label: "Admin", to: "/admin/dashboard" },
-          { label: "Review" },
-        ]}
       />
 
       {/* Mobile Tab Bar */}
