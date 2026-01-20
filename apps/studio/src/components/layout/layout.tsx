@@ -1,4 +1,5 @@
 import { AppSidebar } from "@/components/layout/app-sidebar";
+import { SidebarInset, SidebarTrigger } from "@elcokiin/ui/sidebar";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -6,11 +7,14 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   return (
-    <div className="flex h-screen w-full bg-background">
+    <>
       <AppSidebar />
-      <main className="flex-1 overflow-auto">
+      <SidebarInset className="overflow-auto">
+        <div className="flex h-14 items-center border-b px-4">
+          <SidebarTrigger />
+        </div>
         {children}
-      </main>
-    </div>
+      </SidebarInset>
+    </>
   );
 }

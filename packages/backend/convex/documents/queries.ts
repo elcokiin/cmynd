@@ -22,8 +22,8 @@ import {
   paginatedPendingDocumentListValidator,
   paginatedPublishedDocumentListValidator,
 } from "../../lib/validators/documents";
-import { getDocumentByOldSlug } from "./slug-helpers";
-import { getDocumentStats } from "./stats-helpers";
+import { getDocumentByOldSlug } from "./slug_helpers";
+import { getDocumentStats } from "./stats_helpers";
 
 /**
  * Get a single document by ID with author check.

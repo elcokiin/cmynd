@@ -18,10 +18,10 @@ import type * as documents_helpers from "../documents/helpers.js";
 import type * as documents_mutations from "../documents/mutations.js";
 import type * as documents_projections from "../documents/projections.js";
 import type * as documents_queries from "../documents/queries.js";
+import type * as documents_slug_helpers from "../documents/slug_helpers.js";
+import type * as documents_stats_helpers from "../documents/stats_helpers.js";
 import type * as healthCheck from "../healthCheck.js";
 import type * as http from "../http.js";
-import type * as slugRedirects_helpers from "../slugRedirects/helpers.js";
-import type * as stats_helpers from "../stats/helpers.js";
 import type * as storage from "../storage.js";
 
 import type {
@@ -41,10 +41,10 @@ declare const fullApi: ApiFromModules<{
   "documents/mutations": typeof documents_mutations;
   "documents/projections": typeof documents_projections;
   "documents/queries": typeof documents_queries;
+  "documents/slug_helpers": typeof documents_slug_helpers;
+  "documents/stats_helpers": typeof documents_stats_helpers;
   healthCheck: typeof healthCheck;
   http: typeof http;
-  "slugRedirects/helpers": typeof slugRedirects_helpers;
-  "stats/helpers": typeof stats_helpers;
   storage: typeof storage;
 }>;
 

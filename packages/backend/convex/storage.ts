@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import * as Auth from "./_lib/auth";
 
 /**
@@ -17,7 +17,7 @@ export const generateUploadUrl = mutation({
 /**
  * Get a URL for a stored file.
  */
-export const getUrl = mutation({
+export const getUrl = query({
   args: { storageId: v.id("_storage") },
   handler: async (ctx, args): Promise<string | null> => {
     return await ctx.storage.getUrl(args.storageId);

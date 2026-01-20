@@ -18,12 +18,12 @@ import {
   slugExists,
   addSlugRedirect,
   deleteAllRedirectsForDocument,
-} from "./slug-helpers";
+} from "./slug_helpers";
 import {
   incrementStatusCount,
   decrementStatusCount,
   updateStatusCount,
-} from "./stats-helpers";
+} from "./stats_helpers";
 
 /**
  * Create a new document.

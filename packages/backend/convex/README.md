@@ -14,8 +14,8 @@ convex/
 │   ├── mutations.ts        # Document mutation functions (public API)
 │   ├── projections.ts      # Data projection helpers (toDocumentListItem, etc.)
 │   ├── helpers.ts          # General document helpers (getByIdForAuthor)
-│   ├── slug-helpers.ts     # Slug management (slugExists, redirects)
-│   └── stats-helpers.ts    # Document statistics (O(1) counts)
+│   ├── slug_helpers.ts     # Slug management (slugExists, redirects)
+│   └── stats_helpers.ts    # Document statistics (O(1) counts)
 │
 ├── authors/                # Authors feature
 │   ├── queries.ts          # Author query functions
@@ -50,8 +50,8 @@ Helpers are organized by concern within each feature folder:
 | File | Location | Purpose |
 |------|----------|---------|
 | `helpers.ts` | `documents/` | General helpers (`getByIdForAuthor`) |
-| `slug-helpers.ts` | `documents/` | Slug validation and redirects |
-| `stats-helpers.ts` | `documents/` | O(1) document count statistics |
+| `slug_helpers.ts` | `documents/` | Slug validation and redirects |
+| `stats_helpers.ts` | `documents/` | O(1) document count statistics |
 | `projections.ts` | `documents/` | Data projections for API responses |
 
 Single-use logic is inlined directly into query/mutation handlers.
@@ -90,8 +90,8 @@ const getUrl = useMutation(api.storage.getUrl);
 // In mutations.ts - using helpers from different files
 import * as Auth from "../_lib/auth";
 import { getByIdForAuthor } from "./helpers";
-import { slugExists, addSlugRedirect } from "./slug-helpers";
-import { incrementStatusCount, updateStatusCount } from "./stats-helpers";
+import { slugExists, addSlugRedirect } from "./slug_helpers";
+import { incrementStatusCount, updateStatusCount } from "./stats_helpers";
 
 export const updateTitle = mutation({
   args: { documentId: v.id("documents"), title: v.string() },
@@ -133,7 +133,7 @@ export const create = mutation({
 
 1. **Inline single-use logic** directly into handlers
 2. **Create helpers only** when logic is used by 2+ functions
-3. **Organize helpers by concern** (slug-helpers, stats-helpers, etc.)
+3. **Organize helpers by concern** (slug_helpers, stats_helpers, etc.)
 4. **Shared auth helpers** go in `_lib/auth.ts`
 5. Always use `withIndex()` instead of `.filter()` for database queries
 6. Always validate authentication in protected functions using `_lib/auth.ts`

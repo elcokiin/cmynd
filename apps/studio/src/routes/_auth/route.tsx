@@ -3,6 +3,7 @@ import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
 import { RefreshCwIcon } from "lucide-react";
 import { useState } from "react";
+import { SidebarProvider } from "@elcokiin/ui/sidebar";
 
 import { SignInForm } from "@/components/sign-in-form";
 import { SignUpForm } from "@/components/sign-up-form";
@@ -19,9 +20,11 @@ function AuthLayout() {
   return (
     <>
       <Authenticated>
-        <Layout>
-          <Outlet />
-        </Layout>
+        <SidebarProvider>
+          <Layout>
+            <Outlet />
+          </Layout>
+        </SidebarProvider>
       </Authenticated>
       <Unauthenticated>
         <div className="flex items-center justify-center h-full">
