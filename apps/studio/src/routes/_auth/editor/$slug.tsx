@@ -30,27 +30,23 @@ function EditorRoute() {
   const updateContent = useMutation(api.documents.mutations.updateContent);
   const uploadFn = useConvexImageUpload();
 
-  // Handle slug redirects
-  useEffect(() => {
-    if (document && "isRedirect" in document && document.isRedirect) {
-      // This is an old slug - redirect to current slug
-      toast.info("Redirecting to current URL...", {
-        description: `This article is now at: /editor/${document.currentSlug}`,
-      });
-
-      // Navigate to the current slug
-      navigate({
-        to: "/editor/$slug",
-        params: { slug: document.currentSlug },
-        replace: true, // Replace history so back button works correctly
-      });
-    }
-  }, [document, navigate]);
+  // useEffect(() => {
+  //   if (document && "isRedirect" in document && document.isRedirect) {
+  //     toast.info("Redirecting to current URL...", {
+  //       description: `This article is now at: /editor/${document.currentSlug}`,
+  //     });
+  //
+  //     navigate({
+  //       to: "/editor/$slug",
+  //       params: { slug: document.currentSlug },
+  //       replace: true,
+  //     });
+  //   }
+  // }, [document, navigate]);
 
   const handleDebouncedUpdate = useCallback(
     async (content: JSONContent) => {
       if (!document) return;
-      
       try {
         await updateContent({
           documentId: document._id,

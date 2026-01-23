@@ -1,7 +1,6 @@
 import type { UploadFn } from "@elcokiin/backend/lib/types";
 
 import { useMemo } from "react";
-import { useCurrentEditor } from "@tiptap/react";
 import {
   CheckSquare,
   Code,
@@ -23,12 +22,13 @@ import {
   EditorCommandItem,
   EditorCommandList,
   renderItems,
+  type SuggestionItem,
 } from "novel";
 
 import { uploadImage } from "@/utils/image-upload";
 import { useImageUpload } from "./image-upload-context";
 
-const baseSuggestionItems = createSuggestionItems([
+const baseSuggestionItems: SuggestionItem[] = createSuggestionItems([
   {
     title: "Text",
     description: "Just start typing with plain text.",
@@ -150,7 +150,7 @@ const baseSuggestionItems = createSuggestionItems([
 function createImageSuggestionItem(
   uploadFn: UploadFn | null,
   onError?: (error: Error) => void,
-) {
+): SuggestionItem {
   return {
     title: "Image",
     description: "Upload an image from your computer.",
@@ -184,52 +184,28 @@ export const slashCommand = Command.configure({
   },
 });
 
-type SlashCommandProps = {
-  className?: string;
-};
-
-export function SlashCommand({
-  className,
-}: SlashCommandProps): React.ReactNode {
-  const editor = (useCurrentEditor() as any).editor;
+export function SlashCommand(): React.ReactNode {
   const { uploadFn, onError } = useImageUpload();
 
-  // Memoize suggestion items to prevent array recreation on every render
   const suggestionItems = useMemo(
     () => [
-      ...baseSuggestionItems.slice(0, 9), // Items before Divider
+      ...baseSuggestionItems,
       createImageSuggestionItem(uploadFn, onError),
-      ...baseSuggestionItems.slice(9), // Divider and after
     ],
     [uploadFn, onError],
   );
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && editor) {
-      e.preventDefault();
-      e.stopPropagation();
-      const range = editor.state.selection;
-      suggestionItems[0]?.command?.({ editor, range });
-    }
-  };
-
   return (
-    <div
-      onKeyDown={handleKeyDown}
-      className={
-        className ??
-        "z-50 h-auto max-h-[330px] w-72 overflow-y-auto rounded-md border border-border bg-popover px-1 py-2 shadow-md transition-all"
-      }
-      tabIndex={-1}
-    >
+    <div tabIndex={0}>
       <EditorCommand>
         <EditorCommandEmpty className="px-2 text-muted-foreground">
           No results
         </EditorCommandEmpty>
-        <EditorCommandList>
+        <EditorCommandList className="z-50 h-auto max-h-[330px] w-72 overflow-y-auto rounded-md border border-border bg-popover px-1 py-2 shadow-md transition-all">
           {suggestionItems.map((item) => (
             <EditorCommandItem
               key={item.title}
+              onKeyDown={() => console.log("peped")}
               value={item.title}
               onCommand={(val) => item.command?.(val)}
               className="flex w-full items-center space-x-2 rounded-md px-2 py-1 text-left text-sm hover:bg-accent aria-selected:bg-accent"

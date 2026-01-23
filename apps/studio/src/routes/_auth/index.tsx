@@ -1,7 +1,7 @@
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { Button } from "@elcokiin/ui/button";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useQuery, usePaginatedQuery } from "convex/react";
+import { usePaginatedQuery } from "convex/react";
 import { useCallback } from "react";
 
 import {
@@ -18,7 +18,6 @@ export const Route = createFileRoute("/_auth/")({
 });
 
 function DashboardRoute() {
-  const isAdmin = useQuery(api.auth.isCurrentUserAdmin);
   const navigate = useNavigate();
 
   const { results, status, loadMore } = usePaginatedQuery(
