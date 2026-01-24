@@ -8,7 +8,7 @@ type DashboardSearch = {
   page?: number;
 };
 
-export const Route = createFileRoute("/_auth/admin/dashboard")({
+export const Route = createFileRoute("/_auth/admin/")({
   component: AdminDashboard,
   pendingComponent: AdminDashboardSkeleton,
   validateSearch: (search: Record<string, unknown>): DashboardSearch => {

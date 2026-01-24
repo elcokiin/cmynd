@@ -1,4 +1,8 @@
 ## Tasks
+- [ ] Email implementation
+- [ ] /editor/new delete the "save document" button
+- [ ] Fix the admin section
+- [ ] Document before sent to review (cover, card)
 - [x] Add general navigation sidebar and reorganize header information into it
 - [x] Review and improve breadcrumb implementation do something more like layout
 - [x] Fix README files: add individual READMEs to all packages and apps, update root README to explain project structure, catalog, and purpose

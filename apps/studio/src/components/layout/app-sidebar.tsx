@@ -34,7 +34,7 @@ export function AppSidebar() {
   if (isAdmin) {
     navItems.push({
       label: "Admin",
-      to: "/admin/dashboard",
+      to: "/admin",
       icon: ShieldIcon,
       active: location.pathname.startsWith("/admin"),
     });
