@@ -1,10 +1,7 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { ThemeToggle } from "@elcokiin/ui/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
-import {
-  HomeIcon,
-  ShieldIcon,
-} from "lucide-react";
+import { HomeIcon, ShieldIcon } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import {
@@ -18,6 +15,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@elcokiin/ui/sidebar";
+
+import LogoStudio from "@/assets/images/s_letter.svg";
 
 export function AppSidebar() {
   const location = useLocation();
@@ -44,8 +43,14 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <Link to="/" className="flex items-center gap-2 font-semibold px-2">
-          <span className="text-xl font-bold">Studio</span>
+        <Link to="/" className="flex items-center gap-2 font-semibold">
+          <img
+            src={LogoStudio}
+            alt="Studio logo"
+            width={32}
+            height={32}
+            className="rounded-md"
+          />
         </Link>
       </SidebarHeader>
 
@@ -55,7 +60,10 @@ export function AppSidebar() {
             <SidebarMenu>
               {navItems.map((item, index) => (
                 <SidebarMenuItem key={index}>
-                  <SidebarMenuButton render={<Link to={item.to} />} isActive={item.active}>
+                  <SidebarMenuButton
+                    render={<Link to={item.to} />}
+                    isActive={item.active}
+                  >
                     <item.icon />
                     {item.label}
                   </SidebarMenuButton>
@@ -67,17 +75,14 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
-        <SidebarGroup>
-          <SidebarGroupContent className="space-y-2">
-            <div className="flex items-center justify-between px-2">
-              <span className="text-sm font-medium">Theme</span>
-              <ThemeToggle />
-            </div>
-            <div className="px-2">
-              <UserMenu />
-            </div>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <ThemeToggle />
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <UserMenu />
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
   );

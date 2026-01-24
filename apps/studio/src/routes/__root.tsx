@@ -84,7 +84,7 @@ function RootDocument() {
               </div>
             </ErrorBoundary>
             <Toaster richColors />
-            <TanStackRouterDevtools position="bottom-left" />
+            <TanStackRouterDevtools position="bottom-right" />
             <Scripts />
           </body>
         </html>

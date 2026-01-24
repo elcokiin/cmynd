@@ -20,7 +20,7 @@ function AuthLayout() {
   return (
     <>
       <Authenticated>
-        <SidebarProvider>
+        <SidebarProvider open={false}>
           <Layout>
             <Outlet />
           </Layout>
@@ -49,11 +49,19 @@ function AuthLayout() {
   );
 }
 
-function AuthErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function AuthErrorComponent({
+  error,
+  reset,
+}: {
+  error: Error;
+  reset: () => void;
+}) {
   return (
     <div className="flex items-center justify-center h-screen">
       <div className="text-center space-y-4 max-w-md p-6">
-        <h1 className="text-2xl font-bold text-destructive">Authentication Error</h1>
+        <h1 className="text-2xl font-bold text-destructive">
+          Authentication Error
+        </h1>
         <p className="text-muted-foreground">{error.message}</p>
         <Button onClick={reset} variant="outline">
           <RefreshCwIcon className="h-4 w-4 mr-2" />

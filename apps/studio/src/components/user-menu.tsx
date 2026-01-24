@@ -9,6 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@elcokiin/ui/dropdown-menu";
+import { User } from "lucide-react";
 import { useQuery } from "convex/react";
 
 import { authClient } from "@/lib/auth-client";
@@ -18,7 +19,12 @@ export function UserMenu(): React.ReactNode {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="outline" />}>{user?.name}</DropdownMenuTrigger>
+      <DropdownMenuTrigger
+        render={<Button variant="outline" />}
+        className="p-2"
+      >
+        <User />
+      </DropdownMenuTrigger>
       <DropdownMenuContent className="bg-card">
         <DropdownMenuGroup>
           <DropdownMenuLabel>My Account</DropdownMenuLabel>

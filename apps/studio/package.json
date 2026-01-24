@@ -24,6 +24,7 @@
     "@tanstack/router-plugin": "^1.141.1",
     "@tiptap/core": "^3.14.0",
     "@tiptap/react": "^3.14.0",
+    "@unpic/react": "^1.0.2",
     "better-auth": "catalog:",
     "convex": "catalog:",
     "dotenv": "catalog:",
