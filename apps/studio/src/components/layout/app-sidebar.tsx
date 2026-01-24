@@ -49,7 +49,7 @@ export function AppSidebar() {
             alt="Studio logo"
             width={32}
             height={32}
-            className="rounded-md"
+            className="rounded-full"
           />
         </Link>
       </SidebarHeader>
