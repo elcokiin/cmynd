@@ -16,8 +16,8 @@ import { createServerFn } from "@tanstack/react-start";
 
 import { authClient } from "@/lib/auth-client";
 import { getToken } from "@/lib/auth-server";
+import { ErrorBoundary } from "@/components/error-boundary";
 
-import Header from "../components/header";
 import appCss from "../index.css?url";
 
 const getAuth = createServerFn({ method: "GET" }).handler(async () => {
@@ -40,7 +40,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "My App",
+        title: "Studio - elcokiin",
       },
     ],
     links: [
@@ -78,12 +78,13 @@ function RootDocument() {
             <HeadContent />
           </head>
           <body>
-            <div className="grid h-svh grid-rows-[auto_1fr]">
-              <Header />
-              <Outlet />
-            </div>
+            <ErrorBoundary>
+              <div className="grid h-svh grid-rows-[auto_1fr]">
+                <Outlet />
+              </div>
+            </ErrorBoundary>
             <Toaster richColors />
-            <TanStackRouterDevtools position="bottom-left" />
+            <TanStackRouterDevtools position="bottom-right" />
             <Scripts />
           </body>
         </html>

@@ -8,6 +8,7 @@ import { env } from "@elcokiin/env/backend";
 import { components } from "./_generated/api";
 import { query } from "./_generated/server";
 import authConfig from "./auth.config";
+import { isAdmin } from "./_lib/auth";
 
 const siteUrl = env.SITE_URL;
 
@@ -20,7 +21,24 @@ function createAuth(ctx: GenericCtx<DataModel>) {
     database: authComponent.adapter(ctx),
     emailAndPassword: {
       enabled: true,
-      requireEmailVerification: false,
+      requireEmailVerification: true,
+    },
+    emailVerification: {
+      sendOnSignUp: true,
+      autoSignInAfterVerification: true,
+      sendVerificationEmail: async ({ user, url, token }) => {
+        if (env.NODE_ENV === "development") {
+          console.log(
+            `\nVerify your email by clicking here: ${url}\nToken: ${token}\n`,
+          );
+        }
+      },
+    },
+    socialProviders: {
+      google: {
+        clientId: env.GOOGLE_CLIENT_ID,
+        clientSecret: env.GOOGLE_CLIENT_SECRET,
+      },
     },
     plugins: [
       convex({
@@ -37,5 +55,12 @@ export const getCurrentUser = query({
   args: {},
   handler: async (ctx) => {
     return await authComponent.safeGetAuthUser(ctx);
+  },
+});
+
+export const isCurrentUserAdmin = query({
+  args: {},
+  handler: async (ctx): Promise<boolean> => {
+    return await isAdmin(ctx);
   },
 });

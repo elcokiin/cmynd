@@ -4,21 +4,40 @@
   "description": "",
   "license": "ISC",
   "author": "",
+  "type": "module",
+  "exports": {
+    "./convex/_generated/api": "./convex/_generated/api.js",
+    "./convex/_generated/api.d": "./convex/_generated/api.d.ts",
+    "./convex/_generated/dataModel": "./convex/_generated/dataModel.d.ts",
+    "./lib/types/documents": "./lib/types/documents.ts",
+    "./lib/types": "./lib/types/index.ts",
+    "./lib/validators/documents": "./lib/validators/documents.ts",
+    "./lib/validators/auth": "./lib/validators/auth.ts"
+  },
   "scripts": {
     "dev": "convex dev",
-    "dev:setup": "convex dev --configure --until-success"
+    "dev:setup": "convex dev --configure --until-success",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "convex": "catalog:",
-    "better-auth": "catalog:",
     "@convex-dev/better-auth": "catalog:",
+    "@elcokiin/env": "workspace:*",
+    "@elcokiin/errors": "workspace:*",
+    "better-auth": "catalog:",
+    "convex": "catalog:",
     "dotenv": "catalog:",
-    "zod": "catalog:",
-    "@elcokiin/env": "workspace:*"
+    "slug": "11.0.1",
+    "zod": "catalog:"
   },
   "devDependencies": {
+    "@elcokiin/config": "workspace:*",
     "@types/node": "^24.3.0",
+    "@types/slug": "^5.0.9",
+    "@vitest/ui": "^4.0.17",
     "typescript": "catalog:",
-    "@elcokiin/config": "workspace:*"
+    "vitest": "^4.0.17"
   }
 }

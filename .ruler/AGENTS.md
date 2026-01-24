@@ -1,118 +1,87 @@
-# AI Agent Instructions for elcokiin
+# elcokiin
 
-## Project Overview
+**Better-T-Stack monorepo** combining React 19 + TanStack Start + Convex + Better-Auth
 
-This is a **Better-T-Stack monorepo** combining modern web technologies:
+## Package Manager
 
-- **Frontend**: React 19 + TanStack Start (SSR) + TailwindCSS 4 + shadcn/ui
-- **Backend**: Convex (reactive backend-as-a-service)
-- **Auth**: Better-Auth with Convex integration
-- **Build System**: Turborepo + Bun package manager
-- **TypeScript**: Strict mode enabled across all packages
-
-## Quick Start
+**Bun** (not npm). Use `bun` for all commands.
 
 ```bash
 bun install              # Install dependencies
+bun run dev              # Start all apps in development mode
 bun run dev:setup        # Setup Convex project (first time only)
-bun run dev              # Start all apps in development mode
-```
-
-Open [http://localhost:3001](http://localhost:3001) to view the web app.
-
-## Essential Commands
-
-### Development
-```bash
-bun run dev              # Start all apps in development mode
-bun run dev:web          # Start only the web app (port 3001)
-bun run dev:server       # Start only the Convex backend
-bun run dev:setup        # Setup and configure Convex project
-```
-
-### Build & Type Checking
-```bash
 bun run build            # Build all workspaces
 bun run check-types      # Check TypeScript types across all apps
 ```
 
-### Testing
-Currently no test suite configured. When adding tests:
-- Use Vitest for unit/integration tests (already has @testing-library/react)
-- Test file naming: `*.test.ts`, `*.test.tsx`
-- Run single test: `bun test <file-path>` (after setting up Vitest)
+Web app runs at: [http://localhost:3001](http://localhost:3001)
 
-### Ruler
-```bash
-bun run ruler:apply      # Apply ruler configuration (--local-only flag set)
-```
+---
 
 ## Monorepo Structure
 
 ```
 elcokiin/
 ├── apps/
-│   └── web/              # Frontend application
-│       ├── src/
-│       │   ├── components/  # React components
-│       │   ├── lib/         # Utilities, auth clients
-│       │   ├── routes/      # TanStack Router routes
-│       │   └── index.css    # Global styles
-│       └── vite.config.ts
+│   └── studio/              # Frontend: React 19 + TanStack Start + TailwindCSS 4
 ├── packages/
-│   ├── backend/          # Convex backend
-│   │   └── convex/       # Convex functions, schema, auth config
-│   ├── config/           # Shared TypeScript configs
-│   └── env/              # Shared environment variables
-└── turbo.json            # Turborepo configuration
+│   ├── backend/             # Convex backend
+│   ├── ui/                  # Shared shadcn components
+│   ├── config/              # Shared TypeScript configs
+│   └── env/                 # Shared environment variables
+└── turbo.json               # Turborepo configuration
 ```
 
-## Dependencies Management
+---
+
+## Workspace Dependencies
 
 ### Adding Dependencies
 ```bash
-# Add to workspace root
-bun add <package>
-
-# Add to specific workspace
-bun add <package> --filter web
-bun add <package> --filter @elcokiin/backend
-
-# Add dev dependency
-bun add -d <package> --filter web
+bun add <package>                      # Add to workspace root
+bun add <package> --filter studio      # Add to specific workspace
+bun add -d <package> --filter studio   # Add dev dependency
 ```
 
-### Workspace Dependencies
-- Use `workspace:*` for internal package references
-- Use catalog for version consistency: `"zod": "catalog:"`
-- Current catalog packages: dotenv, zod, typescript, convex, better-auth, @convex-dev/better-auth
-
-**Example** (in `package.json`):
+### Internal Packages
+Use `workspace:*` for internal package references:
 ```json
 {
   "dependencies": {
-    "zod": "catalog:",
-    "@elcokiin/env": "workspace:*"
+    "@elcokiin/ui": "workspace:*"
   }
 }
 ```
 
-## Environment Variables
+### Catalog Packages
+Use `catalog:` for version consistency across workspaces:
+```json
+{
+  "dependencies": {
+    "zod": "catalog:",
+    "convex": "catalog:"
+  }
+}
+```
 
-- Store in `.env` files (gitignored)
-- Use `@elcokiin/env` package for type-safe env access
-- Never commit `.env` files
-- Document required env vars in `.env.example`
-
-## Authentication
-
-- Better-Auth integrated with Convex
-- Client: `authClient` from `@/lib/auth-client`
-- Server: Auth config in `packages/backend/convex/auth.config.ts`
-- Always use Convex's auth integration: `@convex-dev/better-auth`
+**Current catalog packages:** dotenv, zod, typescript, convex, better-auth, @convex-dev/better-auth
 
 ---
 
-**Last Updated**: 2025-12-29  
+## Guidelines
+
+**Follow progressive disclosure:** Start with the essentials above. Consult specialized guides only when working in specific areas.
+
+- **[TypeScript](typescript.md)** - Type system, imports, naming conventions
+- **[React](react.md)** - Components, TanStack Form, hooks, state management
+- **[Convex](convex.md)** - Backend patterns, queries, mutations, schema
+- **[Styling](styling.md)** - TailwindCSS 4, CVA, design tokens, dark mode
+- **[Security](security.md)** - Input validation (Zod), auth, data exposure
+- **[Git](git.md)** - Conventional commits, atomic commits
+- **[Checklist](checklist.md)** - Pre-commit verification
+
+---
+
+**Last Updated**: 2026-01-18  
 **Package Manager**: Bun 1.3.4  
 **Node Version**: Current LTS recommended

@@ -1,14 +1,19 @@
+import type { Router } from "@tanstack/react-router";
+
 import { ConvexQueryClient } from "@convex-dev/react-query";
 import { env } from "@elcokiin/env/studio";
 import { QueryClient } from "@tanstack/react-query";
-import { createRouter as createTanStackRouter } from "@tanstack/react-router";
+import {
+  createRouter as createTanStackRouter,
+  Navigate,
+} from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
 
-import Loader from "./components/loader";
+import { Loader } from "./components/loader";
 import "./index.css";
 import { routeTree } from "./routeTree.gen";
 
-export function getRouter() {
+export function getRouter(): Router<typeof routeTree, "preserve"> {
   const convexUrl = env.VITE_CONVEX_URL;
   if (!convexUrl) {
     throw new Error("VITE_CONVEX_URL is not set");
@@ -30,7 +35,7 @@ export function getRouter() {
     routeTree,
     defaultPreload: "intent",
     defaultPendingComponent: () => <Loader />,
-    defaultNotFoundComponent: () => <div>Not Found</div>,
+    defaultNotFoundComponent: () => <Navigate to="/" replace />,
     context: { queryClient, convexQueryClient },
   });
 
