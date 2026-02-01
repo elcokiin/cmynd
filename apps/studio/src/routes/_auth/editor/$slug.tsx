@@ -5,8 +5,7 @@ import { Button } from "@elcokiin/ui/button";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { ArrowLeftIcon } from "lucide-react";
-import { useCallback, useEffect } from "react";
-import { toast } from "sonner";
+import { useCallback } from "react";
 
 import { AdvancedEditor } from "@/components/editor/advanced-editor";
 import { EditorHeader } from "@/components/editor/editor-header";
@@ -29,20 +28,6 @@ function EditorRoute() {
   });
   const updateContent = useMutation(api.documents.mutations.updateContent);
   const uploadFn = useConvexImageUpload();
-
-  // useEffect(() => {
-  //   if (document && "isRedirect" in document && document.isRedirect) {
-  //     toast.info("Redirecting to current URL...", {
-  //       description: `This article is now at: /editor/${document.currentSlug}`,
-  //     });
-  //
-  //     navigate({
-  //       to: "/editor/$slug",
-  //       params: { slug: document.currentSlug },
-  //       replace: true,
-  //     });
-  //   }
-  // }, [document, navigate]);
 
   const handleDebouncedUpdate = useCallback(
     async (content: JSONContent) => {
@@ -101,7 +86,7 @@ function EditorRoute() {
       />
 
       {/* Editor area */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-clip">
         <div className="max-w-4xl mx-auto">
           <AdvancedEditor
             initialContent={document.content as JSONContent | undefined}

@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { FileTextIcon, ListIcon, MessageSquareIcon } from "lucide-react";
+import { FileTextIcon, MessageSquareIcon } from "lucide-react";
 
 import { MobileTabBar } from "@/components/admin/mobile-tab-bar";
 import type { MobileTab } from "@/components/admin/review-page-layout";
-import { PendingDocumentList } from "@/components/admin/pending-document-list";
+// import { PendingDocumentList } from "@/components/admin/pending-document-list";
 import { DocumentPreview } from "@/components/admin/document-preview";
 import { ReviewSidebar } from "@/components/admin/review-sidebar";
 import { ReviewSkeleton } from "@/components/admin/review-skeleton";
@@ -35,11 +35,11 @@ function AdminReviewPage() {
       {/* Mobile Tab Bar */}
       <MobileTabBar
         tabs={[
-          {
-            id: "list",
-            label: "Pending",
-            icon: ListIcon,
-          },
+          // {
+          //   id: "list",
+          //   label: "Pending",
+          //   icon: ListIcon,
+          // },
           {
             id: "preview",
             label: "Preview",
@@ -58,23 +58,23 @@ function AdminReviewPage() {
       />
 
       {/* Content */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-auto">
         {/* Desktop Layout */}
         <div className="hidden md:flex flex-col flex-1">
           <div className="flex flex-1 overflow-hidden">
             {/* Document List */}
-            <PendingDocumentList
-              selectedSlug={selectedSlug}
-              onSelect={() => setMobileTab("preview")}
-            />
+            {/* <PendingDocumentList */}
+            {/*   selectedSlug={selectedSlug} */}
+            {/*   onSelect={() => setMobileTab("preview")} */}
+            {/* /> */}
 
             {/* Preview */}
-            <div className="flex-1 overflow-auto">
+            <div className="flex-1 overflow-clip">
               <DocumentPreview slug={selectedSlug} />
             </div>
 
             {/* Sidebar */}
-            <div className="w-80 border-l p-4 overflow-auto">
+            <div className="sticky w-80 border-l p-4 overflow-auto">
               <ReviewSidebar
                 slug={selectedSlug}
                 onActionComplete={() => setMobileTab("list")}
@@ -86,15 +86,13 @@ function AdminReviewPage() {
         {/* Mobile Layout */}
         <div className="md:hidden flex flex-col flex-1">
           <div className="flex-1 overflow-auto">
-            {mobileTab === "list" && (
-              <PendingDocumentList
-                selectedSlug={selectedSlug}
-                onSelect={() => setMobileTab("preview")}
-              />
-            )}
-            {mobileTab === "preview" && (
-              <DocumentPreview slug={selectedSlug} />
-            )}
+            {/* {mobileTab === "list" && ( */}
+            {/*   <PendingDocumentList */}
+            {/*     selectedSlug={selectedSlug} */}
+            {/*     onSelect={() => setMobileTab("preview")} */}
+            {/*   /> */}
+            {/* )} */}
+            {mobileTab === "preview" && <DocumentPreview slug={selectedSlug} />}
             {mobileTab === "actions" && (
               <div className="p-4">
                 <ReviewSidebar

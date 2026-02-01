@@ -1,8 +1,12 @@
-# [ ] /editor/new delete the "save document" button
+# [ ] Remove the "Save document" button on `/editor/new`
 
 ## Description
-<!-- Its an approach, do more description for the agent -->
-In the /editor/new delete the "save document" button, I don't want that friction. 
-Just if someone change the title or the content that document will be automatically save.
+Remove the manual "Save document" button on `/editor/new` to reduce friction.
 
-## Docs for Context
+The document should save automatically when the user changes the title or content.
+
+## Acceptance Criteria
+- The "Save document" button is removed from `/editor/new`.
+- Title/content changes trigger auto-save (preferably debounced to avoid excessive writes).
+- The UI shows save state (saving / saved / error).
+- No save occurs if nothing changed.

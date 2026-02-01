@@ -1,12 +1,10 @@
 import type { PendingDocumentListItem } from "@elcokiin/backend/lib/types/documents";
 
 import { api } from "@elcokiin/backend/convex/_generated/api";
-import { buttonVariants } from "@elcokiin/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@elcokiin/ui/card";
 import { Pagination } from "@elcokiin/ui/pagination";
-import { cn } from "@elcokiin/ui/lib/utils";
 import { Link } from "@tanstack/react-router";
-import { FileCheckIcon, HourglassIcon } from "lucide-react";
+import { HourglassIcon } from "lucide-react";
 
 import { useUrlSyncedPagination } from "@/hooks/use-url-synced-pagination";
 
@@ -32,7 +30,7 @@ function PendingDocumentRow({
     <Link
       key={document._id}
       to="/admin/review"
-      search={{ doc: document._id }}
+      search={{ slug: document.slug }}
       className="flex items-center justify-between border-b pb-2 last:border-0 hover:bg-muted/50 rounded px-2 -mx-2 py-1 transition-colors"
     >
       <div className="flex-1">
@@ -98,16 +96,6 @@ export function DashboardPendingList({
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>Pending Documents</CardTitle>
-          <Link
-            to="/admin/review"
-            className={cn(
-              buttonVariants({ variant: "outline", size: "sm" }),
-              "gap-2",
-            )}
-          >
-            Review All
-            <FileCheckIcon className="h-4 w-4" />
-          </Link>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">

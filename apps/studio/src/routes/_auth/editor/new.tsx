@@ -96,7 +96,7 @@ function NewDocumentRoute() {
       </div>
 
       {/* Editor area */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-clip">
         <div className="max-w-4xl mx-auto">
           <AdvancedEditor
             initialContent={content}
