@@ -275,6 +275,57 @@ export const listPendingForAdmin = query({
 });
 
 /**
+ * List all documents for admin review with pagination, search, and filtering.
+ * Returns projected documents with minimal fields.
+ *
+ * @throws AdminRequiredError if user is not an admin.
+ */
+export const listForAdmin = query({
+  args: { 
+    paginationOpts: paginationOptsValidator,
+    status: v.optional(v.union(v.literal("pending"), v.literal("published"), v.literal("all"))),
+    search: v.optional(v.string()),
+  },
+  returns: paginatedPendingDocumentListValidator,
+  handler: async (ctx, args) => {
+    await Auth.requireAdmin(ctx);
+
+    let result;
+
+    if (args.search) {
+      result = await ctx.db
+        .query("documents")
+        .withSearchIndex("search_title", (q) => {
+          let query = q.search("title", args.search!);
+          if (args.status && args.status !== "all") {
+            query = query.eq("status", args.status);
+          }
+          return query;
+        })
+        .paginate(args.paginationOpts);
+    } else {
+      if (args.status && args.status !== "all") {
+        result = await ctx.db
+          .query("documents")
+          .withIndex("by_status", (q) => q.eq("status", args.status as any))
+          .order("desc")
+          .paginate(args.paginationOpts);
+      } else {
+        result = await ctx.db
+          .query("documents")
+          .order("desc")
+          .paginate(args.paginationOpts);
+      }
+    }
+
+    return {
+      ...result,
+      page: result.page.map(toPendingDocumentListItem),
+    };
+  },
+});
+
+/**
  * Get a document for admin review (admin only).
  * Returns the full document content without author info (anonymous review).
  *
@@ -334,10 +385,15 @@ export const getForAdminReviewBySlug = query({
       }
     }
 
-    // Return null for not found or non-pending documents (graceful)
-    if (!document || document.status !== "pending") {
+    // Return null for not found
+    if (!document) {
       return null;
     }
+
+    // Allow admin to view any document status
+    // if (!document || document.status !== "pending") {
+    //   return null;
+    // }
 
     return {
       _id: document._id,
@@ -350,6 +406,7 @@ export const getForAdminReviewBySlug = query({
       coverImageId: document.coverImageId,
       submittedAt: document.submittedAt,
       createdAt: document.createdAt,
+      status: document.status, // Add status so we can check it in frontend
     };
   },
 });

@@ -452,3 +452,35 @@ export const remove = mutation({
     await decrementStatusCount(ctx, document.status);
   },
 });
+
+/**
+ * Move a published document back to pending (admin only).
+ * Changes status from "published" to "pending".
+ */
+export const moveBackToPending = mutation({
+  args: { documentId: v.id("documents") },
+  handler: async (ctx, args) => {
+    await Auth.requireAdmin(ctx);
+
+    const document = await ctx.db.get(args.documentId);
+    if (!document) {
+      throwConvexError(ErrorCode.DOCUMENT_NOT_FOUND);
+    }
+
+    if (document.status !== "published") {
+      throwConvexError(
+        ErrorCode.DOCUMENT_INVALID_STATUS,
+        "Only published documents can be moved back to pending",
+      );
+    }
+
+    await ctx.db.patch(args.documentId, {
+      status: "pending",
+      publishedAt: undefined,
+      updatedAt: Date.now(),
+    });
+
+    // Update status counts (published -> pending)
+    await updateStatusCount(ctx, "published", "pending");
+  },
+});

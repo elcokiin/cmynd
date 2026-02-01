@@ -6,6 +6,8 @@ import { DashboardPendingList } from "@/components/admin/dashboard-pending-list"
 
 type DashboardSearch = {
   page?: number;
+  status?: "pending" | "published" | "all";
+  search?: string;
 };
 
 export const Route = createFileRoute("/_auth/admin/")({
@@ -14,12 +16,14 @@ export const Route = createFileRoute("/_auth/admin/")({
   validateSearch: (search: Record<string, unknown>): DashboardSearch => {
     return {
       page: Number(search.page) || 1,
+      status: (search.status as "pending" | "published" | "all") || "pending",
+      search: (search.search as string) || "",
     };
   },
 });
 
 function AdminDashboard() {
-  const { page: urlPage = 1 } = Route.useSearch();
+  const { page: urlPage = 1, status = "pending", search = "" } = Route.useSearch();
 
   return (
     <div className="flex flex-col h-full">
@@ -36,7 +40,7 @@ function AdminDashboard() {
         <DashboardStatsGrid />
 
         {/* Pending Documents List Component */}
-        <DashboardPendingList urlPage={urlPage} />
+        <DashboardPendingList urlPage={urlPage} status={status} search={search} />
       </div>
     </div>
   );

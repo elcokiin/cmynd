@@ -9,7 +9,11 @@ export default defineSchema({
   documents: defineTable(documentValidator)
     .index("by_author", ["authorId"])
     .index("by_status", ["status", "createdAt"])
-    .index("by_slug", ["slug"]),
+    .index("by_slug", ["slug"])
+    .searchIndex("search_title", {
+      searchField: "title",
+      filterFields: ["status"],
+    }),
 
   slugRedirects: defineTable({
     oldSlug: v.string(),
