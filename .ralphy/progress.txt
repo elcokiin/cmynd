@@ -16,3 +16,11 @@ Add general navigation sidebar and reorganize header information into it
 
 Review and improve breadcrumb implementation do something more like layout
 
+
+Sun Feb 01 2026
+Remove the "Save document" button on `/editor/new` (auto-save)
+- Removed "Save Document" button and manual save handler from `apps/studio/src/routes/_auth/editor/new.tsx`.
+- Implemented auto-save logic using `useDebouncedCallback` and `AdvancedEditor` callbacks.
+- Added `onUpdate` to `AdvancedEditor` usage to ensure latest content is captured.
+- Implemented `saveDocument` function with `useRef` to handle state freshness and prevent race conditions.
+- Updated title change handler to trigger debounced save.
