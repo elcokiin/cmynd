@@ -32,3 +32,19 @@ Fixed the admin review section:
 - Implemented "Move to Pending" functionality for published documents.
 - Added document context (cover image, curation spin) to the review sidebar.
 - Updated backend queries and mutations to support these features.
+
+Sun Feb 02 2026
+Implemented production email sending with Resend for Better Auth:
+- Added `resend` package (^4.0.0) to backend dependencies.
+- Added `RESEND_API_KEY` and `EMAIL_FROM` environment variables to `packages/env/src/backend.ts`.
+- Created `packages/backend/convex/email/` module with:
+  - `client.ts` - Resend client initialization and helpers.
+  - `templates/verification.ts` - HTML/text email verification templates with brand styling.
+  - `templates/password-reset.ts` - HTML/text password reset templates with brand styling.
+  - `send.ts` - Convex internal actions for sending emails via Resend.
+  - `index.ts` - Module exports.
+- Updated `packages/backend/convex/auth.ts` to integrate email sending:
+  - Email verification sends real emails via Resend when API key is configured.
+  - Password reset sends real emails via Resend when API key is configured.
+  - Development mode logs verification/reset URLs to console for easy testing.
+  - Graceful error handling (no app crashes if email fails).
