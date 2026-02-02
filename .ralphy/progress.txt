@@ -16,7 +16,6 @@ Add general navigation sidebar and reorganize header information into it
 
 Review and improve breadcrumb implementation do something more like layout
 
-
 Sun Feb 01 2026
 Remove the "Save document" button on `/editor/new` (auto-save)
 - Removed "Save Document" button and manual save handler from `apps/studio/src/routes/_auth/editor/new.tsx`.
@@ -24,3 +23,12 @@ Remove the "Save document" button on `/editor/new` (auto-save)
 - Added `onUpdate` to `AdvancedEditor` usage to ensure latest content is captured.
 - Implemented `saveDocument` function with `useRef` to handle state freshness and prevent race conditions.
 - Updated title change handler to trigger debounced save.
+
+Sun Feb 01 2026
+Fixed the admin review section:
+- Implemented friendly URLs for admin review (/admin/review/$slug).
+- Refactored review page structure to remove pending list and only show review actions + preview.
+- Added search and status filtering (Pending, Published, All) to the admin dashboard.
+- Implemented "Move to Pending" functionality for published documents.
+- Added document context (cover image, curation spin) to the review sidebar.
+- Updated backend queries and mutations to support these features.
