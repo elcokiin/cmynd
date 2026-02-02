@@ -1,4 +1,4 @@
-# [ ] Email implementation
+# [x] Email implementation
 
 ## Description
 Implement production email sending with Resend and wire it into Better Auth's email verification flow.

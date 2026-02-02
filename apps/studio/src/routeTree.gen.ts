@@ -17,6 +17,7 @@ import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AuthEditorNewRouteImport } from './routes/_auth/editor/new'
 import { Route as AuthEditorSlugRouteImport } from './routes/_auth/editor/$slug'
 import { Route as AuthAdminReviewRouteImport } from './routes/_auth/admin/review'
+import { Route as AuthAdminReviewSlugRouteImport } from './routes/_auth/admin/review.$slug'
 
 const AuthRouteRoute = AuthRouteRouteImport.update({
   id: '/_auth',
@@ -57,34 +58,42 @@ const AuthAdminReviewRoute = AuthAdminReviewRouteImport.update({
   path: '/review',
   getParentRoute: () => AuthAdminRouteRoute,
 } as any)
+const AuthAdminReviewSlugRoute = AuthAdminReviewSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => AuthAdminReviewRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/admin': typeof AuthAdminRouteRouteWithChildren
   '/': typeof AuthIndexRoute
-  '/admin/review': typeof AuthAdminReviewRoute
+  '/admin/review': typeof AuthAdminReviewRouteWithChildren
   '/editor/$slug': typeof AuthEditorSlugRoute
   '/editor/new': typeof AuthEditorNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin/': typeof AuthAdminIndexRoute
+  '/admin/review/$slug': typeof AuthAdminReviewSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AuthIndexRoute
-  '/admin/review': typeof AuthAdminReviewRoute
+  '/admin/review': typeof AuthAdminReviewRouteWithChildren
   '/editor/$slug': typeof AuthEditorSlugRoute
   '/editor/new': typeof AuthEditorNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin': typeof AuthAdminIndexRoute
+  '/admin/review/$slug': typeof AuthAdminReviewSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_auth': typeof AuthRouteRouteWithChildren
   '/_auth/admin': typeof AuthAdminRouteRouteWithChildren
   '/_auth/': typeof AuthIndexRoute
-  '/_auth/admin/review': typeof AuthAdminReviewRoute
+  '/_auth/admin/review': typeof AuthAdminReviewRouteWithChildren
   '/_auth/editor/$slug': typeof AuthEditorSlugRoute
   '/_auth/editor/new': typeof AuthEditorNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/_auth/admin/': typeof AuthAdminIndexRoute
+  '/_auth/admin/review/$slug': typeof AuthAdminReviewSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -96,6 +105,7 @@ export interface FileRouteTypes {
     | '/editor/new'
     | '/api/auth/$'
     | '/admin/'
+    | '/admin/review/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -104,6 +114,7 @@ export interface FileRouteTypes {
     | '/editor/new'
     | '/api/auth/$'
     | '/admin'
+    | '/admin/review/$slug'
   id:
     | '__root__'
     | '/_auth'
@@ -114,6 +125,7 @@ export interface FileRouteTypes {
     | '/_auth/editor/new'
     | '/api/auth/$'
     | '/_auth/admin/'
+    | '/_auth/admin/review/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -179,16 +191,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthAdminReviewRouteImport
       parentRoute: typeof AuthAdminRouteRoute
     }
+    '/_auth/admin/review/$slug': {
+      id: '/_auth/admin/review/$slug'
+      path: '/$slug'
+      fullPath: '/admin/review/$slug'
+      preLoaderRoute: typeof AuthAdminReviewSlugRouteImport
+      parentRoute: typeof AuthAdminReviewRoute
+    }
   }
 }
 
+interface AuthAdminReviewRouteChildren {
+  AuthAdminReviewSlugRoute: typeof AuthAdminReviewSlugRoute
+}
+
+const AuthAdminReviewRouteChildren: AuthAdminReviewRouteChildren = {
+  AuthAdminReviewSlugRoute: AuthAdminReviewSlugRoute,
+}
+
+const AuthAdminReviewRouteWithChildren = AuthAdminReviewRoute._addFileChildren(
+  AuthAdminReviewRouteChildren,
+)
+
 interface AuthAdminRouteRouteChildren {
-  AuthAdminReviewRoute: typeof AuthAdminReviewRoute
+  AuthAdminReviewRoute: typeof AuthAdminReviewRouteWithChildren
   AuthAdminIndexRoute: typeof AuthAdminIndexRoute
 }
 
 const AuthAdminRouteRouteChildren: AuthAdminRouteRouteChildren = {
-  AuthAdminReviewRoute: AuthAdminReviewRoute,
+  AuthAdminReviewRoute: AuthAdminReviewRouteWithChildren,
   AuthAdminIndexRoute: AuthAdminIndexRoute,
 }
 

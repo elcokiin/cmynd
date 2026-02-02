@@ -11,7 +11,11 @@ import authConfig from "./auth.config";
 import { isAdmin } from "./_lib/auth";
 
 // Email utilities
-import { createResendClient, getEmailFrom, isEmailEnabled } from "./email/client";
+import {
+  createResendClient,
+  getEmailFrom,
+  isEmailEnabled,
+} from "./email/client";
 import {
   generateVerificationEmailHtml,
   generateVerificationEmailText,
@@ -19,7 +23,7 @@ import {
 import {
   generatePasswordResetEmailHtml,
   generatePasswordResetEmailText,
-} from "./email/templates/password-reset";
+} from "./email/templates/password_reset";
 
 const siteUrl = env.SITE_URL;
 
@@ -43,7 +47,9 @@ async function sendVerificationEmailViaResend(
   // If Resend is not configured, skip sending
   if (!isEmailEnabled()) {
     if (env.NODE_ENV !== "development") {
-      console.warn("[Auth] RESEND_API_KEY not configured, verification email not sent");
+      console.warn(
+        "[Auth] RESEND_API_KEY not configured, verification email not sent",
+      );
     }
     return;
   }
@@ -98,7 +104,9 @@ async function sendPasswordResetEmailViaResend(
   // If Resend is not configured, skip sending
   if (!isEmailEnabled()) {
     if (env.NODE_ENV !== "development") {
-      console.warn("[Auth] RESEND_API_KEY not configured, password reset email not sent");
+      console.warn(
+        "[Auth] RESEND_API_KEY not configured, password reset email not sent",
+      );
     }
     return;
   }
@@ -126,7 +134,10 @@ async function sendPasswordResetEmailViaResend(
     });
 
     if (error) {
-      console.error("[Auth] Failed to send password reset email:", error.message);
+      console.error(
+        "[Auth] Failed to send password reset email:",
+        error.message,
+      );
     } else {
       console.log(`[Auth] Password reset email sent to ${userEmail}`);
     }
@@ -145,8 +156,9 @@ function createAuth(ctx: GenericCtx<DataModel>) {
       requireEmailVerification: true,
       // Password reset handler
       sendResetPassword: async ({ user, url }) => {
-        // Don't await to prevent timing attacks
-        void sendPasswordResetEmailViaResend(user.email, user.name, url);
+        // Don't await to prevent timing attacks - I temporaly change this
+        // void sendPasswordResetEmailViaResend(user.email, user.name, url);
+        await sendPasswordResetEmailViaResend(user.email, user.name, url);
       },
     },
     emailVerification: {
@@ -154,8 +166,8 @@ function createAuth(ctx: GenericCtx<DataModel>) {
       autoSignInAfterVerification: true,
       // Email verification handler
       sendVerificationEmail: async ({ user, url }) => {
-        // Don't await to prevent timing attacks
-        void sendVerificationEmailViaResend(user.email, user.name, url);
+        // void sendVerificationEmailViaResend(user.email, user.name, url);
+        await sendVerificationEmailViaResend(user.email, user.name, url);
       },
     },
     socialProviders: {

@@ -3,7 +3,6 @@ import { Button } from "@elcokiin/ui/button";
 import { Input } from "@elcokiin/ui/input";
 import { Label } from "@elcokiin/ui/label";
 import { useForm } from "@tanstack/react-form";
-import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 
 import { authClient } from "@/lib/auth-client";
@@ -12,11 +11,9 @@ type SignUpFormProps = {
   onSwitchToSignIn: () => void;
 };
 
-export function SignUpForm({ onSwitchToSignIn }: SignUpFormProps): React.ReactNode {
-  const navigate = useNavigate({
-    from: "/",
-  });
-
+export function SignUpForm({
+  onSwitchToSignIn,
+}: SignUpFormProps): React.ReactNode {
   const form = useForm({
     defaultValues: {
       email: "",
@@ -29,13 +26,11 @@ export function SignUpForm({ onSwitchToSignIn }: SignUpFormProps): React.ReactNo
           email: value.email,
           password: value.password,
           name: value.name,
+          callbackURL: `${window.location.origin}/`,
         },
         {
           onSuccess: () => {
-            navigate({
-              to: "/",
-            });
-            toast.success("Sign up successful");
+            toast.success("Verification email sent! Please check your inbox.");
           },
           onError: (error) => {
             toast.error(error.error.message || error.error.statusText);
@@ -148,7 +143,7 @@ export function SignUpForm({ onSwitchToSignIn }: SignUpFormProps): React.ReactNo
           onClick={async () => {
             await authClient.signIn.social({
               provider: "google",
-              callbackURL: "/",
+              callbackURL: `${window.location.origin}/`,
             });
           }}
         >
