@@ -6,18 +6,16 @@ import { Button } from "@elcokiin/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@elcokiin/ui/dialog";
-import { Label } from "@elcokiin/ui/label";
 import { cn } from "@elcokiin/ui/lib/utils";
 import { useMutation, useQuery } from "convex/react";
 import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { XIcon, ImageIcon, BookOpenIcon, LinkIcon } from "lucide-react";
 
-import { documentTypeConfig } from "@/components/dashboard/document-type-config";
+// import { documentTypeConfig } from "@/components/dashboard/document-type-config";
 import { useErrorHandler } from "@/hooks/use-error-handler";
 
 type DocumentSettingsDialogProps = {
@@ -38,18 +36,22 @@ export function DocumentSettingsDialog({
   const [type, setType] = useState<DocumentType>(currentType);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [activeSection, setActiveSection] = useState<NavigationSection>("cover");
+  const [activeSection, setActiveSection] =
+    useState<NavigationSection>("cover");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const { handleError } = useErrorHandler();
 
   const document = useQuery(api.documents.queries.getForEdit, { documentId });
-  const coverImageUrl = useQuery(api.storage.getUrl, 
-    document?.coverImageId ? { storageId: document.coverImageId } : "skip"
+  const coverImageUrl = useQuery(
+    api.storage.getUrl,
+    document?.coverImageId ? { storageId: document.coverImageId } : "skip",
   );
 
   const updateType = useMutation(api.documents.mutations.updateType);
-  const updateCoverImage = useMutation(api.documents.mutations.updateCoverImage);
+  const updateCoverImage = useMutation(
+    api.documents.mutations.updateCoverImage,
+  );
   const deleteFile = useMutation(api.storage.deleteFile);
   const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
 
@@ -70,8 +72,10 @@ export function DocumentSettingsDialog({
       setIsSaving(false);
     }
   };
-  
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+
+  const handleImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -99,15 +103,17 @@ export function DocumentSettingsDialog({
       }
 
       const { storageId } = await result.json();
-      
+
       await updateCoverImage({
         documentId,
         coverImageId: storageId as Id<"_storage">,
       });
-      
+
       toast.success("Cover image updated");
     } catch (error) {
-      handleError(error, { context: "DocumentSettingsDialog.handleImageUpload" });
+      handleError(error, {
+        context: "DocumentSettingsDialog.handleImageUpload",
+      });
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
@@ -127,7 +133,9 @@ export function DocumentSettingsDialog({
       });
       toast.success("Cover image removed");
     } catch (error) {
-      handleError(error, { context: "DocumentSettingsDialog.handleRemoveCoverImage" });
+      handleError(error, {
+        context: "DocumentSettingsDialog.handleRemoveCoverImage",
+      });
     }
   };
 
@@ -144,7 +152,9 @@ export function DocumentSettingsDialog({
           {/* Sidebar Navigation */}
           <div className="w-48 border-r bg-muted/30 p-4 flex flex-col gap-1">
             <DialogHeader className="pb-4">
-              <DialogTitle className="text-sm font-medium">Settings</DialogTitle>
+              <DialogTitle className="text-sm font-medium">
+                Settings
+              </DialogTitle>
             </DialogHeader>
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -157,7 +167,7 @@ export function DocumentSettingsDialog({
                     "flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors text-left",
                     activeSection === item.id
                       ? "bg-background shadow-sm font-medium"
-                      : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+                      : "text-muted-foreground hover:text-foreground hover:bg-background/50",
                   )}
                 >
                   <Icon className="h-4 w-4" />
@@ -174,8 +184,8 @@ export function DocumentSettingsDialog({
                 <div>
                   <h3 className="text-lg font-medium mb-1">Cover Image</h3>
                   <p className="text-sm text-muted-foreground">
-                    Add a cover image that will be displayed on your document card.
-                    A cover image is required to submit for review.
+                    Add a cover image that will be displayed on your document
+                    card. A cover image is required to submit for review.
                   </p>
                 </div>
 
@@ -197,7 +207,7 @@ export function DocumentSettingsDialog({
                       </Button>
                     </div>
                   ) : (
-                    <div 
+                    <div
                       className="flex aspect-video w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed bg-muted/50 hover:bg-muted/70 transition-colors"
                       onClick={() => fileInputRef.current?.click()}
                     >
@@ -209,7 +219,9 @@ export function DocumentSettingsDialog({
                         )}
                       </div>
                       <div className="text-sm font-medium text-muted-foreground">
-                        {isUploading ? "Uploading..." : "Click to upload cover image"}
+                        {isUploading
+                          ? "Uploading..."
+                          : "Click to upload cover image"}
                       </div>
                       <div className="text-xs text-muted-foreground/70">
                         Recommended: 1200 x 630 pixels
@@ -224,41 +236,6 @@ export function DocumentSettingsDialog({
                     onChange={handleImageUpload}
                     disabled={isUploading}
                   />
-                </div>
-
-                <div className="space-y-3 pt-4 border-t">
-                  <Label>Document Type</Label>
-                  <div className="grid grid-cols-1 gap-2">
-                    {(
-                      Object.entries(documentTypeConfig) as [
-                        DocumentType,
-                        (typeof documentTypeConfig)[DocumentType],
-                      ][]
-                    ).map(([key, config]) => {
-                      const Icon = config.icon;
-                      return (
-                        <button
-                          key={key}
-                          type="button"
-                          onClick={() => setType(key)}
-                          className={cn(
-                            "flex items-start gap-3 p-3 rounded-lg border text-left transition-colors",
-                            type === key
-                              ? "border-primary bg-primary/5"
-                              : "border-border hover:border-primary/50",
-                          )}
-                        >
-                          <Icon className="h-5 w-5 mt-0.5 shrink-0" />
-                          <div>
-                            <div className="font-medium">{config.label}</div>
-                            <div className="text-sm text-muted-foreground">
-                              {config.description}
-                            </div>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
                 </div>
 
                 <div className="flex justify-end gap-2 pt-4 border-t">
