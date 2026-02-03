@@ -14,7 +14,7 @@ import { useQuery } from "convex/react";
 
 import { authClient } from "@/lib/auth-client";
 
-export function UserMenu(): React.ReactNode {
+export function UserMenu() {
   const user = useQuery(api.auth.getCurrentUser);
 
   return (

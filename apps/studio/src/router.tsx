@@ -37,6 +37,7 @@ export function getRouter(): Router<typeof routeTree, "preserve"> {
     defaultPendingComponent: () => <Loader />,
     defaultNotFoundComponent: () => <Navigate to="/" replace />,
     context: { queryClient, convexQueryClient },
+    trailingSlash: "preserve",
   });
 
   setupRouterSsrQueryIntegration({

@@ -33,15 +33,20 @@ export function AdvancedEditor({
   className,
   uploadFn = null,
   onUploadError,
-}: AdvancedEditorProps): React.ReactNode {
-  const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">(
+}: AdvancedEditorProps) {
+  const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved" | "error">(
     "saved",
   );
 
   const debouncedUpdate = useDebouncedCallback(async (content: JSONContent) => {
     setSaveStatus("saving");
-    onDebouncedUpdate?.(content);
-    setSaveStatus("saved");
+    try {
+      await onDebouncedUpdate?.(content);
+      setSaveStatus("saved");
+    } catch (error) {
+      console.error("[AdvancedEditor] Failed to save:", error);
+      setSaveStatus("error");
+    }
   }, debounceMs);
 
   return (
@@ -57,11 +62,14 @@ export function AdvancedEditor({
                   "text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20",
                 saveStatus === "unsaved" &&
                   "text-orange-600 bg-orange-50 dark:bg-orange-900/20",
+                saveStatus === "error" &&
+                  "text-red-600 bg-red-50 dark:bg-red-900/20",
               )}
             >
               {saveStatus === "saved" && "Saved"}
               {saveStatus === "saving" && "Saving..."}
               {saveStatus === "unsaved" && "Unsaved changes"}
+              {saveStatus === "error" && "Error saving"}
             </span>
           </div>
         )}

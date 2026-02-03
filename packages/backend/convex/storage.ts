@@ -16,10 +16,17 @@ export const generateUploadUrl = mutation({
 
 /**
  * Get a URL for a stored file.
+ * Requires authentication to access storage URLs.
  */
 export const getUrl = query({
   args: { storageId: v.id("_storage") },
   handler: async (ctx, args): Promise<string | null> => {
+    // Require authentication for storage access
+    const user = await Auth.getCurrentUserOrNull(ctx);
+    if (!user) {
+      return null;
+    }
+    
     return await ctx.storage.getUrl(args.storageId);
   },
 });

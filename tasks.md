@@ -2,8 +2,8 @@
 - [x] [Email implementation](../../.tasks/email-implementation.md)
 - [x] [Remove the "Save document" button on `/editor/new` (auto-save)](../../.tasks/new-document.md)
 - [ ] [Fix the admin review section](../../.tasks/admin.md)
-- [ ] [Require a cover before sending a document to review](../../.tasks/sent-review.md)
-- [ ] [Improve document cards](../../.tasks/sent-review.md)
+- [x] [Require a cover before sending a document to review](../../.tasks/sent-review.md)
+- [x] [Improve document cards](../../.tasks/sent-review.md)
 - [ ] [Refining the settings dialog UX](../../.tasks/sent-review.md)
 - [ ] [Apply code review fixes (types, effects, routing, auth, Convex)](../../.tasks/code-review-fixes.md)
 - [x] Add general navigation sidebar and reorganize header information into it

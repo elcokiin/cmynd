@@ -75,3 +75,49 @@ Fixed README files: added individual READMEs to all packages and apps, updated r
   - Workspace packages table with descriptions.
   - Links to all package READMEs.
   - Architecture section explaining each package's purpose.
+
+Code review fixes - All TypeScript errors resolved:
+
+Studio App fixes:
+- `document-preview.tsx`: Added null guard for document (handles `document === null`)
+- `advanced-editor.tsx`: Updated `debouncedUpdate` to use `await onDebouncedUpdate?.(content)` with try/catch, added "error" save status
+- `document-settings-dialog.tsx`: Added useEffect to sync local state, removed unused imports (ImagePlusIcon, uploadFn)
+- `editable-document-title.tsx`: Added timeout cancellation on Escape key press
+- `error-boundary.tsx`: Removed invalid statusCode/context fields from console.error
+- `user-menu.tsx`: Removed invalid React.ReactNode return type annotation
+- `use-manual-pagination.ts`: Verified already uses useEffect correctly
+- `use-url-synced-pagination.ts`: Removed isInitialMount ref, fixed URL param preservation, removed unused currentSearch
+- `use-convex-image-upload.ts`: Fixed to use `useConvex().query()` instead of useMutation for getUrl (query not mutation)
+- `router.tsx`: Added `trailingSlash: "preserve"` option to match return type
+- `_auth/index.tsx`: Fixed navigation to use `/editor/$slug` (actual URL path, not file-based path)
+- `_auth/editor/new.tsx`: Fixed back button to navigate to `/` instead of `/_auth`
+- `app-sidebar.tsx`: Updated navigation links to use actual URL paths (`/`, `/admin`)
+- `dashboard-pending-list.tsx`: Fixed navigate search type by specifying `to: "/admin"`
+
+Backend (Convex) fixes:
+- `authors/helpers.ts`: Fixed ctx.db.get(authorId) call (removed table name argument)
+- `authors/queries.ts`: Added toPublicAuthor() call to return PublicAuthor type
+- `documents/mutations.ts`: Added pending status check in publish mutation
+- `storage.ts`: Added authentication check in getUrl query
+- `global.d.ts`: Created type declarations for slug module
+
+UI Package fixes:
+- `dialog.tsx`: Added "use client" directive
+- `theme-toggle.tsx`: Added "use client" directive
+- `sidebar.tsx`: Fixed all imports to use relative paths instead of src/ paths
+- `sheet.tsx`: Fixed imports to use relative paths
+- `tooltip.tsx`: Fixed imports to use relative paths
+- `button.tsx`: Fixed import to use relative path
+- `input.tsx`: Fixed import to use relative path
+- `separator.tsx`: Fixed import to use relative path
+- `skeleton.tsx`: Fixed import to use relative path
+
+Config fixes:
+- `studio/tsconfig.json`: Added backend global.d.ts to include for slug types
+- `backend/package.json`: Removed @types/slug (incompatible with slug v11 ESM)
+- `studio/package.json`: Added check-types script
+
+All packages now pass `bun run check-types`:
+- apps/studio: PASS
+- packages/ui: PASS
+- packages/backend: PASS

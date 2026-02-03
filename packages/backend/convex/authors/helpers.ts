@@ -52,7 +52,7 @@ export async function getAuthorById(
   ctx: QueryCtx,
   authorId: Id<"authors">,
 ): Promise<Doc<"authors">> {
-  const author = await ctx.db.get("authors", authorId);
+  const author = await ctx.db.get(authorId);
   if (!author) {
     throwConvexError(
       ErrorCode.AUTHOR_NOT_FOUND,

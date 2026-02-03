@@ -16,7 +16,7 @@ type DocumentPreviewProps = {
 
 export function DocumentPreview({
   slug,
-}: DocumentPreviewProps): React.ReactNode {
+}: DocumentPreviewProps) {
   const document = useQuery(
     api.documents.queries.getForAdminReviewBySlug,
     slug ? { slug } : "skip",
@@ -40,6 +40,19 @@ export function DocumentPreview({
         <div className="max-w-3xl mx-auto">
           <ReviewPreviewSkeleton />
         </div>
+      </div>
+    );
+  }
+
+  // Handle null document (document not found)
+  if (document === null) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-center p-6">
+        <FileTextIcon className="h-12 w-12 text-muted-foreground mb-4" />
+        <h3 className="text-lg font-medium mb-1">Document not found</h3>
+        <p className="text-sm text-muted-foreground max-w-sm">
+          The document you're looking for doesn't exist or has been deleted
+        </p>
       </div>
     );
   }

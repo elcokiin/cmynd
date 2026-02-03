@@ -1,7 +1,7 @@
 import type { UploadFn } from "@elcokiin/backend/lib/types";
 
 import { api } from "@elcokiin/backend/convex/_generated/api";
-import { useMutation } from "convex/react";
+import { useConvex, useMutation } from "convex/react";
 import { useCallback } from "react";
 
 /**
@@ -11,8 +11,8 @@ import { useCallback } from "react";
  * @returns Upload function that accepts a File and returns a Promise with the public URL
  */
 function useConvexImageUpload(): UploadFn {
+  const convex = useConvex();
   const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
-  const getStorageUrl = useMutation(api.storage.getUrl);
 
   return useCallback(
     async (file: File): Promise<string> => {
@@ -30,14 +30,14 @@ function useConvexImageUpload(): UploadFn {
 
       const { storageId } = await response.json();
 
-      const url = await getStorageUrl({ storageId });
+      const url = await convex.query(api.storage.getUrl, { storageId });
       if (!url) {
         throw new Error("Failed to get file URL");
       }
 
       return url;
     },
-    [generateUploadUrl, getStorageUrl],
+    [convex, generateUploadUrl],
   );
 }
 

@@ -11,7 +11,7 @@ import {
 } from "@elcokiin/ui/dialog";
 import { cn } from "@elcokiin/ui/lib/utils";
 import { useMutation, useQuery } from "convex/react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { XIcon, ImageIcon, BookOpenIcon, LinkIcon } from "lucide-react";
 
@@ -32,14 +32,19 @@ export function DocumentSettingsDialog({
   currentType,
   open,
   onOpenChange,
-}: DocumentSettingsDialogProps): React.ReactNode {
+}: DocumentSettingsDialogProps) {
   const [type, setType] = useState<DocumentType>(currentType);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [activeSection, setActiveSection] =
     useState<NavigationSection>("cover");
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  
+  // Sync local state when dialog opens or currentType changes
+  useEffect(() => {
+    setType(currentType);
+  }, [currentType, open]);
+  
   const { handleError } = useErrorHandler();
 
   const document = useQuery(api.documents.queries.getForEdit, { documentId });
