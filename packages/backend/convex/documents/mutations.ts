@@ -330,6 +330,11 @@ export const submit = mutation({
       );
     }
 
+    // Require cover image for submission
+    if (!document.coverImageId) {
+      throwConvexError(ErrorCode.DOCUMENT_COVER_REQUIRED);
+    }
+
     // Rate limiting: check submission history
     const submissionHistory = document.submissionHistory ?? [];
     const now = Date.now();

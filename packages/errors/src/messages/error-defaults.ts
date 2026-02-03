@@ -24,6 +24,7 @@ export const ERROR_DEFAULTS: Record<ErrorCode, string> = {
   [ErrorCodes.DOCUMENT_INVALID_STATUS]: "Invalid document status for this operation",
   [ErrorCodes.DOCUMENT_INVALID_TITLE]: "Document title is invalid: cannot be 'Untitled' or empty",
   [ErrorCodes.DOCUMENT_EMPTY]: "Cannot save document: no valid title and no content",
+  [ErrorCodes.DOCUMENT_COVER_REQUIRED]: "Document requires a cover image to be submitted for review",
 
   // Validation Errors (3xxx)
   [ErrorCodes.VALIDATION_ERROR]: "Validation failed",

@@ -1,5 +1,17 @@
 # Ralphy Progress Log
 
+Tue Feb 03 2026
+Improved document cards and settings dialog:
+- Refactored document settings dialog with sidebar navigation (Cover, Curate, References tabs).
+- Added placeholder views for Curate and References features ("This feature is still being built.").
+- Added cover image requirement validation - documents now require a cover image before submission.
+- Added new error code DOCUMENT_COVER_REQUIRED (DOC_2011) with user-friendly messages.
+- Completely redesigned document cards with two variants:
+  - Card with cover: Shows cover image with gradient overlay, title overlaid, hover zoom effect.
+  - Card without cover: Shows decorative gradient pattern with document type icon.
+- Both card variants feature improved hover states, status badges, and consistent styling.
+- Updated document card menu styling for better visibility on image backgrounds.
+
 Mon Jan 19 09:33:49 PM -05 2026
 Implemented cover image upload in document settings dialog
 - Added email verification configuration to Better Auth in `packages/backend/convex/auth.ts`.

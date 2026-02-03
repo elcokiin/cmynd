@@ -57,7 +57,7 @@ export function DocumentCardMenu({ document, onEdit }: DocumentCardMenuProps): R
         <DropdownMenuTrigger
           className={cn(
             buttonVariants({ variant: "ghost", size: "icon" }),
-            "h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer",
+            "h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer bg-background/80 backdrop-blur-sm hover:bg-background",
           )}
         >
           <MoreVerticalIcon className="h-4 w-4" />

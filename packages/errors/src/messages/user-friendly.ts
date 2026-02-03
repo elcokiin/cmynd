@@ -21,6 +21,7 @@ export const USER_FRIENDLY_MESSAGES: Record<ErrorCode, string> = {
   [ErrorCode.DOCUMENT_INVALID_STATUS]: "Invalid document status",
   [ErrorCode.DOCUMENT_INVALID_TITLE]: "Please provide a valid title for your document",
   [ErrorCode.DOCUMENT_EMPTY]: "Your document needs either a title or some content to be saved",
+  [ErrorCode.DOCUMENT_COVER_REQUIRED]: "Please add a cover image before submitting for review",
 
   // Validation Errors
   [ErrorCode.VALIDATION_ERROR]: "Some fields contain invalid data",
