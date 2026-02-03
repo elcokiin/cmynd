@@ -1,7 +1,7 @@
 import type { Doc } from "../_generated/dataModel";
 import type {
   DocumentListItem,
-  PendingDocumentListItem,
+  AdminDocumentListItem,
   PublishedDocumentListItem,
 } from "../../lib/types/documents";
 import type { PublicAuthor } from "../../lib/types/authors";
@@ -41,22 +41,28 @@ export function toDocumentListItem(doc: Doc<"documents">): DocumentListItem {
 }
 
 /**
- * Project document to pending list item (for admin review list).
- * Contains minimal metadata for pending documents awaiting review.
+ * Project document to admin list item (for admin review and management).
+ * Contains minimal metadata for all document statuses.
  */
-export function toPendingDocumentListItem(
+export function toAdminDocumentListItem(
   doc: Doc<"documents">,
-): PendingDocumentListItem {
+): AdminDocumentListItem {
   return {
     _id: doc._id,
     title: doc.title,
     slug: doc.slug,
     type: doc.type,
+    status: doc.status,
     submittedAt: doc.submittedAt,
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
   };
 }
+
+/**
+ * @deprecated Use toAdminDocumentListItem instead
+ */
+export const toPendingDocumentListItem = toAdminDocumentListItem;
 
 /**
  * Project document and author to published document list item.

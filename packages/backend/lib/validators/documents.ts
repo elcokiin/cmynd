@@ -81,16 +81,22 @@ export const documentListItemValidator = v.object({
   rejectionReason: v.optional(v.string()),
 });
 
-// Minimal fields for admin review
-export const pendingDocumentListItemValidator = v.object({
+// Minimal fields for admin review and management
+export const adminDocumentListItemValidator = v.object({
   _id: v.id("documents"),
   title: v.string(),
   slug: v.string(),
   type: documentTypeValidator,
+  status: documentStatusValidator,
   submittedAt: v.optional(v.number()),
   createdAt: v.number(),
   updatedAt: v.number(),
 });
+
+/**
+ * @deprecated Use adminDocumentListItemValidator instead
+ */
+export const pendingDocumentListItemValidator = adminDocumentListItemValidator;
 
 // Includes author info, excludes content
 export const publishedDocumentListItemValidator = v.object({
@@ -108,9 +114,14 @@ export const paginatedDocumentListValidator = paginatedValidator(
   documentListItemValidator,
 );
 
-export const paginatedPendingDocumentListValidator = paginatedValidator(
-  pendingDocumentListItemValidator,
+export const paginatedAdminDocumentListValidator = paginatedValidator(
+  adminDocumentListItemValidator,
 );
+
+/**
+ * @deprecated Use paginatedAdminDocumentListValidator instead
+ */
+export const paginatedPendingDocumentListValidator = paginatedAdminDocumentListValidator;
 
 export const paginatedPublishedDocumentListValidator = paginatedValidator(
   publishedDocumentListItemValidator,

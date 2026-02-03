@@ -1,9 +1,9 @@
 ## Tasks
 - [x] [Email implementation](../../.tasks/email-implementation.md)
 - [x] [Remove the "Save document" button on `/editor/new` (auto-save)](../../.tasks/new-document.md)
-- [ ] [Fix the admin review section](../../.tasks/admin.md)
+- [x] [Fix the admin review section](../../.tasks/admin.md)
 - [x] ../../.tasks/sent-review.md
-- [ ] [Apply code review fixes (types, effects, routing, auth, Convex)](../../.tasks/code-review-fixes.md)
+- [x] [Apply code review fixes (types, effects, routing, auth, Convex)](../../.tasks/code-review-fixes.md)
 - [x] Add general navigation sidebar and reorganize header information into it
 - [x] Review and improve breadcrumb implementation do something more like layout
 - [x] Fix README files: add individual READMEs to all packages and apps, update root README to explain project structure, catalog, and purpose

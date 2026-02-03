@@ -71,18 +71,25 @@ export type DocumentListItem = {
 };
 
 /**
- * Pending document list item for admin review.
- * Contains minimal metadata for pending documents awaiting review.
+ * Admin document list item for admin review and management.
+ * Contains minimal metadata for documents in admin views (all statuses).
  */
-export type PendingDocumentListItem = {
+export type AdminDocumentListItem = {
   _id: Id<"documents">;
   title: string;
   slug: string;
   type: DocumentType;
+  status: DocumentStatus;
   submittedAt?: number;
   createdAt: number;
   updatedAt: number;
 };
+
+/**
+ * @deprecated Use AdminDocumentListItem instead
+ * Kept for backward compatibility during migration.
+ */
+export type PendingDocumentListItem = AdminDocumentListItem;
 
 /**
  * Published document with full content and author information.

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { FileTextIcon, MessageSquareIcon } from "lucide-react";
 
 import { MobileTabBar } from "@/components/admin/mobile-tab-bar";
@@ -8,17 +8,22 @@ import { DocumentPreview } from "@/components/admin/document-preview";
 import { ReviewSidebar } from "@/components/admin/review-sidebar";
 import { ReviewSkeleton } from "@/components/admin/review-skeleton";
 
-export const Route = createFileRoute("/_auth/admin/review/$slug")({
+export const Route = createFileRoute("/_auth/admin/review_/$slug")({
   component: AdminReviewPage,
   pendingComponent: ReviewSkeleton,
 });
 
 function AdminReviewPage() {
   const { slug } = Route.useParams();
+  const navigate = useNavigate();
   const [mobileTab, setMobileTab] = useState<MobileTab>("preview");
 
   function handleTabChange(tabId: string): void {
     setMobileTab(tabId as MobileTab);
+  }
+
+  function handleActionComplete(): void {
+    navigate({ to: "/admin" });
   }
 
   return (
@@ -55,7 +60,7 @@ function AdminReviewPage() {
             <div className="sticky w-80 border-l p-4 overflow-auto">
               <ReviewSidebar
                 slug={slug}
-                onActionComplete={() => window.location.href = "/admin"}
+                onActionComplete={handleActionComplete}
               />
             </div>
           </div>
@@ -69,7 +74,7 @@ function AdminReviewPage() {
               <div className="p-4">
                 <ReviewSidebar
                   slug={slug}
-                  onActionComplete={() => window.location.href = "/admin"}
+                  onActionComplete={handleActionComplete}
                 />
               </div>
             )}

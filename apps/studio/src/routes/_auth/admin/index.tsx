@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { AdminDashboardSkeleton } from "@/components/admin/admin-dashboard-skeleton";
 import { DashboardStatsGrid } from "@/components/admin/dashboard-stats-grid";
-import { DashboardPendingList } from "@/components/admin/dashboard-pending-list";
+import { DashboardDocumentList } from "@/components/admin/dashboard-document-list";
 
 type DashboardSearch = {
   page?: number;
@@ -39,8 +39,8 @@ function AdminDashboard() {
         {/* Stats Grid Component */}
         <DashboardStatsGrid />
 
-        {/* Pending Documents List Component */}
-        <DashboardPendingList urlPage={urlPage} status={status} search={search} />
+        {/* Documents List Component */}
+        <DashboardDocumentList urlPage={urlPage} status={status} search={search} />
       </div>
     </div>
   );

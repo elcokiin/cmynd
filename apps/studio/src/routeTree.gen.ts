@@ -17,7 +17,7 @@ import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AuthEditorNewRouteImport } from './routes/_auth/editor/new'
 import { Route as AuthEditorSlugRouteImport } from './routes/_auth/editor/$slug'
 import { Route as AuthAdminReviewRouteImport } from './routes/_auth/admin/review'
-import { Route as AuthAdminReviewSlugRouteImport } from './routes/_auth/admin/review.$slug'
+import { Route as AuthAdminReviewSlugRouteImport } from './routes/_auth/admin/review_.$slug'
 
 const AuthRouteRoute = AuthRouteRouteImport.update({
   id: '/_auth',
@@ -59,15 +59,15 @@ const AuthAdminReviewRoute = AuthAdminReviewRouteImport.update({
   getParentRoute: () => AuthAdminRouteRoute,
 } as any)
 const AuthAdminReviewSlugRoute = AuthAdminReviewSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => AuthAdminReviewRoute,
+  id: '/review_/$slug',
+  path: '/review/$slug',
+  getParentRoute: () => AuthAdminRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/admin': typeof AuthAdminRouteRouteWithChildren
   '/': typeof AuthIndexRoute
-  '/admin/review': typeof AuthAdminReviewRouteWithChildren
+  '/admin/review': typeof AuthAdminReviewRoute
   '/editor/$slug': typeof AuthEditorSlugRoute
   '/editor/new': typeof AuthEditorNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -76,7 +76,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof AuthIndexRoute
-  '/admin/review': typeof AuthAdminReviewRouteWithChildren
+  '/admin/review': typeof AuthAdminReviewRoute
   '/editor/$slug': typeof AuthEditorSlugRoute
   '/editor/new': typeof AuthEditorNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -88,12 +88,12 @@ export interface FileRoutesById {
   '/_auth': typeof AuthRouteRouteWithChildren
   '/_auth/admin': typeof AuthAdminRouteRouteWithChildren
   '/_auth/': typeof AuthIndexRoute
-  '/_auth/admin/review': typeof AuthAdminReviewRouteWithChildren
+  '/_auth/admin/review': typeof AuthAdminReviewRoute
   '/_auth/editor/$slug': typeof AuthEditorSlugRoute
   '/_auth/editor/new': typeof AuthEditorNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/_auth/admin/': typeof AuthAdminIndexRoute
-  '/_auth/admin/review/$slug': typeof AuthAdminReviewSlugRoute
+  '/_auth/admin/review_/$slug': typeof AuthAdminReviewSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -125,7 +125,7 @@ export interface FileRouteTypes {
     | '/_auth/editor/new'
     | '/api/auth/$'
     | '/_auth/admin/'
-    | '/_auth/admin/review/$slug'
+    | '/_auth/admin/review_/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -191,36 +191,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthAdminReviewRouteImport
       parentRoute: typeof AuthAdminRouteRoute
     }
-    '/_auth/admin/review/$slug': {
-      id: '/_auth/admin/review/$slug'
-      path: '/$slug'
+    '/_auth/admin/review_/$slug': {
+      id: '/_auth/admin/review_/$slug'
+      path: '/review/$slug'
       fullPath: '/admin/review/$slug'
       preLoaderRoute: typeof AuthAdminReviewSlugRouteImport
-      parentRoute: typeof AuthAdminReviewRoute
+      parentRoute: typeof AuthAdminRouteRoute
     }
   }
 }
 
-interface AuthAdminReviewRouteChildren {
+interface AuthAdminRouteRouteChildren {
+  AuthAdminReviewRoute: typeof AuthAdminReviewRoute
+  AuthAdminIndexRoute: typeof AuthAdminIndexRoute
   AuthAdminReviewSlugRoute: typeof AuthAdminReviewSlugRoute
 }
 
-const AuthAdminReviewRouteChildren: AuthAdminReviewRouteChildren = {
-  AuthAdminReviewSlugRoute: AuthAdminReviewSlugRoute,
-}
-
-const AuthAdminReviewRouteWithChildren = AuthAdminReviewRoute._addFileChildren(
-  AuthAdminReviewRouteChildren,
-)
-
-interface AuthAdminRouteRouteChildren {
-  AuthAdminReviewRoute: typeof AuthAdminReviewRouteWithChildren
-  AuthAdminIndexRoute: typeof AuthAdminIndexRoute
-}
-
 const AuthAdminRouteRouteChildren: AuthAdminRouteRouteChildren = {
-  AuthAdminReviewRoute: AuthAdminReviewRouteWithChildren,
+  AuthAdminReviewRoute: AuthAdminReviewRoute,
   AuthAdminIndexRoute: AuthAdminIndexRoute,
+  AuthAdminReviewSlugRoute: AuthAdminReviewSlugRoute,
 }
 
 const AuthAdminRouteRouteWithChildren = AuthAdminRouteRoute._addFileChildren(

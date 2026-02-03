@@ -1,27 +1,32 @@
-import type { PendingDocumentListItem } from "@elcokiin/backend/lib/types/documents";
+import type { AdminDocumentListItem } from "@elcokiin/backend/lib/types/documents";
 
+import { useState, useEffect } from "react";
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@elcokiin/ui/card";
 import { Pagination } from "@elcokiin/ui/pagination";
 import { Input } from "@elcokiin/ui/input";
+import { Badge } from "@elcokiin/ui/badge";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { HourglassIcon, SearchIcon } from "lucide-react";
 
 import { useUrlSyncedPagination } from "@/hooks/use-url-synced-pagination";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 
-type DashboardPendingListProps = {
+type DashboardDocumentListProps = {
   urlPage: number;
   status: "pending" | "published" | "all";
   search: string;
 };
 
-type PendingDocumentRowProps = {
-  document: PendingDocumentListItem;
+type DocumentRowProps = {
+  document: AdminDocumentListItem;
+  showStatusBadge: boolean;
 };
 
-function PendingDocumentRow({
+function DocumentRow({
   document,
-}: PendingDocumentRowProps): React.ReactNode {
+  showStatusBadge,
+}: DocumentRowProps): React.ReactNode {
   const formattedDate = new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
@@ -37,7 +42,17 @@ function PendingDocumentRow({
       className="flex items-center justify-between border-b pb-2 last:border-0 hover:bg-muted/50 rounded px-2 -mx-2 py-1 transition-colors"
     >
       <div className="flex-1">
-        <p className="font-medium">{document.title || "Untitled"}</p>
+        <div className="flex items-center gap-2">
+          <p className="font-medium">{document.title || "Untitled"}</p>
+          {showStatusBadge && (
+            <Badge
+              variant={document.status === "published" ? "default" : "secondary"}
+              className="text-xs"
+            >
+              {document.status === "published" ? "Published" : "Pending"}
+            </Badge>
+          )}
+        </div>
         <p className="text-sm text-muted-foreground capitalize">
           {document.type}
         </p>
@@ -49,13 +64,40 @@ function PendingDocumentRow({
   );
 }
 
-export function DashboardPendingList({
+export function DashboardDocumentList({
   urlPage,
   status,
   search,
-}: DashboardPendingListProps): React.ReactNode {
+}: DashboardDocumentListProps): React.ReactNode {
   const navigate = useNavigate();
   const ITEMS_PER_PAGE = 5;
+
+  // Local state for input (immediate updates for responsive typing)
+  const [localSearch, setLocalSearch] = useState(search);
+
+  // Debounced value for URL updates (avoid triggering navigation on every keystroke)
+  const debouncedSearch = useDebouncedValue(localSearch, 300);
+
+  // Sync local state with URL when URL changes externally (e.g., back/forward navigation)
+  useEffect(() => {
+    if (search !== localSearch) {
+      setLocalSearch(search);
+    }
+  }, [search]);
+
+  // Update URL when debounced search value changes
+  useEffect(() => {
+    if (debouncedSearch !== search) {
+      navigate({
+        to: "/admin",
+        search: (old) => ({
+          ...old,
+          search: debouncedSearch,
+          page: 1,
+        }),
+      });
+    }
+  }, [debouncedSearch, search, navigate]);
 
   const pagination = useUrlSyncedPagination(
     api.documents.queries.listForAdmin,
@@ -66,18 +108,11 @@ export function DashboardPendingList({
     },
   );
 
-  const pendingDocuments = pagination.items;
+  const documents = pagination.items;
   const isLoading = pagination.isLoading;
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    navigate({
-      to: "/admin",
-      search: (old) => ({
-        ...old,
-        search: e.target.value,
-        page: 1,
-      }),
-    });
+    setLocalSearch(e.target.value);
   };
 
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -91,6 +126,9 @@ export function DashboardPendingList({
     });
   };
 
+  // Show status badge when viewing "all" documents
+  const showStatusBadge = status === "all";
+
   return (
     <Card>
       <CardHeader>
@@ -99,11 +137,11 @@ export function DashboardPendingList({
           <div className="flex items-center space-x-2">
              <div className="relative">
               <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
+               <Input
                 type="search"
                 placeholder="Search..."
                 className="w-[200px] pl-8"
-                value={search}
+                value={localSearch}
                 onChange={handleSearchChange}
               />
             </div>
@@ -124,15 +162,19 @@ export function DashboardPendingList({
           <div className="py-10 text-center">
             <p className="text-muted-foreground">Loading documents...</p>
           </div>
-        ) : !pendingDocuments || pendingDocuments.length === 0 ? (
+        ) : !documents || documents.length === 0 ? (
           <div className="py-10 text-center">
             <HourglassIcon className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
             <p className="text-muted-foreground">No documents found</p>
           </div>
         ) : (
           <div className="space-y-3">
-            {pendingDocuments.map((doc) => (
-              <PendingDocumentRow key={doc._id} document={doc} />
+            {documents.map((doc) => (
+              <DocumentRow 
+                key={doc._id} 
+                document={doc} 
+                showStatusBadge={showStatusBadge}
+              />
             ))}
           </div>
         )}

@@ -13,13 +13,13 @@ import {
 } from "./helpers";
 import {
   toDocumentListItem,
-  toPendingDocumentListItem,
+  toAdminDocumentListItem,
   toPublicAuthor,
   toPublishedDocumentListItem,
 } from "./projections";
 import {
   paginatedDocumentListValidator,
-  paginatedPendingDocumentListValidator,
+  paginatedAdminDocumentListValidator,
   paginatedPublishedDocumentListValidator,
 } from "../../lib/validators/documents";
 import { getDocumentByOldSlug } from "./slug_helpers";
@@ -257,7 +257,7 @@ export const list = query({
  */
 export const listPendingForAdmin = query({
   args: { paginationOpts: paginationOptsValidator },
-  returns: paginatedPendingDocumentListValidator,
+  returns: paginatedAdminDocumentListValidator,
   handler: async (ctx, args) => {
     await Auth.requireAdmin(ctx);
 
@@ -269,7 +269,7 @@ export const listPendingForAdmin = query({
 
     return {
       ...result,
-      page: result.page.map(toPendingDocumentListItem),
+      page: result.page.map(toAdminDocumentListItem),
     };
   },
 });
@@ -286,7 +286,7 @@ export const listForAdmin = query({
     status: v.optional(v.union(v.literal("pending"), v.literal("published"), v.literal("all"))),
     search: v.optional(v.string()),
   },
-  returns: paginatedPendingDocumentListValidator,
+  returns: paginatedAdminDocumentListValidator,
   handler: async (ctx, args) => {
     await Auth.requireAdmin(ctx);
 
@@ -320,7 +320,7 @@ export const listForAdmin = query({
 
     return {
       ...result,
-      page: result.page.map(toPendingDocumentListItem),
+      page: result.page.map(toAdminDocumentListItem),
     };
   },
 });
