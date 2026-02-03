@@ -12,7 +12,8 @@ import { paginatedAuthorsValidator } from "../../lib/validators/authors";
 export const get = query({
   args: { authorId: v.id("authors") },
   handler: async (ctx, args): Promise<PublicAuthor> => {
-    return await getAuthorById(ctx, args.authorId);
+    const author = await getAuthorById(ctx, args.authorId);
+    return toPublicAuthor(author);
   },
 });
 

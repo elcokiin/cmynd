@@ -58,12 +58,15 @@ function NewDocumentRoute() {
       });
 
       documentIdRef.current = result.documentId;
+      
+      // Navigate to the editor route with the new document's slug
+      navigate({ to: "/editor/$slug", params: { slug: result.slug } });
     } catch (error) {
       handleError(error, { context: "Failed to create document" });
     } finally {
       isSavingRef.current = false;
     }
-  }, [createDocument, handleError]);
+  }, [createDocument, handleError, navigate]);
 
   // Save title changes (only if document exists)
   const saveTitleChange = useCallback(async () => {

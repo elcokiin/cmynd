@@ -1,6 +1,6 @@
 import type { FunctionReference } from "convex/server";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
 
 import { useManualPagination } from "./use-manual-pagination";
@@ -70,29 +70,24 @@ export function useUrlSyncedPagination<
 
   const pagination = useManualPagination(query, args, pageSize);
 
-  // Track if this is the initial mount to prevent circular updates
-  const isInitialMount = useRef(true);
-
-  // Effect 1: URL → Pagination State (on mount only)
-  // When component mounts or URL changes, sync pagination to match URL
+  // Effect 1: URL → Pagination State
+  // Sync pagination to URL when urlPage changes (e.g., back/forward navigation)
   useEffect(() => {
-    if (isInitialMount.current && pagination.currentPage !== urlPage) {
+    if (pagination.currentPage !== urlPage) {
       pagination.goToPage(urlPage);
-      isInitialMount.current = false;
     }
   }, [urlPage, pagination.currentPage, pagination.goToPage]);
 
-  // Effect 2: Pagination State → URL (skip on mount and during loading)
-  // When user changes page, update URL to match
+  // Effect 2: Pagination State → URL
+  // When user changes page via pagination controls, update URL preserving existing params
   useEffect(() => {
     if (
-      !isInitialMount.current &&
       !pagination.isLoading &&
       pagination.currentPage !== urlPage
     ) {
       navigate({
-        search: { page: pagination.currentPage } as any,
-      });
+        search: (prev: Record<string, unknown>) => ({ ...prev, page: pagination.currentPage }),
+      } as Parameters<typeof navigate>[0]);
     }
   }, [pagination.currentPage, pagination.isLoading, urlPage, navigate]);
 

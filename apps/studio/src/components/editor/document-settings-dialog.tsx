@@ -14,13 +14,12 @@ import {
 import { Label } from "@elcokiin/ui/label";
 import { cn } from "@elcokiin/ui/lib/utils";
 import { useMutation } from "convex/react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
-import { ImagePlusIcon, XIcon, ImageIcon } from "lucide-react";
+import { XIcon, ImageIcon } from "lucide-react";
 
 import { documentTypeConfig } from "@/components/dashboard/document-type-config";
 import { useErrorHandler } from "@/hooks/use-error-handler";
-import { useConvexImageUpload } from "@/hooks/use-convex-image-upload";
 import { useQuery } from "convex/react";
 
 type DocumentSettingsDialogProps = {
@@ -35,14 +34,18 @@ export function DocumentSettingsDialog({
   currentType,
   open,
   onOpenChange,
-}: DocumentSettingsDialogProps): React.ReactNode {
+}: DocumentSettingsDialogProps) {
   const [type, setType] = useState<DocumentType>(currentType);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
+  // Sync local state when dialog opens or currentType changes
+  useEffect(() => {
+    setType(currentType);
+  }, [currentType, open]);
+  
   const { handleError } = useErrorHandler();
-  const uploadFn = useConvexImageUpload();
 
   const document = useQuery(api.documents.queries.getForEdit, { documentId });
   const coverImageUrl = useQuery(api.storage.getUrl, 

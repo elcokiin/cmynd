@@ -71,6 +71,7 @@ export function DashboardPendingList({
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     navigate({
+      to: "/admin",
       search: (old) => ({
         ...old,
         search: e.target.value,
@@ -81,9 +82,10 @@ export function DashboardPendingList({
 
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     navigate({
+      to: "/admin",
       search: (old) => ({
         ...old,
-        status: e.target.value as any,
+        status: e.target.value as "pending" | "published" | "all",
         page: 1,
       }),
     });

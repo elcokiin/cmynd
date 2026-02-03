@@ -260,6 +260,7 @@ export const updateContent = mutation({
 /**
  * Publish a document.
  * Changes status from "building" to "published".
+ * Cannot publish if document is pending review.
  */
 export const publish = mutation({
   args: { documentId: v.id("documents") },
@@ -268,6 +269,13 @@ export const publish = mutation({
 
     if (document.status === "published") {
       throwConvexError(ErrorCode.DOCUMENT_ALREADY_PUBLISHED);
+    }
+
+    if (document.status === "pending") {
+      throwConvexError(
+        ErrorCode.DOCUMENT_PENDING_REVIEW,
+        "Cannot publish a document that is pending review",
+      );
     }
 
     if (!document.title || document.title.trim() === "") {

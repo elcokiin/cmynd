@@ -30,7 +30,7 @@ type EditableDocumentTitleProps =
 
 export function EditableDocumentTitle(
   props: EditableDocumentTitleProps
-): React.ReactNode {
+) {
   const isControlledMode = "title" in props && props.title !== undefined;
 
   const [localTitle, setLocalTitle] = useState(
@@ -126,6 +126,11 @@ export function EditableDocumentTitle(
       handleTitleBlur();
     }
     if (e.key === "Escape") {
+      // Cancel any pending debounced save before reverting state
+      if (titleUpdateTimeoutRef.current) {
+        clearTimeout(titleUpdateTimeoutRef.current);
+        titleUpdateTimeoutRef.current = null;
+      }
       const fallbackTitle = isControlledMode
         ? props.title
         : props.initialTitle || "Untitled";

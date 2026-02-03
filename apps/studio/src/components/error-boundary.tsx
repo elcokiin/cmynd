@@ -31,8 +31,6 @@ export class ErrorBoundary extends Component<
     console.error("[ErrorBoundary] Uncaught error:", {
       message: parsed.message,
       code: parsed.code,
-      statusCode: parsed.statusCode,
-      context: parsed.context,
       componentStack: errorInfo.componentStack,
       error,
     });
