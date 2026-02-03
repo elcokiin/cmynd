@@ -17,3 +17,6 @@ Improve the "send to review" experience by making the cover required, refining t
   - Provide two variants:
     - Card without a cover (fallback layout)
     - Card with a cover image
+- Refining the settings dialog UX
+  - Make a sidebar (without trigger) inside the settings dialog
+    - Split the Cover config and the type of document in differents items in the sidebar
