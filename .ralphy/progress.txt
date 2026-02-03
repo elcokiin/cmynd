@@ -48,3 +48,18 @@ Implemented production email sending with Resend for Better Auth:
   - Password reset sends real emails via Resend when API key is configured.
   - Development mode logs verification/reset URLs to console for easy testing.
   - Graceful error handling (no app crashes if email fails).
+
+Tue Feb 03 2026
+Fixed README files: added individual READMEs to all packages and apps, updated root README:
+- Created `packages/backend/README.md` - Documents Convex backend structure, exports, scripts, and dependencies.
+- Created `packages/ui/README.md` - Lists all UI components, usage patterns, and dependencies.
+- Created `packages/errors/README.md` - Documents error codes, categories, and usage examples.
+- Created `packages/env/README.md` - Documents environment variables for studio and backend.
+- Created `packages/config/README.md` - Documents base TypeScript configuration.
+- Created `apps/studio/README.md` - Documents web app structure, routes, and features.
+- Updated root `README.md` with:
+  - Comprehensive project structure overview.
+  - Package catalog with shared dependency versions.
+  - Workspace packages table with descriptions.
+  - Links to all package READMEs.
+  - Architecture section explaining each package's purpose.
