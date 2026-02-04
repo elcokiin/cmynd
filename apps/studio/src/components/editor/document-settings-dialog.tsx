@@ -11,16 +11,21 @@ import {
 } from "@elcokiin/ui/dialog";
 import { cn } from "@elcokiin/ui/lib/utils";
 import { useMutation, useQuery } from "convex/react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { toast } from "sonner";
-import { XIcon, ImageIcon, BookOpenIcon, LinkIcon } from "lucide-react";
+import {
+  XIcon,
+  ImageIcon,
+  BookOpenIcon,
+  LinkIcon,
+  SettingsIcon,
+} from "lucide-react";
 
-// import { documentTypeConfig } from "@/components/dashboard/document-type-config";
 import { useErrorHandler } from "@/hooks/use-error-handler";
 
 type DocumentSettingsDialogProps = {
   documentId: Id<"documents">;
-  currentType: DocumentType;
+  currentType?: DocumentType;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
@@ -33,18 +38,11 @@ export function DocumentSettingsDialog({
   open,
   onOpenChange,
 }: DocumentSettingsDialogProps) {
-  const [type, setType] = useState<DocumentType>(currentType);
-  const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [activeSection, setActiveSection] =
     useState<NavigationSection>("cover");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
-  // Sync local state when dialog opens or currentType changes
-  useEffect(() => {
-    setType(currentType);
-  }, [currentType, open]);
-  
+
   const { handleError } = useErrorHandler();
 
   const document = useQuery(api.documents.queries.getForEdit, { documentId });
@@ -53,30 +51,11 @@ export function DocumentSettingsDialog({
     document?.coverImageId ? { storageId: document.coverImageId } : "skip",
   );
 
-  const updateType = useMutation(api.documents.mutations.updateType);
   const updateCoverImage = useMutation(
     api.documents.mutations.updateCoverImage,
   );
   const deleteFile = useMutation(api.storage.deleteFile);
   const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
-
-  const handleSave = async () => {
-    if (type === currentType) {
-      onOpenChange(false);
-      return;
-    }
-
-    setIsSaving(true);
-    try {
-      await updateType({ documentId, type });
-      toast.success("Document settings updated");
-      onOpenChange(false);
-    } catch (error) {
-      handleError(error, { context: "DocumentSettingsDialog.handleSave" });
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   const handleImageUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -242,15 +221,6 @@ export function DocumentSettingsDialog({
                     disabled={isUploading}
                   />
                 </div>
-
-                <div className="flex justify-end gap-2 pt-4 border-t">
-                  <Button variant="ghost" onClick={() => onOpenChange(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleSave} disabled={isSaving}>
-                    {isSaving ? "Saving..." : "Save Changes"}
-                  </Button>
-                </div>
               </div>
             )}
 
@@ -295,5 +265,41 @@ export function DocumentSettingsDialog({
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+type ButtonSettingsProps = {
+  documentId: Id<"documents"> | null;
+  currentType?: DocumentType;
+};
+
+export function ButtonSettings({
+  documentId,
+  currentType,
+}: ButtonSettingsProps): React.ReactNode {
+  const [open, setOpen] = useState(false);
+
+  const isDisabled = !documentId;
+
+  return (
+    <>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setOpen(true)}
+        disabled={isDisabled}
+        title={isDisabled ? "Save document first" : "Document settings"}
+      >
+        <SettingsIcon className="h-4 w-4" />
+      </Button>
+      {documentId && (
+        <DocumentSettingsDialog
+          documentId={documentId}
+          currentType={currentType}
+          open={open}
+          onOpenChange={setOpen}
+        />
+      )}
+    </>
   );
 }

@@ -10,6 +10,8 @@ import type { JSONContent } from "novel";
 
 import { AdvancedEditor } from "@/components/editor/advanced-editor";
 import { EditableDocumentTitle } from "@/components/editor/editable-document-title";
+import { ButtonSubmit } from "@/components/editor/button-submit";
+import { ButtonSettings } from "@/components/editor/document-settings-dialog";
 import { useConvexImageUpload } from "@/hooks/use-convex-image-upload";
 import { useErrorHandler } from "@/hooks/use-error-handler";
 
@@ -58,9 +60,6 @@ function NewDocumentRoute() {
       });
 
       documentIdRef.current = result.documentId;
-      
-      // Navigate to the editor route with the new document's slug
-      navigate({ to: "/editor/$slug", params: { slug: result.slug } });
     } catch (error) {
       handleError(error, { context: "Failed to create document" });
     } finally {
@@ -164,6 +163,11 @@ function NewDocumentRoute() {
               onTitleChange={handleTitleChange}
               isEditable={true}
             />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <ButtonSubmit documentId={documentIdRef.current} title={title} />
+            <ButtonSettings documentId={documentIdRef.current} />
           </div>
         </div>
       </div>

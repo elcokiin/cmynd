@@ -28,7 +28,7 @@ import {
 /**
  * Create a new document.
  * Validates title and generates a unique slug without ID suffix if possible.
- * 
+ *
  * Returns { documentId, slug } instead of just documentId.
  */
 export const create = mutation({
@@ -42,7 +42,7 @@ export const create = mutation({
     if (!isValidTitle(args.title)) {
       throwConvexError(
         ErrorCode.DOCUMENT_INVALID_TITLE,
-        "Title cannot be 'Untitled' or empty"
+        "Title cannot be 'Untitled' or empty",
       );
     }
 
@@ -50,7 +50,7 @@ export const create = mutation({
     const authorId = await getOrCreateAuthorForUser(ctx, userId);
 
     const now = Date.now();
-    
+
     // Insert document with temporary slug
     const documentId = await ctx.db.insert("documents", {
       title: args.title,
@@ -67,7 +67,7 @@ export const create = mutation({
     const slug = await generateUniqueSlug(
       args.title,
       documentId,
-      async (checkSlug) => await slugExists(ctx, checkSlug)
+      async (checkSlug) => await slugExists(ctx, checkSlug),
     );
     await ctx.db.patch(documentId, { slug });
 
@@ -81,10 +81,10 @@ export const create = mutation({
 /**
  * Update document title (auto-save).
  * If status is "building", regenerates the slug and manages slug redirects.
- * 
+ *
  * Automatically maintains the last 3 slug redirects by deleting the oldest
  * when a 4th redirect is added.
- * 
+ *
  * Returns { slug, slugDeleted } where slugDeleted is the old URL that was removed (if any).
  */
 export const updateTitle = mutation({
@@ -97,12 +97,12 @@ export const updateTitle = mutation({
     if (!isValidTitle(args.title)) {
       throwConvexError(
         ErrorCode.DOCUMENT_INVALID_TITLE,
-        "Title cannot be 'Untitled' or empty"
+        "Title cannot be 'Untitled' or empty",
       );
     }
 
     const document = await getByIdForAuthor(ctx, args.documentId);
-    
+
     const updates: Record<string, unknown> = {
       title: args.title,
       updatedAt: Date.now(),
@@ -117,7 +117,7 @@ export const updateTitle = mutation({
       newSlug = await generateUniqueSlug(
         args.title,
         args.documentId,
-        async (checkSlug) => await slugExists(ctx, checkSlug, args.documentId)
+        async (checkSlug) => await slugExists(ctx, checkSlug, args.documentId),
       );
 
       // Only proceed with slug change if it's actually different
@@ -126,7 +126,7 @@ export const updateTitle = mutation({
         const redirectResult = await addSlugRedirect(
           ctx,
           args.documentId,
-          document.slug
+          document.slug,
         );
         slugDeleted = redirectResult.deletedSlug;
 
@@ -137,9 +137,9 @@ export const updateTitle = mutation({
 
     await ctx.db.patch(args.documentId, updates);
 
-    return { 
-      slug: newSlug ?? document.slug, 
-      slugDeleted 
+    return {
+      slug: newSlug ?? document.slug,
+      slugDeleted,
     };
   },
 });
@@ -201,7 +201,7 @@ export const updateCoverImage = mutation({
 /**
  * Update document content (auto-save).
  * Only allowed for documents in "building" status.
- * 
+ *
  * Auto-extracts title from first heading if current title is invalid.
  * Throws error if no valid title and no content.
  */
@@ -229,26 +229,27 @@ export const updateContent = mutation({
     // Check if current title is invalid and content has a heading we can extract
     if (!isValidTitle(document.title)) {
       const contentHasText = hasContent(args.content as JSONContent);
-      
+
       // Try to extract title from content
       const extractedTitle = extractFirstHeading(args.content as JSONContent);
-      
+
       if (extractedTitle && isValidTitle(extractedTitle)) {
         // Update title and regenerate slug
         updates.title = extractedTitle;
-        
+
         const newSlug = await generateUniqueSlug(
           extractedTitle,
           args.documentId,
-          async (checkSlug) => await slugExists(ctx, checkSlug, args.documentId)
+          async (checkSlug) =>
+            await slugExists(ctx, checkSlug, args.documentId),
         );
-        
+
         updates.slug = newSlug;
       } else if (!contentHasText) {
         // No valid title and no content - cannot save
         throwConvexError(
           ErrorCode.DOCUMENT_EMPTY,
-          "Document must have either a valid title or content to be saved"
+          "Document must have either a valid title or content to be saved",
         );
       }
     }
@@ -323,7 +324,6 @@ export const submit = mutation({
         "Document is already pending review",
       );
     }
-
     if (!document.title || document.title.trim() === "") {
       throwConvexError(
         ErrorCode.DOCUMENT_VALIDATION,
@@ -331,14 +331,6 @@ export const submit = mutation({
       );
     }
 
-    if (document.type === "curated" && !document.curation) {
-      throwConvexError(
-        ErrorCode.DOCUMENT_VALIDATION,
-        "Curated documents must have curation data",
-      );
-    }
-
-    // Require cover image for submission
     if (!document.coverImageId) {
       throwConvexError(ErrorCode.DOCUMENT_COVER_REQUIRED);
     }
