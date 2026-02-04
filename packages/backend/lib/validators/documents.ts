@@ -1,6 +1,12 @@
 import { v } from "convex/values";
 import { paginatedValidator } from "./utils";
 
+// Slug history entry for tracking old slugs (FIFO queue, max 3 entries)
+export const slugHistoryEntryValidator = v.object({
+  slug: v.string(),
+  createdAt: v.number(),
+});
+
 // Primitives
 export const documentTypeValidator = v.union(
   v.literal("own"),
@@ -28,7 +34,6 @@ export const referenceValidator = v.object({
 });
 
 // Schema validator - used by defineTable() in schema.ts
-//Changes require database migrations
 export const documentValidator = {
   title: v.string(),
   slug: v.string(),
@@ -45,6 +50,7 @@ export const documentValidator = {
   submittedAt: v.optional(v.number()),
   rejectionReason: v.optional(v.string()),
   submissionHistory: v.optional(v.array(v.number())),
+  slugHistory: v.optional(v.array(slugHistoryEntryValidator)),
 };
 
 // Query return validators - API responses only, no schema impact
@@ -121,7 +127,8 @@ export const paginatedAdminDocumentListValidator = paginatedValidator(
 /**
  * @deprecated Use paginatedAdminDocumentListValidator instead
  */
-export const paginatedPendingDocumentListValidator = paginatedAdminDocumentListValidator;
+export const paginatedPendingDocumentListValidator =
+  paginatedAdminDocumentListValidator;
 
 export const paginatedPublishedDocumentListValidator = paginatedValidator(
   publishedDocumentListItemValidator,

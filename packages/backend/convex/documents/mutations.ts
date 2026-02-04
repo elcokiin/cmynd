@@ -16,8 +16,7 @@ import {
 } from "../../lib/utils/title";
 import {
   slugExists,
-  addSlugRedirect,
-  deleteAllRedirectsForDocument,
+  addToSlugHistory,
 } from "./slug_helpers";
 import {
   incrementStatusCount,
@@ -122,16 +121,16 @@ export const updateTitle = mutation({
 
       // Only proceed with slug change if it's actually different
       if (newSlug !== document.slug) {
-        // Add old slug to redirects (automatically deletes oldest if limit exceeded)
-        const redirectResult = await addSlugRedirect(
-          ctx,
-          args.documentId,
+        // Add old slug to history (FIFO queue, max 3)
+        const { newHistory, deletedSlug } = addToSlugHistory(
+          document.slugHistory,
           document.slug,
         );
-        slugDeleted = redirectResult.deletedSlug;
+        slugDeleted = deletedSlug;
 
-        // Update slug
+        // Update slug and history
         updates.slug = newSlug;
+        updates.slugHistory = newHistory;
       }
     }
 
@@ -439,7 +438,7 @@ export const reject = mutation({
 
 /**
  * Delete a document.
- * Cleans up associated slug redirects.
+ * slugHistory is embedded in the document and deleted automatically.
  * Soft delete is not implemented; this is a hard delete.
  */
 export const remove = mutation({
@@ -447,10 +446,7 @@ export const remove = mutation({
   handler: async (ctx, args) => {
     const document = await getByIdForAuthor(ctx, args.documentId);
 
-    // Clean up slug redirects first
-    await deleteAllRedirectsForDocument(ctx, args.documentId);
-
-    // Delete the document
+    // Delete the document (slugHistory is embedded and deleted automatically)
     await ctx.db.delete(args.documentId);
 
     // Decrement the status count

@@ -1,7 +1,11 @@
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
 import { Button } from "@elcokiin/ui/button";
-import { createFileRoute, useBlocker, useNavigate } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  useBlocker,
+  useNavigate,
+} from "@tanstack/react-router";
 import { useMutation } from "convex/react";
 import { ArrowLeftIcon } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
@@ -14,7 +18,7 @@ import { ButtonSubmit } from "@/components/editor/button-submit";
 import { ButtonSettings } from "@/components/editor/document-settings-dialog";
 import { useConvexImageUpload } from "@/hooks/use-convex-image-upload";
 import { useErrorHandler } from "@/hooks/use-error-handler";
-import { getRandomTitle } from "@/lib/random-titles";
+import { getRandomTitle, isRandomTitle } from "@/lib/random-titles";
 
 export const Route = createFileRoute("/_auth/editor/new")({
   component: NewDocumentRoute,
@@ -42,23 +46,30 @@ function NewDocumentRoute() {
   const uploadFn = useConvexImageUpload();
 
   // Check if editor has meaningful content (not just empty paragraph)
-  const hasContent = useCallback((jsonContent: JSONContent | undefined): boolean => {
-    if (!jsonContent) return false;
-    if (!jsonContent.content || jsonContent.content.length === 0) return false;
+  const hasContent = useCallback(
+    (jsonContent: JSONContent | undefined): boolean => {
+      if (!jsonContent) return false;
+      if (!jsonContent.content || jsonContent.content.length === 0)
+        return false;
 
-    // Check if there's any text content
-    const hasText = jsonContent.content.some((node) => {
-      if (node.type === "paragraph" && node.content) {
-        return node.content.some(
-          (child) => child.type === "text" && child.text && child.text.trim().length > 0
-        );
-      }
-      // Any other node type (heading, list, etc.) counts as content
-      return node.type !== "paragraph";
-    });
+      // Check if there's any text content
+      const hasText = jsonContent.content.some((node) => {
+        if (node.type === "paragraph" && node.content) {
+          return node.content.some(
+            (child) =>
+              child.type === "text" &&
+              child.text &&
+              child.text.trim().length > 0,
+          );
+        }
+        // Any other node type (heading, list, etc.) counts as content
+        return node.type !== "paragraph";
+      });
 
-    return hasText;
-  }, []);
+      return hasText;
+    },
+    [],
+  );
 
   // Handle navigation away from /new route
   // - If document exists but has no content → delete it
@@ -66,7 +77,11 @@ function NewDocumentRoute() {
   useBlocker({
     shouldBlockFn: async () => {
       // Document was auto-created but user deleted all content → delete the document
-      if (documentIdRef.current && !hasContent(contentRef.current)) {
+      if (
+        documentIdRef.current &&
+        !hasContent(contentRef.current) &&
+        isRandomTitle(title)
+      ) {
         try {
           await removeDocument({ documentId: documentIdRef.current });
         } catch (error) {

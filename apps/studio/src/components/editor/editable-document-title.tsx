@@ -9,6 +9,8 @@ import { toast } from "sonner";
 
 import { useErrorHandler } from "@/hooks/use-error-handler";
 
+const UNTITLED = "Untitled";
+
 type EditableDocumentTitleProps =
   | {
       documentId: Id<"documents">;
@@ -28,18 +30,15 @@ type EditableDocumentTitleProps =
       initialTitle?: never;
     };
 
-export function EditableDocumentTitle(
-  props: EditableDocumentTitleProps
-) {
+export function EditableDocumentTitle(props: EditableDocumentTitleProps) {
   const isControlledMode = "title" in props && props.title !== undefined;
 
   const [localTitle, setLocalTitle] = useState(
-    isControlledMode ? props.title : props.initialTitle
+    isControlledMode ? props.title : props.initialTitle,
   );
   const [isEditingTitle, setIsEditingTitle] = useState(false);
-  
+
   const titleInputRef = useRef<HTMLInputElement>(null);
-  const titleUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { handleErrorSilent } = useErrorHandler();
 
   const updateTitleMutation = useMutation(api.documents.mutations.updateTitle);
@@ -61,16 +60,6 @@ export function EditableDocumentTitle(
     }
   }, [isEditingTitle]);
 
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (titleUpdateTimeoutRef.current) {
-        clearTimeout(titleUpdateTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  // Save title to backend
   const saveTitleToBackend = async (newTitle: string) => {
     if (isControlledMode) return;
 
@@ -91,33 +80,25 @@ export function EditableDocumentTitle(
     }
   };
 
-  // Handle title change with debouncing
   const handleTitleChange = (newTitle: string) => {
     setLocalTitle(newTitle);
 
     if (isControlledMode) {
-      // Controlled mode: immediately update parent state
       props.onTitleChange(newTitle);
-    } else {
-      // Server-synced mode: debounce and save to backend
-      // Clear existing timeout
-      if (titleUpdateTimeoutRef.current) {
-        clearTimeout(titleUpdateTimeoutRef.current);
-      }
-
-      // Set new timeout for debounced save (500ms)
-      titleUpdateTimeoutRef.current = setTimeout(async () => {
-        await saveTitleToBackend(newTitle);
-      }, 500);
     }
   };
 
-  const handleTitleBlur = () => {
+  const handleTitleBlur = async () => {
     setIsEditingTitle(false);
-    // If title is empty, reset to "Untitled"
+
+    const finalTitle = localTitle.trim() || UNTITLED;
+
     if (!localTitle.trim()) {
-      setLocalTitle("Untitled");
-      handleTitleChange("Untitled");
+      setLocalTitle(UNTITLED);
+    }
+
+    if (!isControlledMode && finalTitle !== props.initialTitle) {
+      await saveTitleToBackend(finalTitle);
     }
   };
 
@@ -126,14 +107,9 @@ export function EditableDocumentTitle(
       handleTitleBlur();
     }
     if (e.key === "Escape") {
-      // Cancel any pending debounced save before reverting state
-      if (titleUpdateTimeoutRef.current) {
-        clearTimeout(titleUpdateTimeoutRef.current);
-        titleUpdateTimeoutRef.current = null;
-      }
       const fallbackTitle = isControlledMode
         ? props.title
-        : props.initialTitle || "Untitled";
+        : props.initialTitle || UNTITLED;
       setLocalTitle(fallbackTitle);
       setIsEditingTitle(false);
     }
@@ -160,7 +136,7 @@ export function EditableDocumentTitle(
       onClick={() => isEditable && setIsEditingTitle(true)}
       className={cn(
         "text-lg font-semibold truncate max-w-md text-left px-2 -ml-2 rounded hover:bg-muted transition-colors",
-        isEditable && "cursor-text"
+        isEditable && "cursor-text",
       )}
       disabled={!isEditable}
     >

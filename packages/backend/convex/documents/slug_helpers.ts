@@ -3,19 +3,24 @@
  *
  * This module manages:
  * - Slug uniqueness validation
- * - Slug redirect system (allows up to 3 valid slugs per document)
+ * - Slug history management (embedded array in documents, max 3 entries)
  *
- * When a 4th slug change occurs, the oldest redirect is deleted.
+ * When a 4th slug change occurs, the oldest entry is removed (FIFO).
  */
 
-import type { QueryCtx, MutationCtx } from "../_generated/server";
-import type { Id } from "../_generated/dataModel";
+import type { QueryCtx } from "../_generated/server";
+import type { Id, Doc } from "../_generated/dataModel";
 
 /**
- * Maximum number of redirects to keep per document.
- * Total valid slugs = current slug + MAX_REDIRECTS = 3 slugs.
+ * Maximum number of old slugs to keep in history.
+ * Total valid slugs = current slug + MAX_SLUG_HISTORY = 4 slugs accessible.
  */
-const MAX_REDIRECTS_PER_DOCUMENT = 2;
+const MAX_SLUG_HISTORY = 3;
+
+type SlugHistoryEntry = {
+  slug: string;
+  createdAt: number;
+};
 
 /**
  * Check if a slug already exists in the database.
@@ -58,105 +63,76 @@ export async function slugExists(
 }
 
 /**
- * Add a slug redirect when a document's slug changes.
+ * Add a slug to the document's history when the slug changes.
+ * Implements FIFO queue with max 3 entries.
  *
- * This function:
- * 1. Checks if the document already has MAX_REDIRECTS
- * 2. If limit is reached, deletes the oldest redirect
- * 3. Creates a new redirect entry for the old slug
+ * This is a pure function that returns the new history array.
+ * The caller is responsible for patching the document.
  *
- * @param ctx - Mutation context
- * @param documentId - The document ID that changed slugs
- * @param oldSlug - The previous slug to add as a redirect
- * @returns Object containing the slug that was deleted (if any)
+ * @param currentHistory - The document's current slugHistory array
+ * @param oldSlug - The previous slug to add to history
+ * @returns Object containing the new history array and any deleted slug
  *
  * @example
- * const result = await addSlugRedirect(ctx, docId, "old-article-slug");
- * if (result.deletedSlug) {
- *   console.log(`Oldest slug deleted: ${result.deletedSlug}`);
+ * const { newHistory, deletedSlug } = addToSlugHistory(document.slugHistory, document.slug);
+ * if (deletedSlug) {
+ *   console.log(`Oldest slug deleted: ${deletedSlug}`);
  * }
+ * await ctx.db.patch(documentId, { slugHistory: newHistory, slug: newSlug });
  */
-export async function addSlugRedirect(
-  ctx: MutationCtx,
-  documentId: Id<"documents">,
+export function addToSlugHistory(
+  currentHistory: SlugHistoryEntry[] | undefined,
   oldSlug: string,
-): Promise<{ deletedSlug: string | null }> {
-  // Query existing redirects for this document
-  const existingRedirects = await ctx.db
-    .query("slugRedirects")
-    .withIndex("by_document_id", (q) => q.eq("documentId", documentId))
-    .collect();
-
+): { newHistory: SlugHistoryEntry[]; deletedSlug: string | null } {
+  const history = currentHistory ? [...currentHistory] : [];
   let deletedSlug: string | null = null;
 
-  // If we've reached the limit, delete the oldest redirect
-  if (existingRedirects.length >= MAX_REDIRECTS_PER_DOCUMENT) {
+  // If we've reached the limit, remove the oldest entry
+  if (history.length >= MAX_SLUG_HISTORY) {
     // Sort by createdAt ascending (oldest first)
-    const sortedRedirects = existingRedirects.sort(
-      (a, b) => a.createdAt - b.createdAt,
-    );
+    history.sort((a, b) => a.createdAt - b.createdAt);
 
-    // Delete the oldest redirect
-    const oldestRedirect = sortedRedirects[0];
-    if (oldestRedirect) {
-      deletedSlug = oldestRedirect.oldSlug;
-      await ctx.db.delete(oldestRedirect._id);
+    const oldest = history.shift();
+    if (oldest) {
+      deletedSlug = oldest.slug;
     }
   }
 
-  // Insert the new redirect
-  await ctx.db.insert("slugRedirects", {
-    oldSlug,
-    documentId,
+  // Add the new entry
+  history.push({
+    slug: oldSlug,
     createdAt: Date.now(),
   });
 
-  return { deletedSlug };
+  return { newHistory: history, deletedSlug };
 }
 
 /**
- * Check slug redirect limit before changing a document's slug.
- *
- * This function determines:
- * - How many redirects currently exist
- * - Which slug would be deleted if a new redirect is added
+ * Check what slug would be deleted if a new one is added.
  *
  * Used to show confirmation dialog BEFORE making the change.
  *
- * @param ctx - Query context
- * @param documentId - The document ID to check
+ * @param currentHistory - The document's current slugHistory array
  * @returns Object containing the slug that would be deleted and current count
  *
  * @example
- * const check = await checkSlugRedirectLimit(ctx, docId);
+ * const check = checkSlugHistoryLimit(document.slugHistory);
  * if (check.wouldDelete) {
- *   // Show confirmation dialog: "Changing this title will break the URL: /article/${check.wouldDelete}"
- *   // User confirms or cancels
+ *   // Show confirmation: "Changing title will break URL: /editor/${check.wouldDelete}"
  * }
  */
-export async function checkSlugRedirectLimit(
-  ctx: QueryCtx,
-  documentId: Id<"documents">,
-): Promise<{ wouldDelete: string | null; count: number }> {
-  // Query existing redirects for this document
-  const existingRedirects = await ctx.db
-    .query("slugRedirects")
-    .withIndex("by_document_id", (q) => q.eq("documentId", documentId))
-    .collect();
+export function checkSlugHistoryLimit(
+  currentHistory: SlugHistoryEntry[] | undefined,
+): { wouldDelete: string | null; count: number } {
+  const history = currentHistory ?? [];
+  const count = history.length;
 
-  const count = existingRedirects.length;
-
-  // If we're at the limit, determine which would be deleted
   let wouldDelete: string | null = null;
-  if (count >= MAX_REDIRECTS_PER_DOCUMENT) {
-    // Sort by createdAt ascending (oldest first)
-    const sortedRedirects = existingRedirects.sort(
-      (a, b) => a.createdAt - b.createdAt,
-    );
-
-    const oldestRedirect = sortedRedirects[0];
-    if (oldestRedirect) {
-      wouldDelete = oldestRedirect.oldSlug;
+  if (count >= MAX_SLUG_HISTORY) {
+    const sorted = [...history].sort((a, b) => a.createdAt - b.createdAt);
+    const oldest = sorted[0];
+    if (oldest) {
+      wouldDelete = oldest.slug;
     }
   }
 
@@ -164,56 +140,36 @@ export async function checkSlugRedirectLimit(
 }
 
 /**
- * Lookup a document by its old slug (redirect).
+ * Lookup a document by its old slug from the slug history.
+ * Uses a table scan since we can't index array fields.
  *
- * Used when a user visits a URL with an old slug to find the current document.
+ * This is acceptable performance since:
+ * 1. Slug redirects are infrequent (only when users access old URLs)
+ * 2. The documents table is typically bounded
  *
  * @param ctx - Query context
  * @param oldSlug - The old slug to look up
- * @returns The document ID if a redirect exists, null otherwise
+ * @returns The document if found via old slug, null otherwise
  *
  * @example
- * const documentId = await getDocumentByOldSlug(ctx, "old-article-slug");
- * if (documentId) {
- *   const doc = await ctx.db.get(documentId);
- *   // Redirect user to /article/${doc.slug}
+ * const document = await getDocumentByOldSlug(ctx, "old-article-slug");
+ * if (document) {
+ *   // Redirect user to /editor/${document.slug}
  * }
  */
 export async function getDocumentByOldSlug(
   ctx: QueryCtx,
   oldSlug: string,
-): Promise<Id<"documents"> | null> {
-  const redirect = await ctx.db
-    .query("slugRedirects")
-    .withIndex("by_old_slug", (q) => q.eq("oldSlug", oldSlug))
-    .unique();
+): Promise<Doc<"documents"> | null> {
+  // Query all documents and filter by slugHistory
+  // This is acceptable as slug redirects are infrequent
+  const documents = await ctx.db.query("documents").collect();
 
-  return redirect?.documentId ?? null;
-}
-
-/**
- * Delete all redirects for a document.
- *
- * Used when a document is permanently deleted to clean up orphaned redirects.
- *
- * @param ctx - Mutation context
- * @param documentId - The document ID to clean up redirects for
- * @returns Number of redirects deleted
- */
-export async function deleteAllRedirectsForDocument(
-  ctx: MutationCtx,
-  documentId: Id<"documents">,
-): Promise<number> {
-  const redirects = await ctx.db
-    .query("slugRedirects")
-    .withIndex("by_document_id", (q) => q.eq("documentId", documentId))
-    .collect();
-
-  let deleted = 0;
-  for (const redirect of redirects) {
-    await ctx.db.delete(redirect._id);
-    deleted++;
+  for (const doc of documents) {
+    if (doc.slugHistory?.some((entry) => entry.slug === oldSlug)) {
+      return doc;
+    }
   }
 
-  return deleted;
+  return null;
 }

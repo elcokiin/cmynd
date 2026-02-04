@@ -15,14 +15,6 @@ export default defineSchema({
       filterFields: ["status"],
     }),
 
-  slugRedirects: defineTable({
-    oldSlug: v.string(),
-    documentId: v.id("documents"),
-    createdAt: v.number(),
-  })
-    .index("by_old_slug", ["oldSlug"])
-    .index("by_document_id", ["documentId"]),
-
   documentStats: defineTable({
     buildingCount: v.number(),
     pendingCount: v.number(),

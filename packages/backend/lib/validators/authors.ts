@@ -10,7 +10,6 @@ export const phraseValidator = v.object({
 });
 
 // Schema validator - used by defineTable() in schema.ts
-// Changes require database migrations
 export const authorValidator = v.object({
   name: v.string(),
   avatarUrl: v.optional(v.string()),

@@ -5,7 +5,7 @@ import { Button } from "@elcokiin/ui/button";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { ArrowLeftIcon } from "lucide-react";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 
 import { AdvancedEditor } from "@/components/editor/advanced-editor";
 import { EditorHeader } from "@/components/editor/editor-header";
@@ -28,6 +28,17 @@ function EditorRoute() {
   });
   const updateContent = useMutation(api.documents.mutations.updateContent);
   const uploadFn = useConvexImageUpload();
+
+  // Redirect to current slug if accessed via old slug
+  useEffect(() => {
+    if (document?.isRedirect && document.currentSlug !== slug) {
+      navigate({
+        to: "/editor/$slug",
+        params: { slug: document.currentSlug },
+        replace: true,
+      });
+    }
+  }, [document, slug, navigate]);
 
   const handleDebouncedUpdate = useCallback(
     async (content: JSONContent) => {

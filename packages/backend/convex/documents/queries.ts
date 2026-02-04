@@ -7,10 +7,7 @@ import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { ErrorCode, throwConvexError } from "@elcokiin/errors";
 import * as Auth from "../_lib/auth";
-import {
-  getByIdForAuthor,
-  paginationOptsValidator,
-} from "./helpers";
+import { getByIdForAuthor, paginationOptsValidator } from "./helpers";
 import {
   toDocumentListItem,
   toAdminDocumentListItem,
@@ -129,9 +126,7 @@ export const listPublished = query({
         if (!author) return null;
         return toPublishedDocumentListItem(doc, author);
       })
-      .filter(
-        (item): item is NonNullable<typeof item> => item !== null,
-      );
+      .filter((item): item is NonNullable<typeof item> => item !== null);
 
     return {
       ...result,
@@ -156,7 +151,7 @@ export const getForEdit = query({
  * Automatically handles slug redirects (checks old slugs if current slug not found).
  * Returns document with redirect information.
  * Returns null if document not found.
- * 
+ *
  * @throws DocumentOwnershipError if user doesn't own the document.
  */
 export const getBySlug = query({
@@ -165,7 +160,7 @@ export const getBySlug = query({
     const { slug } = args;
 
     const userId = await Auth.requireAuth(ctx);
-    
+
     // Try direct slug lookup first
     let document = await ctx.db
       .query("documents")
@@ -175,17 +170,13 @@ export const getBySlug = query({
     let isRedirect = false;
     let currentSlug = slug;
 
-    // If not found by current slug, check slug redirects
+    // If not found by current slug, check slug history
     if (!document) {
-      const documentId = await getDocumentByOldSlug(ctx, slug);
-      
-      if (documentId) {
-        document = await ctx.db.get(documentId);
-        
-        if (document) {
-          isRedirect = true;
-          currentSlug = document.slug;
-        }
+      document = await getDocumentByOldSlug(ctx, slug);
+
+      if (document) {
+        isRedirect = true;
+        currentSlug = document.slug;
       }
     }
 
@@ -281,9 +272,11 @@ export const listPendingForAdmin = query({
  * @throws AdminRequiredError if user is not an admin.
  */
 export const listForAdmin = query({
-  args: { 
+  args: {
     paginationOpts: paginationOptsValidator,
-    status: v.optional(v.union(v.literal("pending"), v.literal("published"), v.literal("all"))),
+    status: v.optional(
+      v.union(v.literal("pending"), v.literal("published"), v.literal("all")),
+    ),
     search: v.optional(v.string()),
   },
   returns: paginatedAdminDocumentListValidator,
@@ -376,12 +369,16 @@ export const getForAdminReviewBySlug = query({
       .withIndex("by_slug", (q) => q.eq("slug", args.slug))
       .unique();
 
-    // If not found by current slug, check slug redirects
+    let isRedirect = false;
+    let currentSlug = args.slug;
+
+    // If not found by current slug, check slug history
     if (!document) {
-      const documentId = await getDocumentByOldSlug(ctx, args.slug);
-      
-      if (documentId) {
-        document = await ctx.db.get(documentId);
+      document = await getDocumentByOldSlug(ctx, args.slug);
+
+      if (document) {
+        isRedirect = true;
+        currentSlug = document.slug;
       }
     }
 
@@ -389,11 +386,6 @@ export const getForAdminReviewBySlug = query({
     if (!document) {
       return null;
     }
-
-    // Allow admin to view any document status
-    // if (!document || document.status !== "pending") {
-    //   return null;
-    // }
 
     return {
       _id: document._id,
@@ -406,7 +398,9 @@ export const getForAdminReviewBySlug = query({
       coverImageId: document.coverImageId,
       submittedAt: document.submittedAt,
       createdAt: document.createdAt,
-      status: document.status, // Add status so we can check it in frontend
+      status: document.status,
+      isRedirect,
+      currentSlug,
     };
   },
 });

@@ -28,4 +28,15 @@ export function getRandomTitle(): string {
   return title ?? RANDOM_TITLES[0];
 }
 
+type RandomTitle = (typeof RANDOM_TITLES)[number];
+
+/**
+ * Type guard to check if a string is a valid random title
+ */
+export function isRandomTitle(title: string): title is RandomTitle {
+  return RANDOM_TITLES.includes(title as RandomTitle);
+}
+
+export type { RandomTitle };
+
 export { RANDOM_TITLES };

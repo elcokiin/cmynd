@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { FileTextIcon, MessageSquareIcon } from "lucide-react";
+import { useQuery } from "convex/react";
+import { api } from "@elcokiin/backend/convex/_generated/api";
 
 import { MobileTabBar } from "@/components/admin/mobile-tab-bar";
 import type { MobileTab } from "@/components/admin/review-page-layout";
@@ -17,6 +19,21 @@ function AdminReviewPage() {
   const { slug } = Route.useParams();
   const navigate = useNavigate();
   const [mobileTab, setMobileTab] = useState<MobileTab>("preview");
+
+  const document = useQuery(api.documents.queries.getForAdminReviewBySlug, {
+    slug,
+  });
+
+  // Redirect to current slug if accessed via old slug
+  useEffect(() => {
+    if (document?.isRedirect && document.currentSlug !== slug) {
+      navigate({
+        to: "/admin/review/$slug",
+        params: { slug: document.currentSlug },
+        replace: true,
+      });
+    }
+  }, [document, slug, navigate]);
 
   function handleTabChange(tabId: string): void {
     setMobileTab(tabId as MobileTab);
