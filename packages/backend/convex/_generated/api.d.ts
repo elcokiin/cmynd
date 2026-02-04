@@ -8,10 +8,27 @@
  * @module
  */
 
+import type * as _lib_auth from "../_lib/auth.js";
 import type * as auth from "../auth.js";
+import type * as authors_helpers from "../authors/helpers.js";
+import type * as authors_mutations from "../authors/mutations.js";
+import type * as authors_projections from "../authors/projections.js";
+import type * as authors_queries from "../authors/queries.js";
+import type * as documents_helpers from "../documents/helpers.js";
+import type * as documents_mutations from "../documents/mutations.js";
+import type * as documents_projections from "../documents/projections.js";
+import type * as documents_queries from "../documents/queries.js";
+import type * as documents_slug_helpers from "../documents/slug_helpers.js";
+import type * as documents_stats_helpers from "../documents/stats_helpers.js";
+import type * as email_client from "../email/client.js";
+import type * as email_index from "../email/index.js";
+import type * as email_resend from "../email/resend.js";
+import type * as email_send from "../email/send.js";
+import type * as email_templates_password_reset from "../email/templates/password_reset.js";
+import type * as email_templates_verification from "../email/templates/verification.js";
 import type * as healthCheck from "../healthCheck.js";
 import type * as http from "../http.js";
-import type * as privateData from "../privateData.js";
+import type * as storage from "../storage.js";
 
 import type {
   ApiFromModules,
@@ -20,10 +37,27 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "_lib/auth": typeof _lib_auth;
   auth: typeof auth;
+  "authors/helpers": typeof authors_helpers;
+  "authors/mutations": typeof authors_mutations;
+  "authors/projections": typeof authors_projections;
+  "authors/queries": typeof authors_queries;
+  "documents/helpers": typeof documents_helpers;
+  "documents/mutations": typeof documents_mutations;
+  "documents/projections": typeof documents_projections;
+  "documents/queries": typeof documents_queries;
+  "documents/slug_helpers": typeof documents_slug_helpers;
+  "documents/stats_helpers": typeof documents_stats_helpers;
+  "email/client": typeof email_client;
+  "email/index": typeof email_index;
+  "email/resend": typeof email_resend;
+  "email/send": typeof email_send;
+  "email/templates/password_reset": typeof email_templates_password_reset;
+  "email/templates/verification": typeof email_templates_verification;
   healthCheck: typeof healthCheck;
   http: typeof http;
-  privateData: typeof privateData;
+  storage: typeof storage;
 }>;
 
 /**
@@ -2028,6 +2062,155 @@ export declare const components: {
     adapterTest: {
       runCustomTests: FunctionReference<"action", "internal", any, any>;
       runTests: FunctionReference<"action", "internal", any, any>;
+    };
+  };
+  resend: {
+    lib: {
+      cancelEmail: FunctionReference<
+        "mutation",
+        "internal",
+        { emailId: string },
+        null
+      >;
+      cleanupAbandonedEmails: FunctionReference<
+        "mutation",
+        "internal",
+        { olderThan?: number },
+        null
+      >;
+      cleanupOldEmails: FunctionReference<
+        "mutation",
+        "internal",
+        { olderThan?: number },
+        null
+      >;
+      createManualEmail: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          from: string;
+          headers?: Array<{ name: string; value: string }>;
+          replyTo?: Array<string>;
+          subject: string;
+          to: Array<string> | string;
+        },
+        string
+      >;
+      get: FunctionReference<
+        "query",
+        "internal",
+        { emailId: string },
+        {
+          bcc?: Array<string>;
+          bounced?: boolean;
+          cc?: Array<string>;
+          clicked?: boolean;
+          complained: boolean;
+          createdAt: number;
+          deliveryDelayed?: boolean;
+          errorMessage?: string;
+          failed?: boolean;
+          finalizedAt: number;
+          from: string;
+          headers?: Array<{ name: string; value: string }>;
+          html?: string;
+          opened: boolean;
+          replyTo: Array<string>;
+          resendId?: string;
+          segment: number;
+          status:
+            | "waiting"
+            | "queued"
+            | "cancelled"
+            | "sent"
+            | "delivered"
+            | "delivery_delayed"
+            | "bounced"
+            | "failed";
+          subject?: string;
+          template?: {
+            id: string;
+            variables?: Record<string, string | number>;
+          };
+          text?: string;
+          to: Array<string>;
+        } | null
+      >;
+      getStatus: FunctionReference<
+        "query",
+        "internal",
+        { emailId: string },
+        {
+          bounced: boolean;
+          clicked: boolean;
+          complained: boolean;
+          deliveryDelayed: boolean;
+          errorMessage: string | null;
+          failed: boolean;
+          opened: boolean;
+          status:
+            | "waiting"
+            | "queued"
+            | "cancelled"
+            | "sent"
+            | "delivered"
+            | "delivery_delayed"
+            | "bounced"
+            | "failed";
+        } | null
+      >;
+      handleEmailEvent: FunctionReference<
+        "mutation",
+        "internal",
+        { event: any },
+        null
+      >;
+      sendEmail: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          bcc?: Array<string>;
+          cc?: Array<string>;
+          from: string;
+          headers?: Array<{ name: string; value: string }>;
+          html?: string;
+          options: {
+            apiKey: string;
+            initialBackoffMs: number;
+            onEmailEvent?: { fnHandle: string };
+            retryAttempts: number;
+            testMode: boolean;
+          };
+          replyTo?: Array<string>;
+          subject?: string;
+          template?: {
+            id: string;
+            variables?: Record<string, string | number>;
+          };
+          text?: string;
+          to: Array<string>;
+        },
+        string
+      >;
+      updateManualEmail: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          emailId: string;
+          errorMessage?: string;
+          resendId?: string;
+          status:
+            | "waiting"
+            | "queued"
+            | "cancelled"
+            | "sent"
+            | "delivered"
+            | "delivery_delayed"
+            | "bounced"
+            | "failed";
+        },
+        null
+      >;
     };
   };
 };

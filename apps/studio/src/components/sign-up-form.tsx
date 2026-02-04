@@ -1,18 +1,19 @@
+import { signUpValidator } from "@elcokiin/backend/lib/validators/auth";
 import { Button } from "@elcokiin/ui/button";
 import { Input } from "@elcokiin/ui/input";
 import { Label } from "@elcokiin/ui/label";
 import { useForm } from "@tanstack/react-form";
-import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import z from "zod";
 
 import { authClient } from "@/lib/auth-client";
 
-export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () => void }) {
-  const navigate = useNavigate({
-    from: "/",
-  });
+type SignUpFormProps = {
+  onSwitchToSignIn: () => void;
+};
 
+export function SignUpForm({
+  onSwitchToSignIn,
+}: SignUpFormProps): React.ReactNode {
   const form = useForm({
     defaultValues: {
       email: "",
@@ -25,13 +26,11 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
           email: value.email,
           password: value.password,
           name: value.name,
+          callbackURL: `${window.location.origin}/`,
         },
         {
           onSuccess: () => {
-            navigate({
-              to: "/dashboard",
-            });
-            toast.success("Sign up successful");
+            toast.success("Verification email sent! Please check your inbox.");
           },
           onError: (error) => {
             toast.error(error.error.message || error.error.statusText);
@@ -40,11 +39,7 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
       );
     },
     validators: {
-      onSubmit: z.object({
-        name: z.string().min(2, "Name must be at least 2 characters"),
-        email: z.email("Invalid email address"),
-        password: z.string().min(8, "Password must be at least 8 characters"),
-      }),
+      onSubmit: signUpValidator,
     },
   });
 
@@ -140,6 +135,21 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
           )}
         </form.Subscribe>
       </form>
+
+      <div className="mt-4">
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={async () => {
+            await authClient.signIn.social({
+              provider: "google",
+              callbackURL: `${window.location.origin}/`,
+            });
+          }}
+        >
+          Sign up with Google
+        </Button>
+      </div>
 
       <div className="mt-4 text-center">
         <Button

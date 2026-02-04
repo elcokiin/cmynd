@@ -1,20 +1,24 @@
 # Styling Guidelines
 
 ## Tech Stack
+
 - **TailwindCSS 4** - Utility-first CSS framework
-- **shadcn/ui** - Reusable component library
+- **shadcn/ui** - Component library
 - **class-variance-authority (cva)** - Component variants
 - **tw-animate-css** - Animation utilities
 
-## Core Utilities
+---
 
-### The `cn()` Function
-Always use `cn()` for conditional className management:
+## Core Rules
+
+### Rule 1: ALWAYS Use `cn()` for className Management
+
+**Never use string concatenation or template literals for classNames.**
 
 ```typescript
 import { cn } from "@/lib/utils";
 
-// ✅ Good: using cn() for conditional classes
+// ✅ Correct
 function Button({ className, isActive }: { className?: string; isActive: boolean }) {
   return (
     <button
@@ -30,26 +34,14 @@ function Button({ className, isActive }: { className?: string; isActive: boolean
   );
 }
 
-// ❌ Bad: string concatenation
-function Button({ className, isActive }) {
-  return (
-    <button
-      className={
-        "px-4 py-2 rounded " +
-        (isActive ? "bg-blue-500 text-white " : "bg-gray-200 text-gray-800 ") +
-        (className || "")
-      }
-    >
-      Click me
-    </button>
-  );
-}
+// ❌ Incorrect
+className={"px-4 py-2 " + (isActive ? "bg-blue-500" : "bg-gray-200")}
+className={`px-4 py-2 ${isActive ? "bg-blue-500" : "bg-gray-200"}`}
 ```
 
-## Component Variants with CVA
+### Rule 2: Use CVA for Component Variants
 
-### Basic CVA Usage
-Use `cva` for components with multiple variants:
+**When a component has 2+ style variants, use class-variance-authority (cva).**
 
 ```typescript
 import { cva, type VariantProps } from "class-variance-authority";
@@ -95,47 +87,25 @@ function Button({
 }
 ```
 
-### Compound Variants
-Use compound variants for interdependent styles:
+**Compound Variants (Advanced):**
+Use when styles depend on multiple variant combinations:
 
 ```typescript
-const badgeVariants = cva("inline-flex items-center", {
-  variants: {
-    variant: {
-      default: "bg-primary text-primary-foreground",
-      secondary: "bg-secondary text-secondary-foreground",
-    },
-    size: {
-      default: "px-2 py-1 text-xs",
-      lg: "px-3 py-1.5 text-sm",
-    },
-    rounded: {
-      true: "rounded-full",
-      false: "rounded",
-    },
-  },
-  compoundVariants: [
-    {
-      variant: "default",
-      size: "lg",
-      className: "font-semibold",
-    },
-  ],
-  defaultVariants: {
+compoundVariants: [
+  {
     variant: "default",
-    size: "default",
-    rounded: false,
+    size: "lg",
+    className: "font-semibold",
   },
-});
+],
 ```
 
-## TailwindCSS Best Practices
+### Rule 3: Utility-First Approach
 
-### Utility-First Approach
-Prefer Tailwind utilities over custom CSS:
+**ALWAYS prefer Tailwind utilities over custom CSS classes.**
 
 ```typescript
-// ✅ Good: Tailwind utilities
+// ✅ Correct
 function Card() {
   return (
     <div className="rounded-lg border bg-card p-6 shadow-sm">
@@ -145,47 +115,35 @@ function Card() {
   );
 }
 
-// ❌ Bad: custom CSS
-function Card() {
-  return (
-    <div className="custom-card">
-      <h2 className="custom-title">Title</h2>
-      <p className="custom-description">Description</p>
-    </div>
-  );
-}
+// ❌ Incorrect - Custom CSS classes
+<div className="custom-card">
+  <h2 className="custom-title">Title</h2>
+</div>
 ```
 
-### Responsive Design
-Use responsive modifiers consistently:
+### Rule 4: Mobile-First Responsive Design
+
+**Use Tailwind responsive prefixes in order: sm → md → lg → xl → 2xl**
 
 ```typescript
-// ✅ Good: mobile-first responsive design
-function Hero() {
-  return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-      <Card />
-      <Card />
-      <Card />
-    </div>
-  );
-}
+// Grid layout: mobile (1 col) → tablet (2 col) → desktop (3 col)
+<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+  <Card />
+  <Card />
+  <Card />
+</div>
 
-// Order of breakpoints: sm -> md -> lg -> xl -> 2xl
-function ResponsiveText() {
-  return (
-    <h1 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl">
-      Responsive Heading
-    </h1>
-  );
-}
+// Typography: progressively larger on bigger screens
+<h1 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl">
+  Responsive Heading
+</h1>
 ```
 
-### Dark Mode Support
-Use dark mode utilities with `dark:` prefix:
+### Rule 5: ALWAYS Include Dark Mode Support
+
+**Use `dark:` prefix for all background, text, and border colors.**
 
 ```typescript
-// ✅ Good: dark mode support
 function Card() {
   return (
     <div className="bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100">
@@ -195,11 +153,18 @@ function Card() {
 }
 ```
 
-### Design Tokens
-Use Tailwind's design tokens (from theme):
+### Rule 6: Use Design Tokens (Semantic Colors)
+
+**Prefer semantic tokens over hardcoded colors for theme consistency.**
+
+**Available Design Tokens:**
+- **Colors**: `primary`, `secondary`, `accent`, `muted`, `destructive`
+- **Text**: `foreground`, `muted-foreground`, `primary-foreground`
+- **Background**: `background`, `card`, `popover`
+- **Border**: `border`, `input`, `ring`
 
 ```typescript
-// ✅ Good: using design tokens
+// ✅ Correct
 function Alert() {
   return (
     <div className="border-border bg-background text-foreground">
@@ -208,26 +173,26 @@ function Alert() {
   );
 }
 
-// Design tokens available:
-// - Colors: primary, secondary, accent, muted, destructive
-// - Text: foreground, muted-foreground, primary-foreground
-// - Background: background, card, popover
-// - Border: border, input, ring
+// ❌ Incorrect - Hardcoded colors
+<div className="border-gray-200 bg-white text-black">
+  <p className="text-gray-500">Info message</p>
+</div>
 ```
+
+---
 
 ## Layout Patterns
 
-### Flexbox
-Use flexbox for common layouts:
+### Flexbox (Common Patterns)
 
-```typescript
-// Horizontal layout with gap
+```jsx
+// Horizontal with gap
 <div className="flex items-center gap-2">
   <Icon />
   <span>Label</span>
 </div>
 
-// Vertical layout
+// Vertical stack
 <div className="flex flex-col gap-4">
   <Item />
   <Item />
@@ -245,10 +210,9 @@ Use flexbox for common layouts:
 </div>
 ```
 
-### Grid
-Use grid for complex layouts:
+### Grid (Complex Layouts)
 
-```typescript
+```jsx
 // Auto-fit responsive grid
 <div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4">
   <Card />
@@ -264,144 +228,112 @@ Use grid for complex layouts:
 </div>
 ```
 
-## Animations
+---
 
-### Transition Utilities
-Use Tailwind's transition utilities:
+## Animations & Transitions
 
-```typescript
-// ✅ Good: smooth transitions
-function Button() {
-  return (
-    <button className="transform transition-all duration-200 hover:scale-105 hover:shadow-lg">
-      Hover me
-    </button>
-  );
-}
+### Tailwind Transitions
 
-// Common transitions:
-// - transition-colors: for color changes
-// - transition-all: for all properties
-// - duration-200: 200ms (fast)
-// - duration-300: 300ms (normal)
+```jsx
+// Color transitions (most common)
+<button className="transition-colors duration-200 hover:bg-primary">
+
+// All properties
+<button className="transition-all duration-300 hover:scale-105 hover:shadow-lg">
+
+// Duration options: duration-150 (fast), duration-200 (normal), duration-300 (slow)
 ```
 
-### tw-animate-css
-Use `tw-animate-css` for complex animations:
+### tw-animate-css (Complex Animations)
 
 ```typescript
 import "tw-animate-css";
 
-function AnimatedCard() {
-  return (
-    <div className="animate-fadeIn animate-duration-500">
-      <Card />
-    </div>
-  );
-}
+<div className="animate-fadeIn animate-duration-500">
+  <Card />
+</div>
 
-// Available animations:
-// - animate-fadeIn, animate-fadeOut
-// - animate-slideInUp, animate-slideInDown
-// - animate-bounceIn, animate-pulse
+// Available: animate-fadeIn, animate-fadeOut, animate-slideInUp, animate-bounceIn
 ```
 
-## Common Patterns
+---
 
-### shadcn/ui Components
-Follow shadcn/ui patterns for consistency:
+## Spacing & Accessibility
 
-```typescript
-// ✅ Good: shadcn/ui pattern
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
+### Consistent Spacing Scale
 
-function Dashboard() {
-  return (
-    <Card>
-      <CardHeader>
-        <h2>Dashboard</h2>
-      </CardHeader>
-      <CardContent>
-        <Button>Click me</Button>
-      </CardContent>
-    </Card>
-  );
-}
-```
+**Use Tailwind's spacing scale consistently: 0, 1, 2, 3, 4, 6, 8, 10, 12, 16, 20, 24, 32**
 
-### Consistent Spacing
-Use consistent spacing scale:
-
-```typescript
-// Spacing scale: 0, 1, 2, 3, 4, 6, 8, 10, 12, 16, 20, 24, 32
-
-// ✅ Good: consistent spacing
-<div className="space-y-4">      {/* 1rem = 16px */}
-  <Section />
+```jsx
+<div className="space-y-4">  {/* 1rem = 16px */}
   <Section />
 </div>
 
-<div className="p-6">            {/* 1.5rem = 24px */}
+<div className="p-6">        {/* 1.5rem = 24px */}
   <Content />
 </div>
 
-<div className="mb-8">           {/* 2rem = 32px */}
+<div className="mb-8">       {/* 2rem = 32px */}
   <Header />
 </div>
 ```
 
-### Focus States
-Always include focus states for accessibility:
+### Focus States (MANDATORY for Accessibility)
 
-```typescript
-// ✅ Good: visible focus state
-function Input() {
-  return (
-    <input
-      className="rounded border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-    />
-  );
-}
+**You MUST include focus states for all interactive elements.**
 
-// ✅ Good: focus-visible for keyboard-only
-function Button() {
-  return (
-    <button className="rounded px-4 py-2 focus-visible:ring-2 focus-visible:ring-offset-2">
-      Click me
-    </button>
-  );
-}
+```jsx
+// All focus (mouse + keyboard)
+<input className="focus:outline-none focus:ring-2 focus:ring-primary" />
+
+// Keyboard-only focus (recommended for buttons)
+<button className="focus-visible:ring-2 focus-visible:ring-offset-2">
+  Click me
+</button>
 ```
 
-## Anti-Patterns to Avoid
+---
 
-```typescript
-// ❌ Bad: magic numbers
+## Anti-Patterns (FORBIDDEN)
+
+### ❌ Magic Numbers (Arbitrary Values)
+
+```jsx
+// ❌ INCORRECT
 <div className="w-[347px] h-[234px]" />
 
-// ✅ Good: use design system values
+// ✅ CORRECT
 <div className="w-80 h-64" />
-
-// ❌ Bad: inline styles
-<div style={{ marginTop: "20px", color: "red" }} />
-
-// ✅ Good: Tailwind classes
-<div className="mt-5 text-red-500" />
-
-// ❌ Bad: !important via Tailwind
-<div className="!mt-10" />
-
-// ✅ Good: fix specificity issues properly
-<div className="mt-10" /> {/* Ensure proper cascade */}
 ```
 
-## Custom Styles (When Necessary)
+### ❌ Inline Styles
 
-Only use custom CSS when Tailwind utilities are insufficient:
+```jsx
+// ❌ INCORRECT
+<div style={{ marginTop: "20px", color: "red" }} />
+
+// ✅ CORRECT
+<div className="mt-5 text-red-500" />
+```
+
+### ❌ Using !important
+
+```jsx
+// ❌ INCORRECT
+<div className="!mt-10" />
+
+// ✅ CORRECT - Fix specificity properly
+<div className="mt-10" />
+```
+
+---
+
+## Custom CSS (Last Resort Only)
+
+**Only write custom CSS when Tailwind utilities are truly insufficient** (e.g., browser-specific pseudo-elements):
 
 ```css
-/* apps/web/src/index.css */
+/* apps/studio/src/index.css */
 @layer components {
   .custom-scrollbar::-webkit-scrollbar {
     width: 8px;

@@ -1,0 +1,123 @@
+# Ralphy Progress Log
+
+Tue Feb 03 2026
+Improved document cards and settings dialog:
+- Refactored document settings dialog with sidebar navigation (Cover, Curate, References tabs).
+- Added placeholder views for Curate and References features ("This feature is still being built.").
+- Added cover image requirement validation - documents now require a cover image before submission.
+- Added new error code DOCUMENT_COVER_REQUIRED (DOC_2011) with user-friendly messages.
+- Completely redesigned document cards with two variants:
+  - Card with cover: Shows cover image with gradient overlay, title overlaid, hover zoom effect.
+  - Card without cover: Shows decorative gradient pattern with document type icon.
+- Both card variants feature improved hover states, status badges, and consistent styling.
+- Updated document card menu styling for better visibility on image backgrounds.
+
+Mon Jan 19 09:33:49 PM -05 2026
+Implemented cover image upload in document settings dialog
+- Added email verification configuration to Better Auth in `packages/backend/convex/auth.ts`.
+- Configured verification codes to be logged to the console in development mode.
+- Enabled email verification requirement.
+
+Mon Jan 19 2026
+Add general navigation sidebar and reorganize header information into it
+- Created `AppSidebar` component in `apps/studio/src/components/layout/app-sidebar.tsx`.
+- Created `Layout` wrapper component in `apps/studio/src/components/layout/layout.tsx`.
+- Wrapped `_auth` route with the new `Layout` component.
+- Removed deprecated `PageHeader` component and its usages.
+- Integrated `UserMenu` and `ThemeToggle` into the sidebar.
+
+Review and improve breadcrumb implementation do something more like layout
+
+Sun Feb 01 2026
+Remove the "Save document" button on `/editor/new` (auto-save)
+- Removed "Save Document" button and manual save handler from `apps/studio/src/routes/_auth/editor/new.tsx`.
+- Implemented auto-save logic using `useDebouncedCallback` and `AdvancedEditor` callbacks.
+- Added `onUpdate` to `AdvancedEditor` usage to ensure latest content is captured.
+- Implemented `saveDocument` function with `useRef` to handle state freshness and prevent race conditions.
+- Updated title change handler to trigger debounced save.
+
+Sun Feb 01 2026
+Fixed the admin review section:
+- Implemented friendly URLs for admin review (/admin/review/$slug).
+- Refactored review page structure to remove pending list and only show review actions + preview.
+- Added search and status filtering (Pending, Published, All) to the admin dashboard.
+- Implemented "Move to Pending" functionality for published documents.
+- Added document context (cover image, curation spin) to the review sidebar.
+- Updated backend queries and mutations to support these features.
+
+Sun Feb 02 2026
+Implemented production email sending with Resend for Better Auth:
+- Added `resend` package (^4.0.0) to backend dependencies.
+- Added `RESEND_API_KEY` and `EMAIL_FROM` environment variables to `packages/env/src/backend.ts`.
+- Created `packages/backend/convex/email/` module with:
+  - `client.ts` - Resend client initialization and helpers.
+  - `templates/verification.ts` - HTML/text email verification templates with brand styling.
+  - `templates/password-reset.ts` - HTML/text password reset templates with brand styling.
+  - `send.ts` - Convex internal actions for sending emails via Resend.
+  - `index.ts` - Module exports.
+- Updated `packages/backend/convex/auth.ts` to integrate email sending:
+  - Email verification sends real emails via Resend when API key is configured.
+  - Password reset sends real emails via Resend when API key is configured.
+  - Development mode logs verification/reset URLs to console for easy testing.
+  - Graceful error handling (no app crashes if email fails).
+
+Tue Feb 03 2026
+Fixed README files: added individual READMEs to all packages and apps, updated root README:
+- Created `packages/backend/README.md` - Documents Convex backend structure, exports, scripts, and dependencies.
+- Created `packages/ui/README.md` - Lists all UI components, usage patterns, and dependencies.
+- Created `packages/errors/README.md` - Documents error codes, categories, and usage examples.
+- Created `packages/env/README.md` - Documents environment variables for studio and backend.
+- Created `packages/config/README.md` - Documents base TypeScript configuration.
+- Created `apps/studio/README.md` - Documents web app structure, routes, and features.
+- Updated root `README.md` with:
+  - Comprehensive project structure overview.
+  - Package catalog with shared dependency versions.
+  - Workspace packages table with descriptions.
+  - Links to all package READMEs.
+  - Architecture section explaining each package's purpose.
+
+Code review fixes - All TypeScript errors resolved:
+
+Studio App fixes:
+- `document-preview.tsx`: Added null guard for document (handles `document === null`)
+- `advanced-editor.tsx`: Updated `debouncedUpdate` to use `await onDebouncedUpdate?.(content)` with try/catch, added "error" save status
+- `document-settings-dialog.tsx`: Added useEffect to sync local state, removed unused imports (ImagePlusIcon, uploadFn)
+- `editable-document-title.tsx`: Added timeout cancellation on Escape key press
+- `error-boundary.tsx`: Removed invalid statusCode/context fields from console.error
+- `user-menu.tsx`: Removed invalid React.ReactNode return type annotation
+- `use-manual-pagination.ts`: Verified already uses useEffect correctly
+- `use-url-synced-pagination.ts`: Removed isInitialMount ref, fixed URL param preservation, removed unused currentSearch
+- `use-convex-image-upload.ts`: Fixed to use `useConvex().query()` instead of useMutation for getUrl (query not mutation)
+- `router.tsx`: Added `trailingSlash: "preserve"` option to match return type
+- `_auth/index.tsx`: Fixed navigation to use `/editor/$slug` (actual URL path, not file-based path)
+- `_auth/editor/new.tsx`: Fixed back button to navigate to `/` instead of `/_auth`
+- `app-sidebar.tsx`: Updated navigation links to use actual URL paths (`/`, `/admin`)
+- `dashboard-pending-list.tsx`: Fixed navigate search type by specifying `to: "/admin"`
+
+Backend (Convex) fixes:
+- `authors/helpers.ts`: Fixed ctx.db.get(authorId) call (removed table name argument)
+- `authors/queries.ts`: Added toPublicAuthor() call to return PublicAuthor type
+- `documents/mutations.ts`: Added pending status check in publish mutation
+- `storage.ts`: Added authentication check in getUrl query
+- `global.d.ts`: Created type declarations for slug module
+
+UI Package fixes:
+- `dialog.tsx`: Added "use client" directive
+- `theme-toggle.tsx`: Added "use client" directive
+- `sidebar.tsx`: Fixed all imports to use relative paths instead of src/ paths
+- `sheet.tsx`: Fixed imports to use relative paths
+- `tooltip.tsx`: Fixed imports to use relative paths
+- `button.tsx`: Fixed import to use relative path
+- `input.tsx`: Fixed import to use relative path
+- `separator.tsx`: Fixed import to use relative path
+- `skeleton.tsx`: Fixed import to use relative path
+
+Config fixes:
+- `studio/tsconfig.json`: Added backend global.d.ts to include for slug types
+- `backend/package.json`: Removed @types/slug (incompatible with slug v11 ESM)
+- `studio/package.json`: Added check-types script
+
+All packages now pass `bun run check-types`:
+- apps/studio: PASS
+- packages/ui: PASS
+- packages/backend: PASS

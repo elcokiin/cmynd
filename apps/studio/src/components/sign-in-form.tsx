@@ -1,14 +1,18 @@
+import { signInValidator } from "@elcokiin/backend/lib/validators/auth";
 import { Button } from "@elcokiin/ui/button";
 import { Input } from "@elcokiin/ui/input";
 import { Label } from "@elcokiin/ui/label";
 import { useForm } from "@tanstack/react-form";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import z from "zod";
 
 import { authClient } from "@/lib/auth-client";
 
-export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () => void }) {
+type SignInFormProps = {
+  onSwitchToSignUp: () => void;
+};
+
+export function SignInForm({ onSwitchToSignUp }: SignInFormProps): React.ReactNode {
   const navigate = useNavigate({
     from: "/",
   });
@@ -27,7 +31,7 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
         {
           onSuccess: () => {
             navigate({
-              to: "/dashboard",
+              to: "/",
             });
             toast.success("Sign in successful");
           },
@@ -38,10 +42,7 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
       );
     },
     validators: {
-      onSubmit: z.object({
-        email: z.email("Invalid email address"),
-        password: z.string().min(8, "Password must be at least 8 characters"),
-      }),
+      onSubmit: signInValidator,
     },
   });
 
@@ -115,6 +116,21 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
           )}
         </form.Subscribe>
       </form>
+
+      <div className="mt-4">
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={async () => {
+            await authClient.signIn.social({
+              provider: "google",
+              callbackURL: "/",
+            });
+          }}
+        >
+          Sign in with Google
+        </Button>
+      </div>
 
       <div className="mt-4 text-center">
         <Button

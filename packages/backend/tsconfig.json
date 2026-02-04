@@ -1,0 +1,8 @@
+{
+  "extends": "@elcokiin/config/tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  "include": ["lib/**/*", "convex/**/*", "global.d.ts"],
+  "exclude": ["convex/_generated"]
+}
