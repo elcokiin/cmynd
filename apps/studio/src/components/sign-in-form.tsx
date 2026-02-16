@@ -10,9 +10,13 @@ import { authClient } from "@/lib/auth-client";
 
 type SignInFormProps = {
   onSwitchToSignUp: () => void;
+  onSwitchToRecover: () => void;
 };
 
-export function SignInForm({ onSwitchToSignUp }: SignInFormProps): React.ReactNode {
+export function SignInForm({
+  onSwitchToSignUp,
+  onSwitchToRecover,
+}: SignInFormProps): React.ReactNode {
   const navigate = useNavigate({
     from: "/",
   });
@@ -139,6 +143,13 @@ export function SignInForm({ onSwitchToSignUp }: SignInFormProps): React.ReactNo
           className="text-indigo-600 hover:text-indigo-800"
         >
           Need an account? Sign Up
+        </Button>
+        <Button
+          variant="link"
+          onClick={onSwitchToRecover}
+          className="text-indigo-600 hover:text-indigo-800"
+        >
+          Recover your password
         </Button>
       </div>
     </div>

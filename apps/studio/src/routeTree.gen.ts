@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as AuthIndexRouteImport } from './routes/_auth/index'
 import { Route as AuthAdminRouteRouteImport } from './routes/_auth/admin/route'
@@ -19,6 +20,11 @@ import { Route as AuthEditorSlugRouteImport } from './routes/_auth/editor/$slug'
 import { Route as AuthAdminReviewRouteImport } from './routes/_auth/admin/review'
 import { Route as AuthAdminReviewSlugRouteImport } from './routes/_auth/admin/review_.$slug'
 
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRouteRoute = AuthRouteRouteImport.update({
   id: '/_auth',
   getParentRoute: () => rootRouteImport,
@@ -65,6 +71,7 @@ const AuthAdminReviewSlugRoute = AuthAdminReviewSlugRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthAdminRouteRouteWithChildren
   '/': typeof AuthIndexRoute
   '/admin/review': typeof AuthAdminReviewRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/admin/review/$slug': typeof AuthAdminReviewSlugRoute
 }
 export interface FileRoutesByTo {
+  '/reset-password': typeof ResetPasswordRoute
   '/': typeof AuthIndexRoute
   '/admin/review': typeof AuthAdminReviewRoute
   '/editor/$slug': typeof AuthEditorSlugRoute
@@ -86,6 +94,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_auth': typeof AuthRouteRouteWithChildren
+  '/reset-password': typeof ResetPasswordRoute
   '/_auth/admin': typeof AuthAdminRouteRouteWithChildren
   '/_auth/': typeof AuthIndexRoute
   '/_auth/admin/review': typeof AuthAdminReviewRoute
@@ -98,6 +107,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/reset-password'
     | '/admin'
     | '/'
     | '/admin/review'
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/admin/review/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/reset-password'
     | '/'
     | '/admin/review'
     | '/editor/$slug'
@@ -118,6 +129,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_auth'
+    | '/reset-password'
     | '/_auth/admin'
     | '/_auth/'
     | '/_auth/admin/review'
@@ -130,11 +142,19 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   AuthRouteRoute: typeof AuthRouteRouteWithChildren
+  ResetPasswordRoute: typeof ResetPasswordRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_auth': {
       id: '/_auth'
       path: ''
@@ -237,6 +257,7 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   AuthRouteRoute: AuthRouteRouteWithChildren,
+  ResetPasswordRoute: ResetPasswordRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport

@@ -21,5 +21,21 @@ export const signUpValidator = z.object({
   password: passwordValidator,
 });
 
+export const forgetPasswordValidator = z.object({
+  email: emailValidator,
+});
+
+export const resetPasswordValidator = z
+  .object({
+    newPassword: passwordValidator,
+    confirmPassword: passwordValidator,
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
 export type SignInData = z.infer<typeof signInValidator>;
 export type SignUpData = z.infer<typeof signUpValidator>;
+export type ForgetPasswordData = z.infer<typeof forgetPasswordValidator>;
+export type ResetPasswordData = z.infer<typeof resetPasswordValidator>;

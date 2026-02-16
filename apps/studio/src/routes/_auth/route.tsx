@@ -5,17 +5,33 @@ import { RefreshCwIcon } from "lucide-react";
 import { useState } from "react";
 import { SidebarProvider } from "@elcokiin/ui/sidebar";
 
+import { Layout } from "@/components/layout/layout";
+import { RecoverPasswordForm } from "@/components/recover-password-form";
 import { SignInForm } from "@/components/sign-in-form";
 import { SignUpForm } from "@/components/sign-up-form";
-import { Layout } from "@/components/layout/layout";
 
 export const Route = createFileRoute("/_auth")({
   component: AuthLayout,
   errorComponent: AuthErrorComponent,
 });
 
+type AuthView = "sign-in" | "sign-up" | "recover-password";
+
 function AuthLayout() {
-  const [showSignIn, setShowSignIn] = useState(false);
+  const [authView, setAuthView] = useState<AuthView>("sign-in");
+
+  const authViews: Record<AuthView, React.ReactNode> = {
+    "sign-in": (
+      <SignInForm
+        onSwitchToSignUp={() => setAuthView("sign-up")}
+        onSwitchToRecover={() => setAuthView("recover-password")}
+      />
+    ),
+    "sign-up": <SignUpForm onSwitchToSignIn={() => setAuthView("sign-in")} />,
+    "recover-password": (
+      <RecoverPasswordForm onBack={() => setAuthView("sign-in")} />
+    ),
+  };
 
   return (
     <>
@@ -28,11 +44,7 @@ function AuthLayout() {
       </Authenticated>
       <Unauthenticated>
         <div className="flex items-center justify-center h-full">
-          {showSignIn ? (
-            <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
-          ) : (
-            <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
-          )}
+          {authViews[authView]}
         </div>
       </Unauthenticated>
       <AuthLoading>
