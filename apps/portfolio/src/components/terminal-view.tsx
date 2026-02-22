@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { ScrollArea } from "@elcokiin/ui/scroll-area";
 import { TerminalInput } from "@/components/terminal-input";
 import { executeCommand, type TerminalState } from "@/lib/vfs/command-parser";
+import { neofetchOutput } from "@/lib/neofetch";
 
 interface HistoryEntry {
   command: string;
@@ -13,7 +14,18 @@ interface HistoryEntry {
 
 export function TerminalView() {
   const [state, setState] = useState<TerminalState>({ cwd: "/" });
-  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [history, setHistory] = useState<HistoryEntry[]>([
+    {
+      command: "neofetch",
+      output: neofetchOutput,
+      prompt: "elcokiin@github ~ $",
+    },
+    {
+      command: "",
+      output: 'Type "help" to see available commands.',
+      prompt: "",
+    },
+  ]);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {

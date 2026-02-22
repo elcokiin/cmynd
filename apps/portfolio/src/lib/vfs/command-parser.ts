@@ -1,5 +1,6 @@
 import type { DirectoryNode, FileSystemNode } from "./schema";
 import fsData from "./fs.json";
+import { neofetchOutput } from "@/lib/neofetch";
 
 const rootDir = fsData as DirectoryNode;
 
@@ -124,6 +125,23 @@ export function executeCommand(
     }
     case "pwd": {
       return { newState: state, output: state.cwd };
+    }
+    case "neofetch": {
+      return { newState: state, output: neofetchOutput };
+    }
+    case "help": {
+      const helpText = [
+        "Available commands:",
+        "",
+        "  neofetch     - Display system info and resume",
+        "  ls           - List directory contents",
+        "  cd           - Change directory",
+        "  cat          - Display file contents",
+        "  pwd          - Print working directory",
+        "  clear        - Clear terminal",
+        "  ask-diego    - Ask Diego's AI agent a question",
+      ].join("\n");
+      return { newState: state, output: helpText };
     }
     case "ask-diego": {
       if (args.length < 2) {
