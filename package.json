@@ -24,6 +24,7 @@
     "dev:native": "turbo -F native dev",
     "dev:studio": "turbo -F studio dev",
     "dev:server": "turbo -F @elcokiin/backend dev",
+    "dev:portfolio": "turbo -F @elcokiin/portfolio dev",
     "dev:setup": "turbo -F @elcokiin/backend dev:setup"
   },
   "dependencies": {

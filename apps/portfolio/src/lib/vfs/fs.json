@@ -1,0 +1,70 @@
+{
+  "name": "elcokiin",
+  "type": "directory",
+  "permissions": "drwxr-xr-x",
+  "children": {
+    "experience": {
+      "name": "experience",
+      "type": "directory",
+      "permissions": "drwxr-xr-x",
+      "children": {
+        "academics.md": {
+          "name": "academics.md",
+          "type": "file",
+          "permissions": "-rw-r--r--",
+          "extension": "md",
+          "content": "# Academic Experience\n\nSystems & Computing Engineering (9th Semester)."
+        },
+        "projects.md": {
+          "name": "projects.md",
+          "type": "file",
+          "permissions": "-rw-r--r--",
+          "extension": "md",
+          "content": "# Practical Output\n\nBuilt an Arch/Nvim environment with deterministic shell and LLM layer."
+        }
+      }
+    },
+    "stack": {
+      "name": "stack",
+      "type": "directory",
+      "permissions": "drwxr-xr-x",
+      "children": {
+        "backend.json": {
+          "name": "backend.json",
+          "type": "file",
+          "permissions": "-rw-r--r--",
+          "extension": "json",
+          "content": "{\n  \"languages\": [\"TypeScript\", \"Java\"],\n  \"frameworks\": [\"tRPC\"],\n  \"databases\": [\"Convex\"]\n}"
+        },
+        "frontend.json": {
+          "name": "frontend.json",
+          "type": "file",
+          "permissions": "-rw-r--r--",
+          "extension": "json",
+          "content": "{\n  \"frameworks\": [\"Next.js\", \"Astro\", \"React Native\"],\n  \"styling\": [\"Tailwind CSS\", \"shadcn/ui\"]\n}"
+        },
+        "ai.json": {
+          "name": "ai.json",
+          "type": "file",
+          "permissions": "-rw-r--r--",
+          "extension": "json",
+          "content": "{\n  \"tools\": [\"MCPs\", \"Agentic Loops\", \"Vercel AI SDK\"]\n}"
+        },
+        "infra.json": {
+          "name": "infra.json",
+          "type": "file",
+          "permissions": "-rw-r--r--",
+          "extension": "json",
+          "content": "{\n  \"tools\": [\"Docker\", \"CI/CD\", \"Turborepo\"]\n}"
+        }
+      }
+    },
+    "philosophy.md": {
+      "name": "philosophy.md",
+      "type": "file",
+      "permissions": "-rw-r--r--",
+      "extension": "md",
+      "content": "# Code Authorship & Engineering Rigor\n\nKeep it simple. Write deterministic code. Use high-leverage primitives."
+    }
+  }
+}
