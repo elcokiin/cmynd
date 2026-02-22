@@ -18,7 +18,7 @@ export function TerminalView() {
     {
       command: "neofetch",
       output: neofetchOutput,
-      prompt: "elcokiin@github ~ $",
+      prompt: "",
     },
     {
       command: "",
@@ -38,21 +38,27 @@ export function TerminalView() {
 
   const getPrompt = (cwd: string) => {
     if (cwd === "/") {
-      return "elcokiin@github ~ $";
+      return "diegotenjo@elcokiin ~ $";
     }
     const displayPath = cwd.replace(/^\//, "~/");
-    return `elcokiin@github ${displayPath} $`;
+    return `diegotenjo@elcokiin ${displayPath} $`;
   };
 
   const handleCommandSubmit = async (commandLine: string) => {
     const prompt = getPrompt(state.cwd);
-    
+
     if (!commandLine.trim()) {
-      setHistory((prev) => [...prev, { command: commandLine, output: "", prompt }]);
+      setHistory((prev) => [
+        ...prev,
+        { command: commandLine, output: "", prompt },
+      ]);
       return;
     }
 
-    const { newState, output, clear, isAsync } = executeCommand(commandLine, state);
+    const { newState, output, clear, isAsync } = executeCommand(
+      commandLine,
+      state,
+    );
 
     if (clear) {
       setHistory([]);
@@ -61,46 +67,61 @@ export function TerminalView() {
     }
 
     if (isAsync) {
-      setHistory((prev) => [...prev, { command: commandLine, output: "Contacting elcokiin's AI agent...\n\n", prompt }]);
+      setHistory((prev) => [
+        ...prev,
+        {
+          command: commandLine,
+          output: "Contacting elcokiin's AI agent...\n\n",
+          prompt,
+        },
+      ]);
       setState(newState);
 
       try {
-        const query = commandLine.replace(/^ask-diego\s+/, '').trim();
-        const response = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const query = commandLine.replace(/^ask-diego\s+/, "").trim();
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            messages: [{ role: 'user', content: query }]
+            messages: [{ role: "user", content: query }],
           }),
         });
 
-        if (!response.ok) throw new Error('Network response was not ok');
-        if (!response.body) throw new Error('No body in response');
+        if (!response.ok) throw new Error("Network response was not ok");
+        if (!response.body) throw new Error("No body in response");
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
-        
+
         // Remove the loading message before streaming the actual response
         setHistory((prev) => {
           const newHistory = [...prev];
           const lastIndex = newHistory.length - 1;
           const lastEntry = newHistory[lastIndex];
-          if (lastIndex >= 0 && lastEntry && lastEntry.command === commandLine) {
+          if (
+            lastIndex >= 0 &&
+            lastEntry &&
+            lastEntry.command === commandLine
+          ) {
             lastEntry.output = "";
           }
           return newHistory;
         });
-        
+
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
           const chunk = decoder.decode(value, { stream: true });
-          
+
           setHistory((prev) => {
             const newHistory = [...prev];
             const lastIndex = newHistory.length - 1;
             const lastEntry = newHistory[lastIndex];
-            if (lastIndex >= 0 && lastEntry && lastEntry.command === commandLine) {
+            if (
+              lastIndex >= 0 &&
+              lastEntry &&
+              lastEntry.command === commandLine
+            ) {
               lastEntry.output += chunk;
             }
             return newHistory;
@@ -111,8 +132,12 @@ export function TerminalView() {
           const newHistory = [...prev];
           const lastIndex = newHistory.length - 1;
           const lastEntry = newHistory[lastIndex];
-          if (lastIndex >= 0 && lastEntry && lastEntry.command === commandLine) {
-            lastEntry.output += '\nError: Failed to fetch response from AI.';
+          if (
+            lastIndex >= 0 &&
+            lastEntry &&
+            lastEntry.command === commandLine
+          ) {
+            lastEntry.output += "\nError: Failed to fetch response from AI.";
           }
           return newHistory;
         });
@@ -131,7 +156,9 @@ export function TerminalView() {
         {history.map((entry, i) => (
           <div key={i} className="flex flex-col mb-2">
             <div className="flex items-center">
-              <span className="text-zinc-400 mr-2 whitespace-nowrap">{entry.prompt}</span>
+              <span className="text-zinc-200 mr-2 whitespace-nowrap">
+                {entry.prompt}
+              </span>
               <span className="text-white">{entry.command}</span>
             </div>
             {entry.output && (

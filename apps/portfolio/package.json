@@ -12,15 +12,16 @@
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.46",
+    "@ai-sdk/google": "^3.0.30",
     "@ai-sdk/openai": "^3.0.30",
+    "@elcokiin/env": "workspace:*",
+    "@elcokiin/errors": "workspace:*",
+    "@elcokiin/ui": "workspace:*",
     "ai": "^6.0.97",
     "lucide-react": "^0.575.0",
     "next": "16.1.6",
     "react": "19.2.3",
-    "react-dom": "19.2.3",
-    "@elcokiin/ui": "workspace:*",
-    "@elcokiin/env": "workspace:*",
-    "@elcokiin/errors": "workspace:*"
+    "react-dom": "19.2.3"
   },
   "devDependencies": {
     "@elcokiin/config": "workspace:*",

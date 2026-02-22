@@ -60,7 +60,7 @@ describe('Page Component', () => {
     expect(panels.length).toBe(2)
     
     // Check default size in inline style roughly or existence of pane content
-    expect(getByText('elcokiin@github ~ $')).not.toBeNull()
+    expect(getByText('diegotenjo@elcokiin ~ $')).not.toBeNull()
     expect(getByText('AI Summary')).not.toBeNull()
     
     // Check for the handle

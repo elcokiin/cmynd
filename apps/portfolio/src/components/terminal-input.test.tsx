@@ -16,7 +16,7 @@ describe("TerminalInput Component", () => {
 
   it("renders with default prompt", () => {
     render(<TerminalInput onSubmit={onSubmitMock} />);
-    expect(screen.getByText("elcokiin@github ~ $")).toBeDefined();
+    expect(screen.getByText("diegotenjo@elcokiin ~ $")).toBeDefined();
     expect(screen.getByRole("textbox")).toBeDefined();
   });
 

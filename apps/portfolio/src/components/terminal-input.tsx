@@ -12,7 +12,7 @@ export interface TerminalInputProps {
 
 export function TerminalInput({
   onSubmit,
-  prompt = "elcokiin@github ~ $",
+  prompt = "diegotenjo@elcokiin ~ $",
   className,
 }: TerminalInputProps) {
   const [value, setValue] = useState("");

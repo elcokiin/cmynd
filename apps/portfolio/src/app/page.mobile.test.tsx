@@ -52,7 +52,7 @@ describe('Page Component - Mobile View', () => {
       expect(triggerButton).not.toBeNull()
       
       // Terminal is still there
-      expect(getByText('elcokiin@github ~ $')).not.toBeNull()
+      expect(getByText('diegotenjo@elcokiin ~ $')).not.toBeNull()
     })
   })
 })

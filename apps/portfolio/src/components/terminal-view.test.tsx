@@ -31,7 +31,7 @@ describe('TerminalView Component', () => {
 
   it('renders correctly with default prompt', () => {
     render(<TerminalView />)
-    expect(screen.getByText('elcokiin@github ~ $')).not.toBeNull()
+    expect(screen.getByText('diegotenjo@elcokiin ~ $')).not.toBeNull()
   })
 
   it('handles command execution and displays output', () => {
@@ -55,7 +55,7 @@ describe('TerminalView Component', () => {
     fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
     
     // Check if new prompt is rendered
-    expect(screen.getAllByText('elcokiin@github ~/test $').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('diegotenjo@elcokiin ~/test $').length).toBeGreaterThan(0)
   })
 
   it('handles clear command', () => {
