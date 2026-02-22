@@ -18,7 +18,7 @@ export function TerminalView() {
     {
       command: "neofetch",
       output: neofetchOutput,
-      prompt: "",
+      prompt: "diegotenjo@elcokiin ~ $",
     },
     {
       command: "",
