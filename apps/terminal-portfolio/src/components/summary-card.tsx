@@ -5,6 +5,8 @@ import { Button } from "@elcokiin/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@elcokiin/ui/card"
 import { Input } from "@elcokiin/ui/input"
 import { ScrollArea } from "@elcokiin/ui/scroll-area"
+import ReactMarkdown from "react-markdown"
+import { useMarkdownResponse } from "@/hooks/use-markdown-response"
 
 interface ChatMessage {
   role: "user" | "assistant"
@@ -12,6 +14,7 @@ interface ChatMessage {
 }
 
 export function SummaryCard() {
+  const { components, remarkPlugins, rehypePlugins } = useMarkdownResponse()
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -116,10 +119,26 @@ export function SummaryCard() {
                     className={`max-w-[90%] rounded-md px-3 py-2 text-sm whitespace-pre-wrap leading-relaxed ${
                       message.role === "user"
                         ? "bg-zinc-800 text-zinc-100"
-                        : "bg-zinc-900 text-zinc-300 border border-zinc-800"
+                        : "bg-zinc-900 text-zinc-300 border border-zinc-800 whitespace-normal"
                     }`}
                   >
-                    {message.content || (isLoading && message.role === "assistant" ? "Thinking..." : "")}
+                    {message.role === "assistant" ? (
+                      message.content ? (
+                        <ReactMarkdown
+                          remarkPlugins={remarkPlugins}
+                          rehypePlugins={rehypePlugins}
+                          components={components}
+                        >
+                          {message.content}
+                        </ReactMarkdown>
+                      ) : isLoading ? (
+                        "Thinking..."
+                      ) : (
+                        ""
+                      )
+                    ) : (
+                      message.content
+                    )}
                   </div>
                 </div>
               ))}
