@@ -7,9 +7,9 @@ vi.mock('ai', () => ({
   streamText: vi.fn(),
 }));
 
-// Mock the @ai-sdk/openai package
-vi.mock('@ai-sdk/openai', () => ({
-  openai: vi.fn(() => 'mocked-model'),
+// Mock the @ai-sdk/google package
+vi.mock('@ai-sdk/google', () => ({
+  google: vi.fn(() => 'mocked-model'),
 }));
 
 describe('POST /api/chat', () => {
@@ -59,5 +59,18 @@ describe('POST /api/chat', () => {
     expect(data).toEqual({ error: 'Failed to generate response' });
 
     consoleSpy.mockRestore();
+  });
+
+  it('returns 400 for invalid messages payload', async () => {
+    const req = new Request('http://localhost:3000/api/chat', {
+      method: 'POST',
+      body: JSON.stringify({ messages: [] }),
+    });
+
+    const response = await POST(req);
+
+    expect(response.status).toBe(400);
+    const data = await response.json();
+    expect(data).toEqual({ error: 'Invalid request: messages are required' });
   });
 });

@@ -1,7 +1,7 @@
 "use client";
 
 import type { KeyboardEvent } from "react";
-import { useState, useRef, useEffect } from "react";
+import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { Input } from "@elcokiin/ui/input";
 
 export interface TerminalInputProps {
@@ -12,13 +12,17 @@ export interface TerminalInputProps {
   className?: string;
 }
 
-export function TerminalInput({
+export interface TerminalInputHandle {
+  focus: () => void;
+}
+
+export const TerminalInput = forwardRef<TerminalInputHandle, TerminalInputProps>(function TerminalInput({
   onSubmit,
   getCompletions,
   onCompletionCandidates,
   prompt = "diegotenjo@elcokiin ~ $",
   className,
-}: TerminalInputProps) {
+}, ref) {
   const [value, setValue] = useState("");
   const [history, setHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState<number>(-1);
@@ -27,6 +31,12 @@ export function TerminalInput({
     candidates: string[];
   } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      inputRef.current?.focus();
+    },
+  }));
 
   const longestCommonPrefix = (items: string[]) => {
     if (items.length === 0) return "";
@@ -66,21 +76,6 @@ export function TerminalInput({
     setValue(nextValue);
     return nextValue;
   };
-
-  // Enforce auto-focus on click anywhere in the window
-  useEffect(() => {
-    const handleGlobalClick = () => {
-      inputRef.current?.focus();
-    };
-    
-    // Initial focus
-    inputRef.current?.focus();
-
-    window.addEventListener("click", handleGlobalClick);
-    return () => {
-      window.removeEventListener("click", handleGlobalClick);
-    };
-  }, []);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
@@ -177,4 +172,4 @@ export function TerminalInput({
       />
     </div>
   );
-}
+});

@@ -1,8 +1,16 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import {
+  useState,
+  useRef,
+  useEffect,
+  type MouseEvent as ReactMouseEvent,
+} from "react";
 import { ScrollArea } from "@elcokiin/ui/scroll-area";
-import { TerminalInput } from "@/components/terminal-input";
+import {
+  TerminalInput,
+  type TerminalInputHandle,
+} from "@/components/terminal-input";
 import {
   executeCommand,
   getCompletions,
@@ -31,6 +39,7 @@ export function TerminalView() {
     },
   ]);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const inputHandleRef = useRef<TerminalInputHandle>(null);
 
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -39,6 +48,39 @@ export function TerminalView() {
   useEffect(() => {
     scrollToBottom();
   }, [history]);
+
+  const handleTerminalClick = (event: ReactMouseEvent<HTMLElement>) => {
+    // If the user selected text, don't steal focus
+    const selection = window.getSelection();
+    if (selection && selection.toString().length > 0) {
+      return;
+    }
+
+    if (!(event.target instanceof HTMLElement)) {
+      inputHandleRef.current?.focus();
+      return;
+    }
+
+    // Allow scrollbar interactions
+    if (
+      event.target.closest(
+        "[data-slot='scroll-area-scrollbar'], [data-slot='scroll-area-thumb']",
+      )
+    ) {
+      return;
+    }
+
+    // Allow interactive elements to keep focus
+    if (
+      event.target.closest(
+        "input, textarea, button, select, a, [contenteditable='true']",
+      )
+    ) {
+      return;
+    }
+
+    inputHandleRef.current?.focus();
+  };
 
   const getPrompt = (cwd: string) => {
     if (cwd === "/") {
@@ -167,33 +209,39 @@ export function TerminalView() {
   const currentPrompt = getPrompt(state.cwd);
 
   return (
-    <ScrollArea className="h-full w-full">
-      <div className="flex flex-col p-4 pb-16 min-h-full">
-        {history.map((entry, i) => (
-          <div key={i} className="flex flex-col mb-2">
-            <div className="flex items-center">
-              <span className="text-zinc-200 mr-2 whitespace-nowrap">
-                {entry.prompt}
-              </span>
-              <span className="text-white">{entry.command}</span>
-            </div>
-            {entry.output && (
-              <div className="text-zinc-300 whitespace-pre-wrap mt-1 font-mono text-sm leading-relaxed">
-                {entry.output}
+    <div
+      className="h-full w-full min-h-0"
+      onClickCapture={handleTerminalClick}
+    >
+      <ScrollArea className="h-full w-full">
+        <div className="flex flex-col p-4 pb-16 min-h-full">
+          {history.map((entry, i) => (
+            <div key={i} className="flex flex-col mb-2">
+              <div className="flex items-center">
+                <span className="text-zinc-200 mr-2 whitespace-nowrap">
+                  {entry.prompt}
+                </span>
+                <span className="text-white">{entry.command}</span>
               </div>
-            )}
+              {entry.output && (
+                <div className="text-zinc-300 whitespace-pre-wrap mt-1 font-mono text-sm leading-relaxed">
+                  {entry.output}
+                </div>
+              )}
+            </div>
+          ))}
+          <div className="flex items-center mt-2">
+            <TerminalInput
+              ref={inputHandleRef}
+              onSubmit={handleCommandSubmit}
+              getCompletions={(input) => getCompletions(input, state)}
+              onCompletionCandidates={handleCompletionCandidates}
+              prompt={currentPrompt}
+            />
           </div>
-        ))}
-        <div className="flex items-center mt-2">
-          <TerminalInput
-            onSubmit={handleCommandSubmit}
-            getCompletions={(input) => getCompletions(input, state)}
-            onCompletionCandidates={handleCompletionCandidates}
-            prompt={currentPrompt}
-          />
+          <div ref={bottomRef} />
         </div>
-        <div ref={bottomRef} />
-      </div>
-    </ScrollArea>
+      </ScrollArea>
+    </div>
   );
 }

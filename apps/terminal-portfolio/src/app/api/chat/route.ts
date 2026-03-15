@@ -9,7 +9,20 @@ export const maxDuration = 30;
 
 export async function POST(req: Request) {
   try {
-    const { messages }: { messages: ModelMessage[] } = await req.json();
+    const payload = (await req.json()) as { messages?: ModelMessage[] };
+    const incomingMessages = payload.messages;
+
+    if (!Array.isArray(incomingMessages) || incomingMessages.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "Invalid request: messages are required" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    const messages = incomingMessages.slice(-20);
 
     const systemPrompt = `You are an AI assistant representing Diego Tenjo (username: elcokiin), a Full-Stack Developer.
 You have access to the following virtual file system representing their resume data and skills:

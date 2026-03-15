@@ -9,6 +9,7 @@ describe('SummaryCard component', () => {
   beforeEach(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fetchMock = vi.spyOn(global, 'fetch') as any
+    window.HTMLElement.prototype.scrollIntoView = function() {}
   })
 
   afterEach(() => {
@@ -19,12 +20,13 @@ describe('SummaryCard component', () => {
   it('renders correctly with initial state', () => {
     render(<SummaryCard />)
     expect(screen.getByText('AI Summary')).toBeDefined()
-    expect(screen.getByText('Generate an AI-powered summary of my profile.')).toBeDefined()
-    expect(screen.getByRole('button', { name: 'Summarize' })).toBeDefined()
-    expect(screen.getByText(/No summary generated yet/i)).toBeDefined()
+    expect(screen.getByText('Chat with an AI version of me powered by my portfolio files.')).toBeDefined()
+    expect(screen.getByRole('button', { name: 'Send' })).toBeDefined()
+    expect(screen.getByPlaceholderText("Ask about Diego's profile...")).toBeDefined()
+    expect(screen.getByText(/Ask me anything about my experience/i)).toBeDefined()
   })
 
-  it('handles successful summarize request', async () => {
+  it('handles successful chat request', async () => {
     const mockResponse = 'Here is a summary of the profile.'
     const encoder = new TextEncoder()
     const stream = new ReadableStream({
@@ -40,8 +42,11 @@ describe('SummaryCard component', () => {
     })
 
     render(<SummaryCard />)
-    
-    const button = screen.getByRole('button', { name: 'Summarize' })
+
+    const input = screen.getByPlaceholderText("Ask about Diego's profile...")
+    fireEvent.change(input, { target: { value: 'Tell me about your experience' } })
+
+    const button = screen.getByRole('button', { name: 'Send' })
     fireEvent.click(button)
 
     await waitFor(() => {
@@ -52,23 +57,26 @@ describe('SummaryCard component', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        messages: [{ role: 'user', content: "Summarize this developer's profile." }]
+        messages: [{ role: 'user', content: 'Tell me about your experience' }]
       }),
     }))
   })
 
-  it('handles error during summarize request', async () => {
+  it('handles error during chat request', async () => {
     fetchMock.mockResolvedValueOnce({
       ok: false,
     })
 
     render(<SummaryCard />)
-    
-    const button = screen.getByRole('button', { name: 'Summarize' })
+
+    const input = screen.getByPlaceholderText("Ask about Diego's profile...")
+    fireEvent.change(input, { target: { value: 'Tell me about your experience' } })
+
+    const button = screen.getByRole('button', { name: 'Send' })
     fireEvent.click(button)
 
     await waitFor(() => {
-      expect(screen.getByText('Failed to fetch summary')).toBeDefined()
+      expect(screen.getByText('Failed to fetch response')).toBeDefined()
     })
   })
 
@@ -76,8 +84,11 @@ describe('SummaryCard component', () => {
     fetchMock.mockRejectedValueOnce(new Error('Network error'))
 
     render(<SummaryCard />)
-    
-    const button = screen.getByRole('button', { name: 'Summarize' })
+
+    const input = screen.getByPlaceholderText("Ask about Diego's profile...")
+    fireEvent.change(input, { target: { value: 'Tell me about your experience' } })
+
+    const button = screen.getByRole('button', { name: 'Send' })
     fireEvent.click(button)
 
     await waitFor(() => {

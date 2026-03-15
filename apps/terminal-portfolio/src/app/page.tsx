@@ -73,9 +73,11 @@ export default function Home() {
         orientation="horizontal"
         className="h-full w-full"
       >
-        <ResizablePanel defaultSize={60} minSize={30} className="flex flex-col">
+        <ResizablePanel defaultSize={60} minSize={30} className="flex flex-col min-h-0">
           {/* Terminal View Pane */}
-          <TerminalView />
+          <div className="flex-1 min-h-0">
+            <TerminalView />
+          </div>
         </ResizablePanel>
         <ResizableHandle withHandle className="bg-zinc-800" />
         <ResizablePanel defaultSize={40} minSize={20} className="flex flex-col bg-zinc-950 p-4 relative">

@@ -31,7 +31,7 @@ describe('TerminalView Component', () => {
 
   it('renders correctly with default prompt', () => {
     render(<TerminalView />)
-    expect(screen.getByText('diegotenjo@elcokiin ~ $')).not.toBeNull()
+    expect(screen.getAllByText('diegotenjo@elcokiin ~ $').length).toBeGreaterThan(0)
   })
 
   it('handles command execution and displays output', () => {
