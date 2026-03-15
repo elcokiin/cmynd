@@ -3,7 +3,11 @@
 import { useState, useRef, useEffect } from "react";
 import { ScrollArea } from "@elcokiin/ui/scroll-area";
 import { TerminalInput } from "@/components/terminal-input";
-import { executeCommand, type TerminalState } from "@/lib/vfs/command-parser";
+import {
+  executeCommand,
+  getCompletions,
+  type TerminalState,
+} from "@/lib/vfs/command-parser";
 import { neofetchOutput } from "@/lib/neofetch";
 
 interface HistoryEntry {
@@ -148,6 +152,18 @@ export function TerminalView() {
     }
   };
 
+  const handleCompletionCandidates = (candidates: string[]) => {
+    if (candidates.length === 0) return;
+    setHistory((prev) => [
+      ...prev,
+      {
+        command: "",
+        output: candidates.join("  "),
+        prompt: "",
+      },
+    ]);
+  };
+
   const currentPrompt = getPrompt(state.cwd);
 
   return (
@@ -171,6 +187,8 @@ export function TerminalView() {
         <div className="flex items-center mt-2">
           <TerminalInput
             onSubmit={handleCommandSubmit}
+            getCompletions={(input) => getCompletions(input, state)}
+            onCompletionCandidates={handleCompletionCandidates}
             prompt={currentPrompt}
           />
         </div>

@@ -1,6 +1,6 @@
 import { expect, test, describe } from 'vitest';
 import type { TerminalState } from './command-parser';
-import { executeCommand } from './command-parser';
+import { executeCommand, getCompletions } from './command-parser';
 
 describe('Command Parser Logic', () => {
   const initialState: TerminalState = { cwd: '/' };
@@ -68,5 +68,20 @@ describe('Command Parser Logic', () => {
     const withArgs = executeCommand('ask-diego what is your tech stack?', initialState);
     expect(withArgs.output).toBe('');
     expect(withArgs.isAsync).toBe(true);
+  });
+
+  test('completes commands and paths', () => {
+    const commandMatches = getCompletions('he', initialState);
+    expect(commandMatches).toContain('help');
+
+    const rootPathMatches = getCompletions('cd st', initialState);
+    expect(rootPathMatches).toContain('stack/');
+
+    const childPathMatches = getCompletions('cd stack/f', initialState);
+    expect(childPathMatches).toContain('stack/frontend.json');
+
+    const nestedState: TerminalState = { cwd: '/stack' };
+    const nestedMatches = getCompletions('cat f', nestedState);
+    expect(nestedMatches).toContain('frontend.json');
   });
 });

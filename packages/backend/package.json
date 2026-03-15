@@ -37,6 +37,7 @@
   "devDependencies": {
     "@elcokiin/config": "workspace:*",
     "@types/node": "^24.3.0",
+    "@types/slug": "^5.0.9",
     "@vitest/ui": "^4.0.17",
     "typescript": "catalog:",
     "vitest": "^4.0.17"

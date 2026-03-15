@@ -85,4 +85,47 @@ describe("TerminalInput Component", () => {
     expect(input.className).toContain("focus-visible:ring-0");
     expect(input.className).toContain("focus-visible:ring-offset-0");
   });
+
+  it("completes input on single Tab match", () => {
+    const getCompletions = vi.fn(() => ["help"]);
+    render(
+      <TerminalInput onSubmit={onSubmitMock} getCompletions={getCompletions} />,
+    );
+    const input = screen.getByRole("textbox") as HTMLInputElement;
+
+    act(() => {
+      fireEvent.change(input, { target: { value: "he" } });
+      fireEvent.keyDown(input, { key: "Tab" });
+    });
+
+    expect(getCompletions).toHaveBeenCalledWith("he");
+    expect(input.value).toBe("help ");
+  });
+
+  it("shows completion candidates on second Tab when ambiguous", () => {
+    const onCompletionCandidates = vi.fn();
+    const getCompletions = vi.fn(() => ["stack/", "status/"]);
+    render(
+      <TerminalInput
+        onSubmit={onSubmitMock}
+        getCompletions={getCompletions}
+        onCompletionCandidates={onCompletionCandidates}
+      />,
+    );
+    const input = screen.getByRole("textbox") as HTMLInputElement;
+
+    act(() => {
+      fireEvent.change(input, { target: { value: "st" } });
+      fireEvent.keyDown(input, { key: "Tab" });
+    });
+
+    expect(onCompletionCandidates).not.toHaveBeenCalled();
+
+    act(() => {
+      fireEvent.keyDown(input, { key: "Tab" });
+    });
+
+    expect(onCompletionCandidates).toHaveBeenCalledWith(["stack/", "status/"]);
+    expect(input.value).toBe("sta");
+  });
 });

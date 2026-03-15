@@ -52,6 +52,75 @@ export function getNode(path: string): FileSystemNode | null {
   return current;
 }
 
+export const BUILT_IN_COMMANDS = [
+  "neofetch",
+  "ls",
+  "cd",
+  "cat",
+  "pwd",
+  "clear",
+  "help",
+  "ask-diego",
+] as const;
+
+function tokenizeInput(input: string): { tokens: string[]; endsWithSpace: boolean } {
+  const endsWithSpace = /\s$/.test(input);
+  const trimmed = input.trim();
+
+  if (!trimmed) {
+    return { tokens: [], endsWithSpace };
+  }
+
+  return { tokens: trimmed.split(/\s+/), endsWithSpace };
+}
+
+function listPathCompletions(cwd: string, rawToken: string): string[] {
+  const token = rawToken || "";
+  const trailingSlash = token.endsWith("/");
+  const splitIndex = token.lastIndexOf("/");
+  const hasPathPrefix = splitIndex !== -1;
+  const dirPart = hasPathPrefix ? token.slice(0, splitIndex + 1) : "";
+  const partial = hasPathPrefix ? token.slice(splitIndex + 1) : token;
+  const basePathInput =
+    hasPathPrefix || trailingSlash ? (dirPart || ".") : ".";
+  const basePath = normalizePath(cwd, basePathInput);
+  const baseNode = getNode(basePath);
+
+  if (!baseNode || baseNode.type !== "directory") {
+    return [];
+  }
+
+  return Object.values(baseNode.children)
+    .filter((child) => child.name.startsWith(partial))
+    .map((child) => {
+      const suffix = child.type === "directory" ? "/" : "";
+      return `${dirPart}${child.name}${suffix}`;
+    })
+    .sort((a, b) => a.localeCompare(b));
+}
+
+export function getCompletions(commandLine: string, state: TerminalState): string[] {
+  const { tokens, endsWithSpace } = tokenizeInput(commandLine);
+
+  if (tokens.length === 0) {
+    return [...BUILT_IN_COMMANDS];
+  }
+
+  if (tokens.length === 1 && !endsWithSpace) {
+    const prefix = tokens[0] ?? "";
+    return BUILT_IN_COMMANDS.filter((cmd) => cmd.startsWith(prefix));
+  }
+
+  const cmd = tokens[0] ?? "";
+  const tokenForPath = endsWithSpace ? "" : (tokens[tokens.length - 1] ?? "");
+
+  if (cmd === "cd" || cmd === "ls" || cmd === "cat") {
+    return listPathCompletions(state.cwd, tokenForPath);
+  }
+
+  return [];
+}
+
 export function executeCommand(
   commandLine: string,
   state: TerminalState,

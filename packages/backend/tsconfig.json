@@ -3,6 +3,6 @@
   "compilerOptions": {
     "types": ["node"]
   },
-  "include": ["lib/**/*", "convex/**/*", "global.d.ts"],
+  "include": ["lib/**/*", "convex/**/*"],
   "exclude": ["convex/_generated"]
 }
