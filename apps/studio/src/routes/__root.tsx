@@ -67,17 +67,17 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 function RootDocument() {
   const context = useRouteContext({ from: Route.id });
   return (
-    <ConvexBetterAuthProvider
-      client={context.convexQueryClient.convexClient}
-      authClient={authClient}
-      initialToken={context.token}
-    >
-      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-        <html lang="en" suppressHydrationWarning>
-          <head>
-            <HeadContent />
-          </head>
-          <body>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <HeadContent />
+      </head>
+      <body>
+        <ConvexBetterAuthProvider
+          client={context.convexQueryClient.convexClient}
+          authClient={authClient}
+          initialToken={context.token}
+        >
+          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
             <ErrorBoundary>
               <div className="grid h-svh grid-rows-[auto_1fr]">
                 <Outlet />
@@ -85,10 +85,10 @@ function RootDocument() {
             </ErrorBoundary>
             <Toaster richColors />
             <TanStackRouterDevtools position="bottom-right" />
-            <Scripts />
-          </body>
-        </html>
-      </ThemeProvider>
-    </ConvexBetterAuthProvider>
+          </ThemeProvider>
+        </ConvexBetterAuthProvider>
+        <Scripts />
+      </body>
+    </html>
   );
 }
