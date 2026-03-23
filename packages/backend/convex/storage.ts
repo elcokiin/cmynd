@@ -32,6 +32,17 @@ export const getUrl = query({
 });
 
 /**
+ * Get a public URL for a stored file.
+ * Intended for public-facing consumers (e.g. blog covers).
+ */
+export const getPublicUrl = query({
+  args: { storageId: v.id("_storage") },
+  handler: async (ctx, args): Promise<string | null> => {
+    return await ctx.storage.getUrl(args.storageId);
+  },
+});
+
+/**
  * Delete a stored file.
  */
 export const deleteFile = mutation({

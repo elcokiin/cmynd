@@ -1,0 +1,38 @@
+{
+  "name": "@elcokiin/blog-astro",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check-types": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/node": "^9.4.2",
+    "@astrojs/rss": "^4.0.12",
+    "@astrojs/sitemap": "^3.4.1",
+    "@elcokiin/backend": "workspace:*",
+    "@tailwindcss/vite": "^4.1.18",
+    "@tiptap/extension-color": "^2.10.4",
+    "@tiptap/extension-highlight": "^2.10.4",
+    "@tiptap/extension-image": "^2.10.4",
+    "@tiptap/extension-link": "^2.10.4",
+    "@tiptap/extension-task-item": "^2.10.4",
+    "@tiptap/extension-task-list": "^2.10.4",
+    "@tiptap/extension-text-style": "^2.10.4",
+    "@tiptap/extension-underline": "^2.10.4",
+    "@tiptap/html": "^2.10.4",
+    "@tiptap/starter-kit": "^2.10.4",
+    "astro": "^5.16.6",
+    "convex": "catalog:",
+    "dayjs": "^1.11.13",
+    "sanitize-html": "^2.17.0",
+    "tailwindcss": "^4.1.18"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.8",
+    "@types/sanitize-html": "^2.16.0",
+    "typescript": "catalog:"
+  }
+}

@@ -90,6 +90,47 @@ export const getPublished = query({
 });
 
 /**
+ * Get a published document by slug (public, no auth required).
+ * Returns full document content with author information.
+ * Returns null if document not found or not published.
+ */
+export const getPublishedBySlug = query({
+  args: { slug: v.string() },
+  handler: async (ctx, args): Promise<PublishedDocument | null> => {
+    let document = await ctx.db
+      .query("documents")
+      .withIndex("by_slug", q => q.eq("slug", args.slug))
+      .unique();
+
+    if (!document) {
+      document = await getDocumentByOldSlug(ctx, args.slug);
+    }
+
+    if (!document || document.status !== "published" || !document.publishedAt) {
+      return null;
+    }
+
+    const author = await ctx.db.get(document.authorId);
+    if (!author) {
+      return null;
+    }
+
+    return {
+      _id: document._id,
+      title: document.title,
+      slug: document.slug,
+      content: document.content,
+      type: document.type,
+      coverImageId: document.coverImageId,
+      curation: document.curation,
+      references: document.references,
+      publishedAt: document.publishedAt,
+      author: toPublicAuthor(author),
+    };
+  },
+});
+
+/**
  * List published documents with pagination (public, no auth required).
  * Returns documents with author information but without content.
  */

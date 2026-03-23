@@ -1,0 +1,48 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SiteHeader from "../../components/SiteHeader.astro";
+import SiteFooter from "../../components/SiteFooter.astro";
+import { getPublishedDocumentBySlug, getPublicStorageUrl } from "../../lib/convex";
+import { formatPublishedDate } from "../../lib/utils";
+import { renderRichContent } from "../../lib/tiptap-render";
+import { SITE } from "../../lib/config";
+
+import "../../styles/global.css";
+
+const cacheControl = "public, max-age=300, s-maxage=1800, stale-while-revalidate=7200";
+Astro.response.headers.set("Cache-Control", cacheControl);
+
+const slug = Astro.params.slug;
+
+if (!slug) {
+  return Astro.redirect("/");
+}
+
+const post = await getPublishedDocumentBySlug(slug);
+
+if (!post) {
+  return Astro.redirect("/404");
+}
+
+const coverUrl = post.coverImageId ? await getPublicStorageUrl(post.coverImageId) : undefined;
+const htmlContent = renderRichContent(post.content);
+
+const title = `${post.title} · ${SITE.title}`;
+const description = `${post.author.name} · ${formatPublishedDate(post.publishedAt)}`;
+const canonicalPath = `/posts/${post.slug}/`;
+---
+
+<BaseLayout title={title} description={description} canonicalPath={canonicalPath}>
+  <SiteHeader />
+  <main class="post-main container">
+    <article class="post-article">
+      <p class="post-card-meta">{post.author.name} · {formatPublishedDate(post.publishedAt)}</p>
+      <h1>{post.title}</h1>
+
+      {coverUrl && <img class="post-cover" src={coverUrl} alt={post.title} loading="eager" />}
+
+      <section class="post-prose" set:html={htmlContent} />
+    </article>
+  </main>
+  <SiteFooter />
+</BaseLayout>

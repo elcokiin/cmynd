@@ -1,0 +1,220 @@
+@import "tailwindcss";
+
+:root {
+  --primary-blue: #0a192f;
+  --primary-aquamarine: #64ffda;
+  --cool-gray: #8892b0;
+  --surface: #f8fbff;
+  --text: #142238;
+  --card: #ffffff;
+  --border: #d8e3f2;
+}
+
+html[data-theme="dark"] {
+  --surface: #070f1d;
+  --text: #d7e2f2;
+  --card: #0b1a32;
+  --border: #274264;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(90rem 45rem at 0% 0%, #e5efff 0%, transparent 50%),
+    radial-gradient(80rem 50rem at 100% 20%, #d5fff7 0%, transparent 45%),
+    var(--surface);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.container {
+  width: min(1120px, 92vw);
+  margin: 0 auto;
+}
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid color-mix(in srgb, var(--primary-blue) 12%, transparent);
+  background: color-mix(in srgb, var(--card) 80%, transparent);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 72px;
+}
+
+.logo {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--primary-blue);
+}
+
+.nav a {
+  color: var(--primary-blue);
+  font-weight: 600;
+}
+
+.theme-toggle {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--card) 90%, transparent);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 0.4rem 0.8rem;
+  font-weight: 600;
+  font-size: 0.84rem;
+  margin-left: 0.8rem;
+}
+
+.theme-toggle:hover {
+  border-color: var(--primary-aquamarine);
+}
+
+.hero {
+  padding: 3.5rem 0 2.5rem;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  line-height: 1.05;
+  color: color-mix(in srgb, var(--primary-blue) 85%, var(--text));
+}
+
+.hero p {
+  max-width: 62ch;
+  color: color-mix(in srgb, var(--text) 74%, white);
+}
+
+.posts-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1.25rem;
+  padding: 0 0 3rem;
+}
+
+.post-card {
+  grid-column: span 12;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  overflow: clip;
+  background: color-mix(in srgb, var(--card) 90%, transparent);
+  box-shadow: 0 10px 30px rgba(10, 25, 47, 0.06);
+  transition: transform 220ms ease, box-shadow 220ms ease;
+}
+
+.post-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px rgba(10, 25, 47, 0.12);
+}
+
+.post-card-image {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  display: block;
+}
+
+.post-card-body {
+  padding: 1rem 1rem 1.25rem;
+}
+
+.post-card-body h2 {
+  margin: 0.35rem 0;
+  color: color-mix(in srgb, var(--primary-blue) 85%, var(--text));
+  font-size: 1.2rem;
+  line-height: 1.3;
+}
+
+.post-card-meta,
+.post-card-type {
+  margin: 0;
+  color: color-mix(in srgb, var(--cool-gray) 80%, black);
+  font-size: 0.88rem;
+}
+
+.site-footer {
+  border-top: 1px solid var(--border);
+  margin-top: 3rem;
+}
+
+.footer-inner {
+  padding: 1.2rem 0 2rem;
+  color: color-mix(in srgb, var(--text) 60%, white);
+}
+
+.post-main {
+  padding: 2rem 0 3.5rem;
+}
+
+html[data-theme="dark"] .logo,
+html[data-theme="dark"] .nav a {
+  color: #e7f0ff;
+}
+
+html[data-theme="dark"] .post-prose a {
+  color: var(--primary-aquamarine);
+}
+
+.post-article {
+  width: min(860px, 100%);
+  margin: 0 auto;
+  background: color-mix(in srgb, white 88%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: clamp(1rem, 4vw, 2.4rem);
+}
+
+.post-cover {
+  width: 100%;
+  border-radius: 14px;
+  max-height: 420px;
+  object-fit: cover;
+}
+
+.post-prose {
+  color: var(--text);
+}
+
+.post-prose p,
+.post-prose li,
+.post-prose blockquote {
+  line-height: 1.7;
+}
+
+.post-prose blockquote {
+  border-left: 4px solid var(--primary-aquamarine);
+  margin-left: 0;
+  padding-left: 1rem;
+  color: color-mix(in srgb, var(--text) 75%, white);
+}
+
+.post-prose img {
+  max-width: 100%;
+  border-radius: 12px;
+}
+
+@media (min-width: 760px) {
+  .post-card {
+    grid-column: span 6;
+  }
+}
+
+@media (min-width: 1060px) {
+  .post-card {
+    grid-column: span 4;
+  }
+}

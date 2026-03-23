@@ -1,0 +1,25 @@
+---
+import type { BlogPostListItem } from "../lib/types";
+import { formatPublishedDate } from "../lib/utils";
+
+type Props = {
+  post: BlogPostListItem;
+};
+
+const { post } = Astro.props;
+---
+
+<article class="post-card">
+  <a href={`/posts/${post.slug}/`}>
+    {
+      post.coverUrl && (
+        <img src={post.coverUrl} alt={post.title} class="post-card-image" loading="lazy" />
+      )
+    }
+    <div class="post-card-body">
+      <p class="post-card-meta">{post.author.name} · {formatPublishedDate(post.publishedAt)}</p>
+      <h2>{post.title}</h2>
+      <p class="post-card-type">{post.type}</p>
+    </div>
+  </a>
+</article>

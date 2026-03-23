@@ -1,0 +1,17 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+
+import "../styles/global.css";
+---
+
+<BaseLayout title="Not Found · elcokiin blog" description="Page not found" canonicalPath="/404">
+  <SiteHeader />
+  <main class="container" style="padding: 4rem 0">
+    <h1>Post not found</h1>
+    <p>Try going back to the homepage.</p>
+    <a href="/" style="color: var(--primary-blue); text-decoration: underline;">Go home</a>
+  </main>
+  <SiteFooter />
+</BaseLayout>

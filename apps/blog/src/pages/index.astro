@@ -1,0 +1,41 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import PostCard from "../components/PostCard.astro";
+import { listAllPublishedDocuments, getPublicStorageUrl } from "../lib/convex";
+import { SITE } from "../lib/config";
+
+import "../styles/global.css";
+
+const cacheControl = "public, max-age=120, s-maxage=600, stale-while-revalidate=3600";
+Astro.response.headers.set("Cache-Control", cacheControl);
+
+const published = await listAllPublishedDocuments();
+
+const posts = await Promise.all(
+  published.map(async post => ({
+    ...post,
+    coverUrl:
+      post.coverImageId ? (await getPublicStorageUrl(post.coverImageId)) ?? undefined : undefined,
+  })),
+);
+---
+
+<BaseLayout title={`${SITE.title} · Blog`} description={SITE.description} canonicalPath="/">
+  <SiteHeader />
+  <main class="container">
+    <section class="hero">
+      <h1>Published documents, human writing, and clear thought.</h1>
+      <p>
+        A live Astro SSR blog powered by Convex. Inspired by AstroPaper structure and
+        elcokiin visual language.
+      </p>
+    </section>
+
+    <section class="posts-grid" aria-label="Published posts">
+      {posts.map(post => <PostCard post={post} />)}
+    </section>
+  </main>
+  <SiteFooter />
+</BaseLayout>
