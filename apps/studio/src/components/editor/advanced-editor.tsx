@@ -12,7 +12,7 @@ import { cn } from "@elcokiin/ui/lib/utils";
 
 const extensions = [...editorExtensions, slashCommand];
 
-type AdvancedEditorProps = {
+export type AdvancedEditorProps = {
   initialContent?: JSONContent;
   onUpdate?: (content: JSONContent) => void;
   onDebouncedUpdate?: (content: JSONContent) => void;

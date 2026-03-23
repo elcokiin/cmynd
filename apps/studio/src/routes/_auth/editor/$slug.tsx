@@ -7,7 +7,7 @@ import { useMutation, useQuery } from "convex/react";
 import { ArrowLeftIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
-import { AdvancedEditor } from "@/components/editor/advanced-editor";
+import { ClientOnlyAdvancedEditor } from "@/components/editor/client-only-advanced-editor";
 import { EditorHeader } from "@/components/editor/editor-header";
 import { EditorSkeleton } from "@/components/editor/editor-skeleton";
 import { MarkdownEditor } from "@/components/editor/markdown-editor";
@@ -159,7 +159,7 @@ function EditorRoute() {
       <div className="flex-1 overflow-clip">
         <div className="max-w-4xl mx-auto">
           {editorMode === "visual" ? (
-            <AdvancedEditor
+            <ClientOnlyAdvancedEditor
               initialContent={document.content as JSONContent | undefined}
               onUpdate={handleVisualUpdate}
               onDebouncedUpdate={isEditable ? handleDebouncedUpdate : undefined}

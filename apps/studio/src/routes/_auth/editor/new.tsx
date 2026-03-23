@@ -12,7 +12,7 @@ import { useCallback, useRef, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import type { JSONContent } from "novel";
 
-import { AdvancedEditor } from "@/components/editor/advanced-editor";
+import { ClientOnlyAdvancedEditor } from "@/components/editor/client-only-advanced-editor";
 import { EditableDocumentTitle } from "@/components/editor/editable-document-title";
 import { ButtonSubmit } from "@/components/editor/button-submit";
 import { ButtonSettings } from "@/components/editor/document-settings-dialog";
@@ -301,7 +301,7 @@ function NewDocumentRoute() {
       <div className="flex-1 overflow-clip">
         <div className="max-w-4xl mx-auto">
           {editorMode === "visual" ? (
-            <AdvancedEditor
+            <ClientOnlyAdvancedEditor
               initialContent={content}
               onUpdate={handleContentUpdate}
               onDebouncedUpdate={handleContentDebounced}

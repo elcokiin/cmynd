@@ -71,9 +71,9 @@ const AuthAdminReviewSlugRoute = AuthAdminReviewSlugRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof AuthIndexRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthAdminRouteRouteWithChildren
-  '/': typeof AuthIndexRoute
   '/admin/review': typeof AuthAdminReviewRoute
   '/editor/$slug': typeof AuthEditorSlugRoute
   '/editor/new': typeof AuthEditorNewRoute
@@ -107,9 +107,9 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/reset-password'
     | '/admin'
-    | '/'
     | '/admin/review'
     | '/editor/$slug'
     | '/editor/new'
@@ -158,7 +158,7 @@ declare module '@tanstack/react-router' {
     '/_auth': {
       id: '/_auth'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof AuthRouteRouteImport
       parentRoute: typeof rootRouteImport
     }

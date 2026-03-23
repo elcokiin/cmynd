@@ -1,0 +1,17 @@
+node_modules
+.git
+.turbo
+.tasks
+.opencode
+
+apps/*/node_modules
+packages/*/node_modules
+
+apps/studio/.output
+apps/studio/.tanstack
+apps/studio/.nitro
+
+apps/blog/.astro
+apps/blog/node_modules
+
+e2e/node_modules

@@ -6,7 +6,7 @@ import { useQuery } from "convex/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@elcokiin/ui/card";
 import { FileTextIcon, LinkIcon } from "lucide-react";
 
-import { AdvancedEditor } from "@/components/editor/advanced-editor";
+import { ClientOnlyAdvancedEditor } from "@/components/editor/client-only-advanced-editor";
 import { documentTypeConfig } from "@/components/dashboard/document-type-config";
 import { ReviewPreviewSkeleton } from "./review-skeleton";
 
@@ -124,7 +124,7 @@ export function DocumentPreview({
 
         {/* Document Content */}
         <div className="border rounded-lg">
-          <AdvancedEditor
+          <ClientOnlyAdvancedEditor
             initialContent={document.content as JSONContent}
             editable={false}
             className="min-h-[300px]"
