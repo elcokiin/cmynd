@@ -2,7 +2,10 @@ import type { DocumentType } from "../../lib/types/documents";
 
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
-import { documentTypeValidator } from "../../lib/validators/documents";
+import {
+  documentTypeValidator,
+  documentContentFormatValidator,
+} from "../../lib/validators/documents";
 import { ErrorCode, throwConvexError } from "@elcokiin/errors";
 import * as Auth from "../_lib/auth";
 import { getByIdForAuthor } from "./helpers";
@@ -35,6 +38,8 @@ export const create = mutation({
     title: v.string(),
     type: documentTypeValidator,
     content: v.optional(v.any()),
+    markdownSource: v.optional(v.string()),
+    contentFormat: v.optional(documentContentFormatValidator),
   },
   handler: async (ctx, args) => {
     // Validate title
@@ -58,6 +63,8 @@ export const create = mutation({
       status: "building",
       authorId,
       content: args.content ?? {},
+      markdownSource: args.markdownSource,
+      contentFormat: args.contentFormat,
       createdAt: now,
       updatedAt: now,
     });
@@ -208,6 +215,7 @@ export const updateContent = mutation({
   args: {
     documentId: v.id("documents"),
     content: v.any(),
+    markdownSource: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const document = await getByIdForAuthor(ctx, args.documentId);
@@ -222,6 +230,7 @@ export const updateContent = mutation({
 
     const updates: Record<string, unknown> = {
       content: args.content,
+      markdownSource: args.markdownSource,
       updatedAt: Date.now(),
     };
 

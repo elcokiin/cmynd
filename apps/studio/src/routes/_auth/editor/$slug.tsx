@@ -5,13 +5,19 @@ import { Button } from "@elcokiin/ui/button";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { ArrowLeftIcon } from "lucide-react";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { AdvancedEditor } from "@/components/editor/advanced-editor";
 import { EditorHeader } from "@/components/editor/editor-header";
 import { EditorSkeleton } from "@/components/editor/editor-skeleton";
+import { MarkdownEditor } from "@/components/editor/markdown-editor";
 import { useConvexImageUpload } from "@/hooks/use-convex-image-upload";
 import { useErrorHandler } from "@/hooks/use-error-handler";
+import {
+  downloadMarkdown,
+  jsonToMarkdown,
+  markdownToJson,
+} from "@/lib/markdown-conversion";
 
 export const Route = createFileRoute("/_auth/editor/$slug")({
   component: EditorRoute,
@@ -28,6 +34,8 @@ function EditorRoute() {
   });
   const updateContent = useMutation(api.documents.mutations.updateContent);
   const uploadFn = useConvexImageUpload();
+  const [editorMode, setEditorMode] = useState<"visual" | "markdown">("visual");
+  const [markdownDraft, setMarkdownDraft] = useState("");
 
   // Redirect to current slug if accessed via old slug
   useEffect(() => {
@@ -47,13 +55,61 @@ function EditorRoute() {
         await updateContent({
           documentId: document._id,
           content,
-        });
+          markdownSource: jsonToMarkdown(content),
+        } as any);
       } catch (error) {
         handleErrorSilent(error, "EditorRoute.handleDebouncedUpdate");
       }
     },
     [document, updateContent, handleErrorSilent],
   );
+
+  const handleVisualUpdate = useCallback((content: JSONContent) => {
+    const nextMarkdown = jsonToMarkdown(content);
+    setMarkdownDraft((previous) =>
+      previous === nextMarkdown ? previous : nextMarkdown,
+    );
+  }, []);
+
+  const handleMarkdownDebouncedUpdate = useCallback(
+    async (markdown: string) => {
+      if (!document) return;
+
+      try {
+        const content = markdownToJson(markdown);
+        await updateContent({
+          documentId: document._id,
+          content,
+          markdownSource: markdown,
+        } as any);
+      } catch (error) {
+        handleErrorSilent(error, "EditorRoute.handleMarkdownDebouncedUpdate");
+        throw error;
+      }
+    },
+    [document, updateContent, handleErrorSilent],
+  );
+
+  useEffect(() => {
+    if (!document || document === null) {
+      return;
+    }
+
+    setMarkdownDraft(jsonToMarkdown(document.content as JSONContent | undefined));
+  }, [document?._id]);
+
+  const handleExportMarkdown = useCallback(() => {
+    if (!document || document === null) {
+      return;
+    }
+
+    const markdown =
+      editorMode === "markdown" && markdownDraft.trim().length > 0
+        ? markdownDraft
+        : jsonToMarkdown(document.content as JSONContent | undefined);
+
+    downloadMarkdown(document.slug || document.title || "document", markdown);
+  }, [document, editorMode, markdownDraft]);
 
   const handleUploadError = useCallback(
     (error: Error) => {
@@ -94,19 +150,33 @@ function EditorRoute() {
         status={document.status}
         isEditable={isEditable}
         rejectionReason={document.rejectionReason}
+        editorMode={editorMode}
+        onEditorModeChange={setEditorMode}
+        onExportMarkdown={handleExportMarkdown}
       />
 
       {/* Editor area */}
       <div className="flex-1 overflow-clip">
         <div className="max-w-4xl mx-auto">
-          <AdvancedEditor
-            initialContent={document.content as JSONContent | undefined}
-            onDebouncedUpdate={isEditable ? handleDebouncedUpdate : undefined}
-            editable={isEditable}
-            uploadFn={isEditable ? uploadFn : null}
-            onUploadError={handleUploadError}
-            className="min-h-full"
-          />
+          {editorMode === "visual" ? (
+            <AdvancedEditor
+              initialContent={document.content as JSONContent | undefined}
+              onUpdate={handleVisualUpdate}
+              onDebouncedUpdate={isEditable ? handleDebouncedUpdate : undefined}
+              editable={isEditable}
+              uploadFn={isEditable ? uploadFn : null}
+              onUploadError={handleUploadError}
+              className="min-h-full"
+            />
+          ) : (
+            <MarkdownEditor
+              initialValue={markdownDraft}
+              onChange={setMarkdownDraft}
+              onDebouncedUpdate={isEditable ? handleMarkdownDebouncedUpdate : undefined}
+              editable={isEditable}
+              className="min-h-full p-8"
+            />
+          )}
         </div>
       </div>
     </div>

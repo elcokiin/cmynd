@@ -1,7 +1,6 @@
 import type { DocumentListItem } from "@elcokiin/backend/lib/types/documents";
 
 import { api } from "@elcokiin/backend/convex/_generated/api";
-import { cn } from "@elcokiin/ui/lib/utils";
 import { useQuery } from "convex/react";
 import { memo } from "react";
 
