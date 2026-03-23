@@ -10,6 +10,13 @@ import type { PublicAuthor } from "./authors";
 export type DocumentType = "own" | "curated" | "inspiration";
 
 /**
+ * Storage/input format metadata for document content.
+ * - rich_json: Authored primarily through rich editor JSON
+ * - markdown_imported: Initially created from markdown import
+ */
+export type DocumentContentFormat = "rich_json" | "markdown_imported";
+
+/**
  * Publication status of a document.
  * - building: Draft/work-in-progress state (editable)
  * - pending: Submitted for admin review (read-only, awaiting approval/rejection)
@@ -100,6 +107,8 @@ export type PublishedDocument = {
   title: string;
   slug: string;
   content: unknown;
+  markdownSource?: string;
+  contentFormat?: DocumentContentFormat;
   type: DocumentType;
   coverImageId?: Id<"_storage">;
   curation?: CurationData;
@@ -121,4 +130,3 @@ export type PublishedDocumentListItem = {
   publishedAt: number;
   author: PublicAuthor;
 };
-

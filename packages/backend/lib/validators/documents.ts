@@ -20,6 +20,11 @@ export const documentStatusValidator = v.union(
   v.literal("published"),
 );
 
+export const documentContentFormatValidator = v.union(
+  v.literal("rich_json"),
+  v.literal("markdown_imported"),
+);
+
 export const curationDataValidator = v.object({
   sourceUrl: v.string(),
   sourceTitle: v.string(),
@@ -38,6 +43,8 @@ export const documentValidator = {
   title: v.string(),
   slug: v.string(),
   content: v.any(),
+  markdownSource: v.optional(v.string()),
+  contentFormat: v.optional(documentContentFormatValidator),
   type: documentTypeValidator,
   status: documentStatusValidator,
   authorId: v.id("authors"),

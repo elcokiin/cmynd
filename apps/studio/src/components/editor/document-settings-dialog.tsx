@@ -18,6 +18,7 @@ import {
   ImageIcon,
   BookOpenIcon,
   LinkIcon,
+  DownloadIcon,
   SettingsIcon,
 } from "lucide-react";
 
@@ -26,15 +27,16 @@ import { useErrorHandler } from "@/hooks/use-error-handler";
 type DocumentSettingsDialogProps = {
   documentId: Id<"documents">;
   currentType?: DocumentType;
+  onExportMarkdown?: () => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
 
-type NavigationSection = "cover" | "curate" | "references";
+type NavigationSection = "cover" | "curate" | "references" | "export";
 
 export function DocumentSettingsDialog({
   documentId,
-  currentType,
+  onExportMarkdown,
   open,
   onOpenChange,
 }: DocumentSettingsDialogProps) {
@@ -127,6 +129,9 @@ export function DocumentSettingsDialog({
     { id: "cover" as const, label: "Cover", icon: ImageIcon },
     { id: "curate" as const, label: "Curate", icon: BookOpenIcon },
     { id: "references" as const, label: "References", icon: LinkIcon },
+    ...(onExportMarkdown
+      ? [{ id: "export" as const, label: "Export", icon: DownloadIcon }]
+      : []),
   ];
 
   return (
@@ -261,6 +266,28 @@ export function DocumentSettingsDialog({
                 </div>
               </div>
             )}
+
+            {activeSection === "export" && onExportMarkdown && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-medium mb-1">Export</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Download your document as a Markdown file.
+                  </p>
+                </div>
+                <div className="rounded-lg border bg-muted/20 p-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={onExportMarkdown}
+                  >
+                    <DownloadIcon className="h-4 w-4 mr-2" />
+                    Export as .md
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </DialogContent>
@@ -271,11 +298,12 @@ export function DocumentSettingsDialog({
 type ButtonSettingsProps = {
   documentId: Id<"documents"> | null;
   currentType?: DocumentType;
+  onExportMarkdown?: () => void;
 };
 
 export function ButtonSettings({
   documentId,
-  currentType,
+  onExportMarkdown,
 }: ButtonSettingsProps): React.ReactNode {
   const [open, setOpen] = useState(false);
 
@@ -295,7 +323,7 @@ export function ButtonSettings({
       {documentId && (
         <DocumentSettingsDialog
           documentId={documentId}
-          currentType={currentType}
+          onExportMarkdown={onExportMarkdown}
           open={open}
           onOpenChange={setOpen}
         />

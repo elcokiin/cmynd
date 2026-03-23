@@ -19,12 +19,13 @@ import {
   DropdownMenuTrigger,
 } from "@elcokiin/ui/dropdown-menu";
 import { cn } from "@elcokiin/ui/lib/utils";
-import { useMutation } from "convex/react";
-import { MoreVerticalIcon, PenIcon, TrashIcon } from "lucide-react";
+import { useConvex, useMutation } from "convex/react";
+import { DownloadIcon, MoreVerticalIcon, PenIcon, TrashIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { useErrorHandler } from "@/hooks/use-error-handler";
+import { downloadMarkdown, jsonToMarkdown } from "@/lib/markdown-conversion";
 
 type DocumentCardMenuProps = {
   document: DocumentListItem;
@@ -34,9 +35,27 @@ type DocumentCardMenuProps = {
 export function DocumentCardMenu({ document, onEdit }: DocumentCardMenuProps): React.ReactNode {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const { handleError } = useErrorHandler();
+  const convex = useConvex();
 
   const removeDocument = useMutation(api.documents.mutations.remove);
+
+  const handleExportMarkdown = async () => {
+    setIsExporting(true);
+    try {
+      const fullDoc = await convex.query(api.documents.queries.getForEdit, {
+        documentId: document._id,
+      });
+      const markdown = jsonToMarkdown(fullDoc.content as any);
+      downloadMarkdown(document.slug || document.title || "document", markdown);
+      toast.success("Markdown exported");
+    } catch (error) {
+      handleError(error, { context: "DocumentCardMenu.handleExportMarkdown" });
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -66,6 +85,10 @@ export function DocumentCardMenu({ document, onEdit }: DocumentCardMenuProps): R
           <DropdownMenuItem onClick={onEdit}>
             <PenIcon className="h-4 w-4 mr-2" />
             Edit
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleExportMarkdown} disabled={isExporting}>
+            <DownloadIcon className="h-4 w-4 mr-2" />
+            {isExporting ? "Exporting..." : "Export Markdown"}
           </DropdownMenuItem>
           <DialogTrigger className="w-full">
             <DropdownMenuItem className="text-destructive">
