@@ -1,38 +1,46 @@
-import { Editor } from "@tiptap/core";
-import { Markdown } from "@tiptap/markdown";
-import Image from "@tiptap/extension-image";
-import TaskList from "@tiptap/extension-task-list";
-import TaskItem from "@tiptap/extension-task-item";
-import StarterKit from "@tiptap/starter-kit";
-import type { JSONContent } from "novel";
+import { generateHTML, generateJSON } from "@tiptap/html";
+import {
+  StarterKit,
+  TaskItem,
+  TaskList,
+  TiptapImage,
+  TiptapLink,
+  type JSONContent,
+} from "novel";
+import { marked } from "marked";
+import TurndownService from "turndown";
 
 const markdownExtensions = [
   StarterKit,
-  Image,
+  TiptapImage,
+  TiptapLink,
   TaskList,
   TaskItem,
-  Markdown,
 ];
 
-function createMarkdownEditor(content: string | JSONContent, contentType: "markdown" | "json") {
-  return new Editor({
-    extensions: markdownExtensions,
-    content: content as any,
-    contentType,
-  });
-}
+const turndown = new TurndownService({
+  headingStyle: "atx",
+  codeBlockStyle: "fenced",
+  bulletListMarker: "-",
+});
+
+turndown.addRule("horizontalRule", {
+  filter: "hr",
+  replacement: () => "\n\n---\n\n",
+});
 
 export function markdownToJson(markdown: string): JSONContent {
   if (!markdown.trim()) {
     return { type: "doc", content: [] };
   }
 
-  const editor = createMarkdownEditor(markdown, "markdown");
-  try {
-    return editor.getJSON() as JSONContent;
-  } finally {
-    editor.destroy();
-  }
+  const html = marked.parse(markdown, {
+    async: false,
+    gfm: true,
+    breaks: false,
+  }) as string;
+
+  return generateJSON(html, markdownExtensions as any) as JSONContent;
 }
 
 export function jsonToMarkdown(content?: JSONContent): string {
@@ -40,12 +48,8 @@ export function jsonToMarkdown(content?: JSONContent): string {
     return "";
   }
 
-  const editor = createMarkdownEditor(content, "json");
-  try {
-    return editor.getMarkdown().trim();
-  } finally {
-    editor.destroy();
-  }
+  const html = generateHTML(content as any, markdownExtensions as any);
+  return turndown.turndown(html).trim();
 }
 
 export function downloadMarkdown(filenameBase: string, markdown: string): void {

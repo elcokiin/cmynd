@@ -1,4 +1,4 @@
-import type { Editor } from "@tiptap/react";
+import type { EditorInstance } from "novel";
 import type { UploadFn } from "@elcokiin/backend/lib/types";
 
 import { getUserFriendlyMessage, parseError } from "@elcokiin/errors";
@@ -14,7 +14,7 @@ import { getUserFriendlyMessage, parseError } from "@elcokiin/errors";
 export async function uploadImage(
   uploadFn: UploadFn | null,
   file: File,
-  editor: Editor,
+  editor: EditorInstance,
   onError?: (error: Error) => void,
 ): Promise<void> {
   if (!uploadFn) {
@@ -65,7 +65,7 @@ export async function uploadImage(
  */
 export function handleImagePaste(
   event: ClipboardEvent,
-  editor: Editor,
+  editor: EditorInstance,
   uploadFn: UploadFn | null,
   onError?: (error: Error) => void,
 ): boolean {
@@ -96,7 +96,7 @@ export function handleImagePaste(
  */
 export function handleImageDrop(
   event: DragEvent,
-  editor: Editor,
+  editor: EditorInstance,
   uploadFn: UploadFn | null,
   onError?: (error: Error) => void,
 ): boolean {
