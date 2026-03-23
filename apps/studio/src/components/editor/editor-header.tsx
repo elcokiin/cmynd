@@ -63,7 +63,7 @@ export function EditorHeader({
           </span>
         </div>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 min-w-0">
         {onEditorModeChange && (
           <div className="flex items-center gap-1 border rounded-md p-1">
             <Button

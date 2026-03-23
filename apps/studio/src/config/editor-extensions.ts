@@ -12,6 +12,7 @@ import {
   TiptapUnderline,
   UpdatedImage,
 } from "novel";
+import TextAlign from "@tiptap/extension-text-align";
 import { cn } from "@elcokiin/ui/lib/utils";
 
 const placeholder = Placeholder.configure({
@@ -104,6 +105,12 @@ const highlight = HighlightExtension.configure({
 
 const underline = TiptapUnderline.configure({});
 
+const textAlign = TextAlign.configure({
+  types: ["heading", "paragraph"],
+  alignments: ["left", "center", "right"],
+  defaultAlignment: "left",
+});
+
 export const editorExtensions = [
   starterKit,
   placeholder,
@@ -117,4 +124,5 @@ export const editorExtensions = [
   color,
   highlight,
   underline,
+  textAlign,
 ];

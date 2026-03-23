@@ -1,7 +1,7 @@
 import type { UploadFn } from "@elcokiin/backend/lib/types";
 
 import { useState } from "react";
-import { EditorContent, EditorRoot, type JSONContent } from "novel";
+import { EditorContent, EditorRoot, type EditorInstance, type JSONContent } from "novel";
 import { useDebouncedCallback } from "use-debounce";
 
 import { editorExtensions } from "@/config/editor-extensions";
@@ -22,6 +22,7 @@ type AdvancedEditorProps = {
   placeholder?: string;
   uploadFn?: UploadFn | null;
   onUploadError?: (error: Error) => void;
+  onEditorInstanceChange?: (editor: EditorInstance | null) => void;
 };
 
 export function AdvancedEditor({
@@ -33,6 +34,7 @@ export function AdvancedEditor({
   className,
   uploadFn = null,
   onUploadError,
+  onEditorInstanceChange,
 }: AdvancedEditorProps) {
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved" | "error">(
     "saved",
@@ -76,7 +78,7 @@ export function AdvancedEditor({
 
         <EditorRoot>
           <EditorContent
-            extensions={extensions}
+            extensions={extensions as any}
             initialContent={initialContent}
             editable={editable}
             className={cn(
@@ -93,6 +95,12 @@ export function AdvancedEditor({
                 setSaveStatus("unsaved");
                 debouncedUpdate(json);
               }
+            }}
+            onCreate={({ editor }) => {
+              onEditorInstanceChange?.(editor);
+            }}
+            onDestroy={() => {
+              onEditorInstanceChange?.(null);
             }}
           >
             <SlashCommand />
