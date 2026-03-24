@@ -3,6 +3,12 @@ import { describe, it, expect, vi, beforeAll, afterEach } from 'vitest'
 import { TerminalView } from './terminal-view'
 import type { TerminalState } from '@/lib/vfs/command-parser'
 
+// Mock useSearchParams - returns empty by default
+const mockGet = vi.fn().mockReturnValue(null)
+vi.mock('next/navigation', () => ({
+  useSearchParams: () => ({ get: mockGet }),
+}))
+
 // Mock executeCommand to avoid dealing with the full file system in UI tests
 vi.mock('@/lib/vfs/command-parser', () => ({
   executeCommand: vi.fn((commandLine: string, state: TerminalState) => {
@@ -34,7 +40,34 @@ describe('TerminalView Component', () => {
     expect(screen.getAllByText('diegotenjo@elcokiin ~ $').length).toBeGreaterThan(0)
   })
 
+  it('shows neofetch output by default', () => {
+    render(<TerminalView />)
+    expect(screen.getByText(/elcokiin@dev/)).not.toBeNull()
+  })
+
+  it('hides neofetch output when neofetch=hidden search param is set', () => {
+    mockGet.mockImplementation((key: string) => {
+      if (key === 'neofetch') return 'hidden'
+      return null
+    })
+
+    render(<TerminalView />)
+    expect(screen.queryByText(/elcokiin@dev/)).toBeNull()
+    expect(screen.getByText('Type "help" to see available commands.')).not.toBeNull()
+  })
+
+  it('shows neofetch when neofetch param has other value', () => {
+    mockGet.mockImplementation((key: string) => {
+      if (key === 'neofetch') return 'visible'
+      return null
+    })
+
+    render(<TerminalView />)
+    expect(screen.getByText(/elcokiin@dev/)).not.toBeNull()
+  })
+
   it('handles command execution and displays output', () => {
+    mockGet.mockReturnValue(null)
     render(<TerminalView />)
     
     const input = screen.getByRole('textbox')
@@ -48,6 +81,7 @@ describe('TerminalView Component', () => {
   })
 
   it('handles cd command and changes prompt', () => {
+    mockGet.mockReturnValue(null)
     render(<TerminalView />)
     
     const input = screen.getByRole('textbox')
@@ -59,6 +93,7 @@ describe('TerminalView Component', () => {
   })
 
   it('handles clear command', () => {
+    mockGet.mockReturnValue(null)
     render(<TerminalView />)
     
     const input = screen.getByRole('textbox')
@@ -77,6 +112,7 @@ describe('TerminalView Component', () => {
   })
 
   it('handles ask-diego asynchronous fetch', async () => {
+    mockGet.mockReturnValue(null)
     // Mock fetch for this specific test
     const mockRead = vi.fn()
       .mockResolvedValueOnce({ done: false, value: new TextEncoder().encode('Hello ') })

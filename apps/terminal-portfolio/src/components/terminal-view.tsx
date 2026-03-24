@@ -6,6 +6,7 @@ import {
   useEffect,
   type MouseEvent as ReactMouseEvent,
 } from "react";
+import { useSearchParams } from "next/navigation";
 import { ScrollArea } from "@elcokiin/ui/scroll-area";
 import {
   TerminalInput,
@@ -25,19 +26,29 @@ interface HistoryEntry {
 }
 
 export function TerminalView() {
+  const searchParams = useSearchParams();
+  const hideNeofetch = searchParams.get("neofetch") === "hidden";
+
   const [state, setState] = useState<TerminalState>({ cwd: "/" });
-  const [history, setHistory] = useState<HistoryEntry[]>([
-    {
-      command: "neofetch",
-      output: neofetchOutput,
-      prompt: "diegotenjo@elcokiin ~ $",
-    },
-    {
+  const [history, setHistory] = useState<HistoryEntry[]>(() => {
+    const entries: HistoryEntry[] = [];
+
+    if (!hideNeofetch) {
+      entries.push({
+        command: "neofetch",
+        output: neofetchOutput,
+        prompt: "diegotenjo@elcokiin ~ $",
+      });
+    }
+
+    entries.push({
       command: "",
       output: 'Type "help" to see available commands.',
       prompt: "",
-    },
-  ]);
+    });
+
+    return entries;
+  });
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputHandleRef = useRef<TerminalInputHandle>(null);
 

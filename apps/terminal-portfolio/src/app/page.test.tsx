@@ -2,6 +2,10 @@ import { render, cleanup, waitFor } from '@testing-library/react'
 import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest'
 import Page from './page'
 
+vi.mock('next/navigation', () => ({
+  useSearchParams: () => ({ get: () => null }),
+}))
+
 // Mock matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,

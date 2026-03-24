@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { Suspense } from "react"
 import {
   ResizableHandle,
   ResizablePanel,
@@ -38,7 +39,9 @@ export default function Home() {
     return (
       <main className="flex h-screen w-full bg-black text-white overflow-hidden font-mono relative">
         <div className="flex-1 flex flex-col h-full w-full">
-          <TerminalView />
+          <Suspense fallback={<div className="flex-1 h-full" />}>
+            <TerminalView />
+          </Suspense>
         </div>
         
         <Sheet>
@@ -76,7 +79,9 @@ export default function Home() {
         <ResizablePanel defaultSize={60} minSize={30} className="flex flex-col min-h-0">
           {/* Terminal View Pane */}
           <div className="flex-1 min-h-0">
-            <TerminalView />
+            <Suspense fallback={<div className="flex-1 h-full" />}>
+              <TerminalView />
+            </Suspense>
           </div>
         </ResizablePanel>
         <ResizableHandle withHandle className="bg-zinc-800" />
