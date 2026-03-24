@@ -8,7 +8,7 @@ import {
   type JSONContent,
 } from "novel";
 import { marked } from "marked";
-import TurndownService from "turndown";
+import TurndownService from "turndown/lib/turndown.browser.es.js";
 
 const markdownExtensions = [
   StarterKit,
