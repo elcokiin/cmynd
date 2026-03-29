@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@elcokiin/ui/card";
+import { Link } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import {
   BarChart3Icon,
@@ -18,6 +19,7 @@ type StatCardProps = {
   description: string;
   icon: LucideIcon;
   valueClassName?: string;
+  to?: "/admin/published";
 };
 
 function StatCard({
@@ -26,9 +28,15 @@ function StatCard({
   description,
   icon: Icon,
   valueClassName,
+  to,
 }: StatCardProps): React.ReactNode {
-  return (
-    <Card>
+  const content = (
+    <Card
+      className={cn(
+        to &&
+          "transition-colors hover:border-primary/40 hover:bg-muted/30 cursor-pointer",
+      )}
+    >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         <Icon className="h-4 w-4 text-muted-foreground" />
@@ -39,6 +47,16 @@ function StatCard({
       </CardContent>
     </Card>
   );
+
+  if (to) {
+    return (
+      <Link to={to} className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        {content}
+      </Link>
+    );
+  }
+
+  return content;
 }
 
 function DashboardStatsGridSkeleton(): React.ReactNode {
@@ -97,6 +115,7 @@ export function DashboardStatsGrid(): React.ReactNode {
         description="Live documents"
         icon={FileCheckIcon}
         valueClassName="text-green-600"
+        to="/admin/published"
       />
     </div>
   );

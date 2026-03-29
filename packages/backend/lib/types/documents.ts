@@ -68,6 +68,8 @@ export type DocumentListItem = {
   _id: Id<"documents">;
   title: string;
   slug: string;
+  description?: string;
+  coverImagePrompt?: string;
   type: DocumentType;
   status: DocumentStatus;
   coverImageId?: Id<"_storage">;
@@ -75,6 +77,7 @@ export type DocumentListItem = {
   updatedAt: number;
   submittedAt?: number;
   rejectionReason?: string;
+  isVisible?: boolean;
 };
 
 /**
@@ -85,11 +88,29 @@ export type AdminDocumentListItem = {
   _id: Id<"documents">;
   title: string;
   slug: string;
+  description?: string;
+  coverImagePrompt?: string;
   type: DocumentType;
   status: DocumentStatus;
   submittedAt?: number;
   createdAt: number;
   updatedAt: number;
+  isVisible?: boolean;
+};
+
+/**
+ * Admin published document list item for visibility management.
+ * Contains metadata needed for toggling public visibility.
+ */
+export type AdminPublishedDocumentListItem = {
+  _id: Id<"documents">;
+  title: string;
+  slug: string;
+  type: DocumentType;
+  status: "published";
+  publishedAt: number;
+  updatedAt: number;
+  isVisible: boolean;
 };
 
 /**
@@ -109,6 +130,8 @@ export type PublishedDocument = {
   content: unknown;
   markdownSource?: string;
   contentFormat?: DocumentContentFormat;
+  description?: string;
+  coverImagePrompt?: string;
   type: DocumentType;
   coverImageId?: Id<"_storage">;
   curation?: CurationData;
@@ -125,6 +148,8 @@ export type PublishedDocumentListItem = {
   _id: Id<"documents">;
   title: string;
   slug: string;
+  description?: string;
+  coverImagePrompt?: string;
   type: DocumentType;
   coverImageId?: Id<"_storage">;
   publishedAt: number;

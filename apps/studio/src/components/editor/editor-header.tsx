@@ -5,20 +5,18 @@ import type {
 } from "@elcokiin/backend/lib/types/documents";
 
 import { buttonVariants } from "@elcokiin/ui/button";
-import { Button } from "@elcokiin/ui/button";
 import { cn } from "@elcokiin/ui/lib/utils";
 import { Link } from "@tanstack/react-router";
 import { Popover, PopoverContent, PopoverTrigger } from "@elcokiin/ui/popover";
 import {
   ArrowLeftIcon,
-  PencilIcon,
-  FileCode2Icon,
   MessageCircleWarningIcon,
 } from "lucide-react";
 
 import { ButtonSettings } from "./document-settings-dialog";
 import { EditableDocumentTitle } from "./editable-document-title";
 import { ButtonSubmit } from "./button-submit";
+import { EditorModeToggle } from "./editor-mode-toggle";
 
 type EditorHeaderProps = {
   documentId: Id<"documents">;
@@ -65,26 +63,10 @@ export function EditorHeader({
       </div>
       <div className="flex items-center gap-2 min-w-0">
         {onEditorModeChange && (
-          <div className="flex items-center gap-1 border rounded-md p-1">
-            <Button
-              type="button"
-              variant={editorMode === "visual" ? "secondary" : "ghost"}
-              size="sm"
-              onClick={() => onEditorModeChange("visual")}
-            >
-              <PencilIcon className="h-4 w-4 mr-1" />
-              Tiptap
-            </Button>
-            <Button
-              type="button"
-              variant={editorMode === "markdown" ? "secondary" : "ghost"}
-              size="sm"
-              onClick={() => onEditorModeChange("markdown")}
-            >
-              <FileCode2Icon className="h-4 w-4 mr-1" />
-              Markdown
-            </Button>
-          </div>
+          <EditorModeToggle
+            mode={editorMode ?? "visual"}
+            onModeChange={onEditorModeChange}
+          />
         )}
         {status === "pending" && (
           <span className="text-xs text-muted-foreground bg-yellow-100 dark:bg-yellow-900/30 px-2 py-1 rounded">

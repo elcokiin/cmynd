@@ -76,7 +76,7 @@ function DocumentCardWithCover({
           className="absolute top-2 right-2 z-10"
           onClick={(e) => e.stopPropagation()}
         >
-          <DocumentCardMenu document={document} onEdit={onOpen} />
+          <DocumentCardMenu document={document} />
         </div>
         
         {/* Title overlaid on image */}
@@ -136,7 +136,7 @@ function DocumentCardWithoutCover({
           className="absolute top-2 right-2 z-10"
           onClick={(e) => e.stopPropagation()}
         >
-          <DocumentCardMenu document={document} onEdit={onOpen} />
+          <DocumentCardMenu document={document} />
         </div>
       </div>
 

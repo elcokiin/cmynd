@@ -21,20 +21,22 @@ export function DashboardSkeleton(): React.ReactNode {
 
 export function DocumentListSkeleton({ count = 6 }: { count?: number }): React.ReactNode {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="columns-1 gap-4 sm:columns-2 xl:columns-3">
       {Array.from({ length: count }).map((_, i) => (
-        <Card key={i}>
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2 mb-2">
-              <Skeleton className="h-4 w-4" />
-              <Skeleton className="h-4 w-16" />
-            </div>
-            <Skeleton className="h-6 w-3/4" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-4 w-32" />
-          </CardContent>
-        </Card>
+        <div key={i} className="mb-4 break-inside-avoid">
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2 mb-2">
+                <Skeleton className="h-4 w-4" />
+                <Skeleton className="h-4 w-16" />
+              </div>
+              <Skeleton className="h-6 w-3/4" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-4 w-32" />
+            </CardContent>
+          </Card>
+        </div>
       ))}
     </div>
   );

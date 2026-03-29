@@ -5,19 +5,16 @@ import { Button } from "@elcokiin/ui/button";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { ArrowLeftIcon } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import { ClientOnlyAdvancedEditor } from "@/components/editor/client-only-advanced-editor";
 import { EditorHeader } from "@/components/editor/editor-header";
 import { EditorSkeleton } from "@/components/editor/editor-skeleton";
-import { MarkdownEditor } from "@/components/editor/markdown-editor";
+import { EditorWorkspace } from "@/components/editor/editor-workspace";
+import { useEditorAutosave } from "@/hooks/use-editor-autosave";
 import { useConvexImageUpload } from "@/hooks/use-convex-image-upload";
+import { useEditorWorkspaceState } from "@/hooks/use-editor-workspace-state";
 import { useErrorHandler } from "@/hooks/use-error-handler";
-import {
-  downloadMarkdown,
-  jsonToMarkdown,
-  markdownToJson,
-} from "@/lib/markdown-conversion";
+import { downloadMarkdown } from "@/lib/markdown-conversion";
 
 export const Route = createFileRoute("/_auth/editor/$slug")({
   component: EditorRoute,
@@ -34,8 +31,17 @@ function EditorRoute() {
   });
   const updateContent = useMutation(api.documents.mutations.updateContent);
   const uploadFn = useConvexImageUpload();
-  const [editorMode, setEditorMode] = useState<"visual" | "markdown">("visual");
-  const [markdownDraft, setMarkdownDraft] = useState("");
+  const {
+    editorMode,
+    setEditorMode,
+    markdownDraft,
+    setMarkdownDraft,
+    setMarkdownFromContent,
+    applyMarkdown,
+    getExportMarkdown,
+  } = useEditorWorkspaceState();
+  const [content, setContent] = useState<JSONContent | undefined>(undefined);
+  const contentRef = useRef<JSONContent | undefined>(undefined);
 
   // Redirect to current slug if accessed via old slug
   useEffect(() => {
@@ -48,68 +54,54 @@ function EditorRoute() {
     }
   }, [document, slug, navigate]);
 
-  const handleDebouncedUpdate = useCallback(
-    async (content: JSONContent) => {
+  const saveContent = useCallback(
+    async (content: JSONContent, markdown: string) => {
       if (!document) return;
       try {
-        await updateContent({
-          documentId: document._id,
-          content,
-          markdownSource: jsonToMarkdown(content),
-        } as any);
-      } catch (error) {
-        handleErrorSilent(error, "EditorRoute.handleDebouncedUpdate");
-      }
-    },
-    [document, updateContent, handleErrorSilent],
-  );
-
-  const handleVisualUpdate = useCallback((content: JSONContent) => {
-    const nextMarkdown = jsonToMarkdown(content);
-    setMarkdownDraft((previous) =>
-      previous === nextMarkdown ? previous : nextMarkdown,
-    );
-  }, []);
-
-  const handleMarkdownDebouncedUpdate = useCallback(
-    async (markdown: string) => {
-      if (!document) return;
-
-      try {
-        const content = markdownToJson(markdown);
         await updateContent({
           documentId: document._id,
           content,
           markdownSource: markdown,
         } as any);
       } catch (error) {
-        handleErrorSilent(error, "EditorRoute.handleMarkdownDebouncedUpdate");
+        handleErrorSilent(error, "EditorRoute.saveContent");
         throw error;
       }
     },
     [document, updateContent, handleErrorSilent],
   );
 
+  const {
+    syncContent,
+    handleVisualUpdate,
+    handleVisualDebouncedUpdate,
+    handleMarkdownDebouncedUpdate,
+  } = useEditorAutosave({
+    setContent,
+    contentRef,
+    setMarkdownFromContent,
+    applyMarkdown,
+    onVisualDebouncedSave: saveContent,
+    onMarkdownDebouncedSave: saveContent,
+  });
+
   useEffect(() => {
     if (!document || document === null) {
       return;
     }
 
-    setMarkdownDraft(jsonToMarkdown(document.content as JSONContent | undefined));
-  }, [document?._id]);
+    syncContent(document.content as JSONContent | undefined);
+  }, [document?._id, syncContent]);
 
   const handleExportMarkdown = useCallback(() => {
     if (!document || document === null) {
       return;
     }
 
-    const markdown =
-      editorMode === "markdown" && markdownDraft.trim().length > 0
-        ? markdownDraft
-        : jsonToMarkdown(document.content as JSONContent | undefined);
+    const markdown = getExportMarkdown(document.content as JSONContent | undefined);
 
     downloadMarkdown(document.slug || document.title || "document", markdown);
-  }, [document, editorMode, markdownDraft]);
+  }, [document, getExportMarkdown]);
 
   const handleUploadError = useCallback(
     (error: Error) => {
@@ -156,29 +148,18 @@ function EditorRoute() {
       />
 
       {/* Editor area */}
-      <div className="flex-1 overflow-clip">
-        <div className="max-w-4xl mx-auto">
-          {editorMode === "visual" ? (
-            <ClientOnlyAdvancedEditor
-              initialContent={document.content as JSONContent | undefined}
-              onUpdate={handleVisualUpdate}
-              onDebouncedUpdate={isEditable ? handleDebouncedUpdate : undefined}
-              editable={isEditable}
-              uploadFn={isEditable ? uploadFn : null}
-              onUploadError={handleUploadError}
-              className="min-h-full"
-            />
-          ) : (
-            <MarkdownEditor
-              initialValue={markdownDraft}
-              onChange={setMarkdownDraft}
-              onDebouncedUpdate={isEditable ? handleMarkdownDebouncedUpdate : undefined}
-              editable={isEditable}
-              className="min-h-full p-8"
-            />
-          )}
-        </div>
-      </div>
+      <EditorWorkspace
+        mode={editorMode}
+        content={content}
+        markdownValue={markdownDraft}
+        onMarkdownChange={setMarkdownDraft}
+        onVisualUpdate={handleVisualUpdate}
+        onVisualDebouncedUpdate={isEditable ? handleVisualDebouncedUpdate : undefined}
+        onMarkdownDebouncedUpdate={isEditable ? handleMarkdownDebouncedUpdate : undefined}
+        editable={isEditable}
+        uploadFn={isEditable ? uploadFn : null}
+        onUploadError={handleUploadError}
+      />
     </div>
   );
 }

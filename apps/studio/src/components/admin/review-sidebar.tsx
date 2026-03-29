@@ -3,7 +3,15 @@ import { useMutation, useQuery } from "convex/react";
 import { useNavigate } from "@tanstack/react-router";
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { toast } from "sonner";
-import { CheckIcon, XIcon, LoaderIcon, RefreshCcwIcon, FileImage } from "lucide-react";
+import {
+  CheckIcon,
+  XIcon,
+  LoaderIcon,
+  RefreshCcwIcon,
+  FileImage,
+  EyeIcon,
+  EyeOffIcon,
+} from "lucide-react";
 
 import { Button } from "@elcokiin/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@elcokiin/ui/card";
@@ -26,6 +34,7 @@ export function ReviewSidebar({
   const [isApproving, setIsApproving] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
   const [isMovingToPending, setIsMovingToPending] = useState(false);
+  const [isUpdatingVisibility, setIsUpdatingVisibility] = useState(false);
   const { handleError } = useErrorHandler();
 
   // Fetch document to get ID for mutations
@@ -36,15 +45,25 @@ export function ReviewSidebar({
 
   const coverImageUrl = useQuery(
     api.storage.getUrl,
-    document?.coverImageId ? { storageId: document.coverImageId } : "skip"
+    document?.coverImageId ? { storageId: document.coverImageId } : "skip",
   );
 
   const approveMutation = useMutation(api.documents.mutations.approve);
   const rejectMutation = useMutation(api.documents.mutations.reject);
-  const moveBackToPendingMutation = useMutation(api.documents.mutations.moveBackToPending);
+  const moveBackToPendingMutation = useMutation(
+    api.documents.mutations.moveBackToPending,
+  );
+  const setPublishedVisibilityMutation = useMutation(
+    api.documents.mutations.setPublishedVisibility,
+  );
 
-  const isProcessing = isApproving || isRejecting || isMovingToPending;
+  const isProcessing =
+    isApproving ||
+    isRejecting ||
+    isMovingToPending ||
+    isUpdatingVisibility;
   const canReject = observations.trim().length > 0;
+  const nextVisible = !document?.isVisible;
 
   function actionCompleted() {
     navigate({
@@ -78,7 +97,10 @@ export function ReviewSidebar({
 
     setIsRejecting(true);
     try {
-      await rejectMutation({ documentId: document._id, reason: observations.trim() });
+      await rejectMutation({
+        documentId: document._id,
+        reason: observations.trim(),
+      });
       toast.success("Document rejected with feedback");
       actionCompleted();
     } catch (error) {
@@ -103,6 +125,23 @@ export function ReviewSidebar({
     }
   }
 
+  async function handleToggleVisibility(): Promise<void> {
+    if (!document || document.status !== "published") return;
+
+    setIsUpdatingVisibility(true);
+    try {
+      await setPublishedVisibilityMutation({
+        documentId: document._id,
+        isVisible: nextVisible,
+      });
+      toast.success(nextVisible ? "Document is now visible" : "Document is now hidden");
+    } catch (error) {
+      handleError(error, { context: "ReviewSidebar.handleToggleVisibility" });
+    } finally {
+      setIsUpdatingVisibility(false);
+    }
+  }
+
   if (!slug) {
     return (
       <Card>
@@ -119,13 +158,13 @@ export function ReviewSidebar({
   }
 
   if (!document) {
-      return (
-          <Card>
-              <CardContent className="p-6">
-                  <LoaderIcon className="h-4 w-4 animate-spin mx-auto" />
-              </CardContent>
-          </Card>
-      )
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <LoaderIcon className="h-4 w-4 animate-spin mx-auto" />
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
@@ -146,22 +185,24 @@ export function ReviewSidebar({
               />
             </div>
           ) : (
-             <div className="flex items-center justify-center aspect-video w-full rounded-md border bg-muted/50 text-muted-foreground">
-                <div className="flex flex-col items-center gap-1">
-                    <FileImage className="h-8 w-8 opacity-50" />
-                    <span className="text-xs">No cover image</span>
-                </div>
-             </div>
+            <div className="flex items-center justify-center aspect-video w-full rounded-md border bg-muted/50 text-muted-foreground">
+              <div className="flex flex-col items-center gap-1">
+                <FileImage className="h-8 w-8 opacity-50" />
+                <span className="text-xs">No cover image</span>
+              </div>
+            </div>
           )}
-          
+
           {/* Curation/Description */}
           {document.curation && (
-              <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Curation Spin / Prompt</Label>
-                  <p className="text-sm text-foreground bg-muted p-2 rounded-md">
-                      {document.curation.spin}
-                  </p>
-              </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">
+                Curation Spin / Prompt
+              </Label>
+              <p className="text-sm text-foreground bg-muted p-2 rounded-md">
+                {document.curation.spin}
+              </p>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -177,6 +218,21 @@ export function ReviewSidebar({
               <div className="p-3 bg-green-500/10 text-green-600 rounded-md text-sm border border-green-200">
                 This document is published.
               </div>
+              <Button
+                onClick={handleToggleVisibility}
+                disabled={isProcessing}
+                className="w-full"
+                variant={document.isVisible ? "outline" : "default"}
+              >
+                {isUpdatingVisibility ? (
+                  <LoaderIcon className="h-4 w-4 mr-2 animate-spin" />
+                ) : document.isVisible ? (
+                  <EyeOffIcon className="h-4 w-4 mr-2" />
+                ) : (
+                  <EyeIcon className="h-4 w-4 mr-2" />
+                )}
+                {document.isVisible ? "Hide from Public" : "Make Publicly Visible"}
+              </Button>
               <Button
                 onClick={handleMoveToPending}
                 disabled={isProcessing}

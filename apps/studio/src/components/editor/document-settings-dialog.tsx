@@ -11,8 +11,9 @@ import {
 } from "@elcokiin/ui/dialog";
 import { cn } from "@elcokiin/ui/lib/utils";
 import { useMutation, useQuery } from "convex/react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
+import { useDebouncedCallback } from "use-debounce";
 import {
   XIcon,
   ImageIcon,
@@ -20,6 +21,8 @@ import {
   LinkIcon,
   DownloadIcon,
   SettingsIcon,
+  SparklesIcon,
+  TextIcon,
 } from "lucide-react";
 
 import { useErrorHandler } from "@/hooks/use-error-handler";
@@ -34,6 +37,8 @@ type DocumentSettingsDialogProps = {
 
 type NavigationSection = "cover" | "curate" | "references" | "export";
 
+type CoverConfigTab = "image" | "prompt" | "description";
+
 export function DocumentSettingsDialog({
   documentId,
   onExportMarkdown,
@@ -43,6 +48,9 @@ export function DocumentSettingsDialog({
   const [isUploading, setIsUploading] = useState(false);
   const [activeSection, setActiveSection] =
     useState<NavigationSection>("cover");
+  const [activeCoverTab, setActiveCoverTab] = useState<CoverConfigTab>("image");
+  const [coverImagePrompt, setCoverImagePrompt] = useState("");
+  const [description, setDescription] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { handleError } = useErrorHandler();
@@ -56,8 +64,55 @@ export function DocumentSettingsDialog({
   const updateCoverImage = useMutation(
     api.documents.mutations.updateCoverImage,
   );
+  const updateMetadata = useMutation(api.documents.mutations.updateMetadata);
   const deleteFile = useMutation(api.storage.deleteFile);
   const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
+
+  useEffect(() => {
+    if (!open || !document) return;
+    setCoverImagePrompt(document.coverImagePrompt ?? "");
+    setDescription(document.description ?? "");
+  }, [open, document?._id, document?.coverImagePrompt, document?.description]);
+
+  const normalizeOptionalText = (value: string): string | undefined => {
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : undefined;
+  };
+
+  const saveMetadataDebounced = useDebouncedCallback(
+    async (field: "coverImagePrompt" | "description", value: string) => {
+      try {
+        const normalized = normalizeOptionalText(value);
+        if (field === "coverImagePrompt") {
+          await updateMetadata({
+            documentId,
+            coverImagePrompt: normalized,
+          });
+          return;
+        }
+
+        await updateMetadata({
+          documentId,
+          description: normalized,
+        });
+      } catch (error) {
+        handleError(error, {
+          context: `DocumentSettingsDialog.saveMetadata.${field}`,
+        });
+      }
+    },
+    700,
+  );
+
+  const handlePromptChange = (value: string) => {
+    setCoverImagePrompt(value);
+    saveMetadataDebounced("coverImagePrompt", value);
+  };
+
+  const handleDescriptionChange = (value: string) => {
+    setDescription(value);
+    saveMetadataDebounced("description", value);
+  };
 
   const handleImageUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -136,10 +191,10 @@ export function DocumentSettingsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl p-0 gap-0">
-        <div className="flex min-h-[400px]">
+      <DialogContent className="w-[96vw] max-w-[96vw] sm:!max-w-4xl p-0 gap-0 h-[76vh]">
+        <div className="flex h-full">
           {/* Sidebar Navigation */}
-          <div className="w-48 border-r bg-muted/30 p-4 flex flex-col gap-1">
+          <div className="w-56 border-r bg-muted/30 p-4 flex flex-col gap-1">
             <DialogHeader className="pb-4">
               <DialogTitle className="text-sm font-medium">
                 Settings
@@ -178,54 +233,138 @@ export function DocumentSettingsDialog({
                   </p>
                 </div>
 
-                <div className="space-y-4">
-                  {coverImageUrl ? (
-                    <div className="relative aspect-video w-full overflow-hidden rounded-lg border bg-muted">
-                      <img
-                        src={coverImageUrl}
-                        alt="Cover"
-                        className="h-full w-full object-cover"
-                      />
-                      <Button
-                        variant="destructive"
-                        size="icon"
-                        className="absolute right-2 top-2 h-8 w-8"
-                        onClick={handleRemoveCoverImage}
-                      >
-                        <XIcon className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div
-                      className="flex aspect-video w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed bg-muted/50 hover:bg-muted/70 transition-colors"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      <div className="rounded-full bg-background p-3 shadow-sm">
-                        {isUploading ? (
-                          <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                        ) : (
-                          <ImageIcon className="h-6 w-6 text-muted-foreground" />
-                        )}
-                      </div>
-                      <div className="text-sm font-medium text-muted-foreground">
-                        {isUploading
-                          ? "Uploading..."
-                          : "Click to upload cover image"}
-                      </div>
-                      <div className="text-xs text-muted-foreground/70">
-                        Recommended: 1200 x 630 pixels
-                      </div>
-                    </div>
-                  )}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleImageUpload}
-                    disabled={isUploading}
-                  />
+                <div className="inline-flex items-center rounded-md border bg-muted/20 p-1 gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setActiveCoverTab("image")}
+                    className={cn(
+                      "inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-sm transition-colors",
+                      activeCoverTab === "image"
+                        ? "bg-background shadow-sm font-medium text-foreground"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    <ImageIcon className="h-4 w-4" />
+                    Image
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveCoverTab("prompt")}
+                    className={cn(
+                      "inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-sm transition-colors",
+                      activeCoverTab === "prompt"
+                        ? "bg-background shadow-sm font-medium text-foreground"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    <SparklesIcon className="h-4 w-4" />
+                    Prompt
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveCoverTab("description")}
+                    className={cn(
+                      "inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-sm transition-colors",
+                      activeCoverTab === "description"
+                        ? "bg-background shadow-sm font-medium text-foreground"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    <TextIcon className="h-4 w-4" />
+                    Description
+                  </button>
                 </div>
+
+                {activeCoverTab === "image" && (
+                  <div className="space-y-4">
+                    {coverImageUrl ? (
+                      <div className="relative aspect-video w-full overflow-hidden rounded-lg border bg-muted">
+                        <img
+                          src={coverImageUrl}
+                          alt="Cover"
+                          className="h-full w-full object-cover"
+                        />
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          className="absolute right-2 top-2 h-8 w-8"
+                          onClick={handleRemoveCoverImage}
+                        >
+                          <XIcon className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div
+                        className="flex aspect-video w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed bg-muted/50 hover:bg-muted/70 transition-colors"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        <div className="rounded-full bg-background p-3 shadow-sm">
+                          {isUploading ? (
+                            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                          ) : (
+                            <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div className="text-sm font-medium text-muted-foreground">
+                          {isUploading
+                            ? "Uploading..."
+                            : "Click to upload cover image"}
+                        </div>
+                        <div className="text-xs text-muted-foreground/70">
+                          Recommended: 1200 x 630 pixels
+                        </div>
+                      </div>
+                    )}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageUpload}
+                      disabled={isUploading}
+                    />
+                  </div>
+                )}
+
+                {activeCoverTab === "prompt" && (
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      Coming soon: auto-generated prompts and image generation inside the blog. Save the prompt used to generate this image.
+                    </p>
+                    <textarea
+                      value={coverImagePrompt}
+                      onChange={(event) =>
+                        handlePromptChange(event.target.value)
+                      }
+                      placeholder="e.g. cinematic street photo, golden hour, 50mm lens, high detail"
+                      className={cn(
+                        "w-full min-h-[220px] p-3 text-sm rounded-md border resize-y",
+                        "bg-background placeholder:text-muted-foreground",
+                        "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                      )}
+                    />
+                  </div>
+                )}
+
+                {activeCoverTab === "description" && (
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      Add a short summary for this document. Optional.
+                    </p>
+                    <textarea
+                      value={description}
+                      onChange={(event) =>
+                        handleDescriptionChange(event.target.value)
+                      }
+                      placeholder="Write a concise summary of what this document covers..."
+                      className={cn(
+                        "w-full min-h-[220px] p-3 text-sm rounded-md border resize-y",
+                        "bg-background placeholder:text-muted-foreground",
+                        "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                      )}
+                    />
+                  </div>
+                )}
               </div>
             )}
 

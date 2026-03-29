@@ -7,24 +7,25 @@ import {
   useNavigate,
 } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
-import { ArrowLeftIcon, PencilIcon } from "lucide-react";
+import { ArrowLeftIcon } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import type { JSONContent } from "novel";
 
-import { ClientOnlyAdvancedEditor } from "@/components/editor/client-only-advanced-editor";
-import { EditableDocumentTitle } from "@/components/editor/editable-document-title";
 import { ButtonSubmit } from "@/components/editor/button-submit";
 import { ButtonSettings } from "@/components/editor/document-settings-dialog";
+import { EditableDocumentTitle } from "@/components/editor/editable-document-title";
+import { EditorModeToggle } from "@/components/editor/editor-mode-toggle";
+import { EditorWorkspace } from "@/components/editor/editor-workspace";
+import { useEditorAutosave } from "@/hooks/use-editor-autosave";
 import { useConvexImageUpload } from "@/hooks/use-convex-image-upload";
+import { useEditorWorkspaceState } from "@/hooks/use-editor-workspace-state";
 import { useErrorHandler } from "@/hooks/use-error-handler";
 import {
   downloadMarkdown,
   jsonToMarkdown,
-  markdownToJson,
 } from "@/lib/markdown-conversion";
 import { getRandomTitle, isRandomTitle } from "@/lib/random-titles";
-import { MarkdownEditor } from "@/components/editor/markdown-editor";
 
 export const Route = createFileRoute("/_auth/editor/new")({
   component: NewDocumentRoute,
@@ -36,8 +37,15 @@ function NewDocumentRoute() {
 
   const [title, setTitle] = useState("Untitled");
   const [content, setContent] = useState<JSONContent | undefined>(undefined);
-  const [editorMode, setEditorMode] = useState<"visual" | "markdown">("visual");
-  const [markdownDraft, setMarkdownDraft] = useState("");
+  const {
+    editorMode,
+    setEditorMode,
+    markdownDraft,
+    setMarkdownDraft,
+    setMarkdownFromContent,
+    applyMarkdown,
+    getExportMarkdown,
+  } = useEditorWorkspaceState();
 
   // Track if document has been created
   const documentIdRef = useRef<Id<"documents"> | null>(null);
@@ -144,7 +152,7 @@ function NewDocumentRoute() {
     } finally {
       isSavingRef.current = false;
     }
-  }, [createDocument, editorMode, handleError, markdownDraft, navigate]);
+  }, [createDocument, editorMode, handleError, markdownDraft]);
 
   // Save title changes (only if document exists)
   const saveTitleChange = useCallback(async () => {
@@ -196,42 +204,23 @@ function NewDocumentRoute() {
     }
   }, [createNewDocument, updateContent, handleError]);
 
-  // Handle content updates
-  const handleContentUpdate = useCallback((newContent: JSONContent) => {
-    setContent(newContent);
-    contentRef.current = newContent;
-    setMarkdownDraft(jsonToMarkdown(newContent));
-  }, []);
-
-  // Trigger save when content stops changing (debounced by AdvancedEditor)
-  const handleContentDebounced = useCallback(
-    (newContent: JSONContent) => {
-      contentRef.current = newContent;
-      const markdown = jsonToMarkdown(newContent);
-      setMarkdownDraft(markdown);
-      saveContentChange(markdown);
-    },
-    [saveContentChange],
-  );
-
-  const handleMarkdownDebouncedUpdate = useCallback(
-    (markdown: string) => {
-      setMarkdownDraft(markdown);
-      const json = markdownToJson(markdown);
-      setContent(json);
-      contentRef.current = json;
-      saveContentChange(markdown);
-    },
-    [saveContentChange],
-  );
+  const {
+    handleVisualUpdate,
+    handleVisualDebouncedUpdate,
+    handleMarkdownDebouncedUpdate,
+  } = useEditorAutosave({
+    setContent,
+    contentRef,
+    setMarkdownFromContent,
+    applyMarkdown,
+    onVisualDebouncedSave: (_, markdown) => saveContentChange(markdown),
+    onMarkdownDebouncedSave: (_, markdown) => saveContentChange(markdown),
+  });
 
   const handleExportMarkdown = useCallback(() => {
-    const markdown =
-      editorMode === "markdown" && markdownDraft.trim().length > 0
-        ? markdownDraft
-        : jsonToMarkdown(contentRef.current);
+    const markdown = getExportMarkdown(contentRef.current);
     downloadMarkdown(title || "document", markdown);
-  }, [editorMode, markdownDraft, title]);
+  }, [getExportMarkdown, title]);
 
   // Handle title updates with debounce
   const debouncedSaveTitle = useDebouncedCallback(() => {
@@ -266,25 +255,7 @@ function NewDocumentRoute() {
               onTitleChange={handleTitleChange}
               isEditable={true}
             />
-            <div className="flex items-center gap-1 border rounded-md p-1">
-              <Button
-                type="button"
-                variant={editorMode === "visual" ? "secondary" : "ghost"}
-                size="sm"
-                onClick={() => setEditorMode("visual")}
-              >
-                <PencilIcon className="h-4 w-4 mr-1" />
-                Tiptap
-              </Button>
-              <Button
-                type="button"
-                variant={editorMode === "markdown" ? "secondary" : "ghost"}
-                size="sm"
-                onClick={() => setEditorMode("markdown")}
-              >
-                Markdown
-              </Button>
-            </div>
+            <EditorModeToggle mode={editorMode} onModeChange={setEditorMode} />
           </div>
 
           <div className="flex items-center gap-2">
@@ -298,29 +269,18 @@ function NewDocumentRoute() {
       </div>
 
       {/* Editor area */}
-      <div className="flex-1 overflow-clip">
-        <div className="max-w-4xl mx-auto">
-          {editorMode === "visual" ? (
-            <ClientOnlyAdvancedEditor
-              initialContent={content}
-              onUpdate={handleContentUpdate}
-              onDebouncedUpdate={handleContentDebounced}
-              editable={true}
-              uploadFn={uploadFn}
-              onUploadError={handleUploadError}
-              className="min-h-full"
-            />
-          ) : (
-            <MarkdownEditor
-              initialValue={markdownDraft}
-              onChange={setMarkdownDraft}
-              onDebouncedUpdate={handleMarkdownDebouncedUpdate}
-              editable={true}
-              className="min-h-full p-8"
-            />
-          )}
-        </div>
-      </div>
+      <EditorWorkspace
+        mode={editorMode}
+        content={content}
+        markdownValue={markdownDraft}
+        onMarkdownChange={setMarkdownDraft}
+        onVisualUpdate={handleVisualUpdate}
+        onVisualDebouncedUpdate={handleVisualDebouncedUpdate}
+        onMarkdownDebouncedUpdate={handleMarkdownDebouncedUpdate}
+        editable={true}
+        uploadFn={uploadFn}
+        onUploadError={handleUploadError}
+      />
     </div>
   );
 }

@@ -34,6 +34,20 @@ function DocumentRow({
     minute: "2-digit",
   }).format(new Date(document.submittedAt ?? document.updatedAt));
 
+  const statusLabel =
+    document.status === "published"
+      ? "Published"
+      : document.status === "pending"
+        ? "Pending"
+        : "Building";
+
+  const statusVariant =
+    document.status === "published"
+      ? "default"
+      : document.status === "pending"
+        ? "secondary"
+        : "outline";
+
   return (
     <Link
       key={document._id}
@@ -45,11 +59,8 @@ function DocumentRow({
         <div className="flex items-center gap-2">
           <p className="font-medium">{document.title || "Untitled"}</p>
           {showStatusBadge && (
-            <Badge
-              variant={document.status === "published" ? "default" : "secondary"}
-              className="text-xs"
-            >
-              {document.status === "published" ? "Published" : "Pending"}
+            <Badge variant={statusVariant} className="text-xs">
+              {statusLabel}
             </Badge>
           )}
         </div>

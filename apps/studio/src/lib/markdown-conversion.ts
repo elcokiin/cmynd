@@ -52,6 +52,22 @@ export function jsonToMarkdown(content?: JSONContent): string {
   return turndown.turndown(html).trim();
 }
 
+export function getMarkdownForExport({
+  editorMode,
+  markdownDraft,
+  content,
+}: {
+  editorMode: "visual" | "markdown";
+  markdownDraft: string;
+  content?: JSONContent;
+}): string {
+  if (editorMode === "markdown" && markdownDraft.trim().length > 0) {
+    return markdownDraft;
+  }
+
+  return jsonToMarkdown(content);
+}
+
 export function downloadMarkdown(filenameBase: string, markdown: string): void {
   const safeBase = filenameBase.trim().replace(/\s+/g, "-").replace(/[^a-zA-Z0-9_-]/g, "").toLowerCase() || "document";
   const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });

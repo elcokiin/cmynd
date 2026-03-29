@@ -72,7 +72,7 @@ function AuthErrorComponent({
     <div className="flex items-center justify-center h-screen">
       <div className="text-center space-y-4 max-w-md p-6">
         <h1 className="text-2xl font-bold text-destructive">
-          Authentication Error
+          Application Error
         </h1>
         <p className="text-muted-foreground">{error.message}</p>
         <Button onClick={reset} variant="outline">

@@ -18,6 +18,7 @@ import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AuthEditorNewRouteImport } from './routes/_auth/editor/new'
 import { Route as AuthEditorSlugRouteImport } from './routes/_auth/editor/$slug'
 import { Route as AuthAdminReviewRouteImport } from './routes/_auth/admin/review'
+import { Route as AuthAdminPublishedRouteImport } from './routes/_auth/admin/published'
 import { Route as AuthAdminReviewSlugRouteImport } from './routes/_auth/admin/review_.$slug'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -64,6 +65,11 @@ const AuthAdminReviewRoute = AuthAdminReviewRouteImport.update({
   path: '/review',
   getParentRoute: () => AuthAdminRouteRoute,
 } as any)
+const AuthAdminPublishedRoute = AuthAdminPublishedRouteImport.update({
+  id: '/published',
+  path: '/published',
+  getParentRoute: () => AuthAdminRouteRoute,
+} as any)
 const AuthAdminReviewSlugRoute = AuthAdminReviewSlugRouteImport.update({
   id: '/review_/$slug',
   path: '/review/$slug',
@@ -74,6 +80,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthIndexRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthAdminRouteRouteWithChildren
+  '/admin/published': typeof AuthAdminPublishedRoute
   '/admin/review': typeof AuthAdminReviewRoute
   '/editor/$slug': typeof AuthEditorSlugRoute
   '/editor/new': typeof AuthEditorNewRoute
@@ -84,6 +91,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/': typeof AuthIndexRoute
+  '/admin/published': typeof AuthAdminPublishedRoute
   '/admin/review': typeof AuthAdminReviewRoute
   '/editor/$slug': typeof AuthEditorSlugRoute
   '/editor/new': typeof AuthEditorNewRoute
@@ -97,6 +105,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_auth/admin': typeof AuthAdminRouteRouteWithChildren
   '/_auth/': typeof AuthIndexRoute
+  '/_auth/admin/published': typeof AuthAdminPublishedRoute
   '/_auth/admin/review': typeof AuthAdminReviewRoute
   '/_auth/editor/$slug': typeof AuthEditorSlugRoute
   '/_auth/editor/new': typeof AuthEditorNewRoute
@@ -110,6 +119,7 @@ export interface FileRouteTypes {
     | '/'
     | '/reset-password'
     | '/admin'
+    | '/admin/published'
     | '/admin/review'
     | '/editor/$slug'
     | '/editor/new'
@@ -120,6 +130,7 @@ export interface FileRouteTypes {
   to:
     | '/reset-password'
     | '/'
+    | '/admin/published'
     | '/admin/review'
     | '/editor/$slug'
     | '/editor/new'
@@ -132,6 +143,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_auth/admin'
     | '/_auth/'
+    | '/_auth/admin/published'
     | '/_auth/admin/review'
     | '/_auth/editor/$slug'
     | '/_auth/editor/new'
@@ -211,6 +223,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthAdminReviewRouteImport
       parentRoute: typeof AuthAdminRouteRoute
     }
+    '/_auth/admin/published': {
+      id: '/_auth/admin/published'
+      path: '/published'
+      fullPath: '/admin/published'
+      preLoaderRoute: typeof AuthAdminPublishedRouteImport
+      parentRoute: typeof AuthAdminRouteRoute
+    }
     '/_auth/admin/review_/$slug': {
       id: '/_auth/admin/review_/$slug'
       path: '/review/$slug'
@@ -222,12 +241,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthAdminRouteRouteChildren {
+  AuthAdminPublishedRoute: typeof AuthAdminPublishedRoute
   AuthAdminReviewRoute: typeof AuthAdminReviewRoute
   AuthAdminIndexRoute: typeof AuthAdminIndexRoute
   AuthAdminReviewSlugRoute: typeof AuthAdminReviewSlugRoute
 }
 
 const AuthAdminRouteRouteChildren: AuthAdminRouteRouteChildren = {
+  AuthAdminPublishedRoute: AuthAdminPublishedRoute,
   AuthAdminReviewRoute: AuthAdminReviewRoute,
   AuthAdminIndexRoute: AuthAdminIndexRoute,
   AuthAdminReviewSlugRoute: AuthAdminReviewSlugRoute,

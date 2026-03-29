@@ -61,6 +61,7 @@ export const create = mutation({
       slug: "temp", // Temporary slug, will be updated immediately
       type: args.type,
       status: "building",
+      isVisible: true,
       authorId,
       content: args.content ?? {},
       markdownSource: args.markdownSource,
@@ -205,6 +206,43 @@ export const updateCoverImage = mutation({
 });
 
 /**
+ * Update optional document settings metadata.
+ * Only allowed for documents in "building" status.
+ */
+export const updateMetadata = mutation({
+  args: {
+    documentId: v.id("documents"),
+    description: v.optional(v.string()),
+    coverImagePrompt: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const document = await getByIdForAuthor(ctx, args.documentId);
+
+    if (document.status === "published") {
+      throwConvexError(ErrorCode.DOCUMENT_PUBLISHED);
+    }
+
+    if (document.status === "pending") {
+      throwConvexError(ErrorCode.DOCUMENT_PENDING_REVIEW);
+    }
+
+    const updates: Record<string, unknown> = {
+      updatedAt: Date.now(),
+    };
+
+    if ("description" in args) {
+      updates.description = args.description;
+    }
+
+    if ("coverImagePrompt" in args) {
+      updates.coverImagePrompt = args.coverImagePrompt;
+    }
+
+    await ctx.db.patch(args.documentId, updates);
+  },
+});
+
+/**
  * Update document content (auto-save).
  * Only allowed for documents in "building" status.
  *
@@ -303,6 +341,7 @@ export const publish = mutation({
 
     await ctx.db.patch(args.documentId, {
       status: "published",
+      isVisible: true,
       publishedAt: Date.now(),
       updatedAt: Date.now(),
     });
@@ -394,6 +433,7 @@ export const approve = mutation({
 
     await ctx.db.patch(args.documentId, {
       status: "published",
+      isVisible: true,
       publishedAt: Date.now(),
       updatedAt: Date.now(),
     });
@@ -492,5 +532,36 @@ export const moveBackToPending = mutation({
 
     // Update status counts (published -> pending)
     await updateStatusCount(ctx, "published", "pending");
+  },
+});
+
+/**
+ * Set visibility for a published document (admin only).
+ * Keeps status as "published" and controls whether it is shown publicly.
+ */
+export const setPublishedVisibility = mutation({
+  args: {
+    documentId: v.id("documents"),
+    isVisible: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    await Auth.requireAdmin(ctx);
+
+    const document = await ctx.db.get(args.documentId);
+    if (!document) {
+      throwConvexError(ErrorCode.DOCUMENT_NOT_FOUND);
+    }
+
+    if (document.status !== "published") {
+      throwConvexError(
+        ErrorCode.DOCUMENT_INVALID_STATUS,
+        "Only published documents can have visibility changed",
+      );
+    }
+
+    await ctx.db.patch(args.documentId, {
+      isVisible: args.isVisible,
+      updatedAt: Date.now(),
+    });
   },
 });

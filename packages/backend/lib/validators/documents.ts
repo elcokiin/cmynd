@@ -45,6 +45,8 @@ export const documentValidator = {
   content: v.any(),
   markdownSource: v.optional(v.string()),
   contentFormat: v.optional(documentContentFormatValidator),
+  description: v.optional(v.string()),
+  coverImagePrompt: v.optional(v.string()),
   type: documentTypeValidator,
   status: documentStatusValidator,
   authorId: v.id("authors"),
@@ -54,6 +56,7 @@ export const documentValidator = {
   createdAt: v.number(),
   updatedAt: v.number(),
   publishedAt: v.optional(v.number()),
+  isVisible: v.optional(v.boolean()),
   submittedAt: v.optional(v.number()),
   rejectionReason: v.optional(v.string()),
   submissionHistory: v.optional(v.array(v.number())),
@@ -92,6 +95,7 @@ export const documentListItemValidator = v.object({
   updatedAt: v.number(),
   submittedAt: v.optional(v.number()),
   rejectionReason: v.optional(v.string()),
+  isVisible: v.optional(v.boolean()),
 });
 
 // Minimal fields for admin review and management
@@ -104,6 +108,18 @@ export const adminDocumentListItemValidator = v.object({
   submittedAt: v.optional(v.number()),
   createdAt: v.number(),
   updatedAt: v.number(),
+  isVisible: v.optional(v.boolean()),
+});
+
+export const adminPublishedDocumentListItemValidator = v.object({
+  _id: v.id("documents"),
+  title: v.string(),
+  slug: v.string(),
+  type: documentTypeValidator,
+  status: v.literal("published"),
+  publishedAt: v.number(),
+  updatedAt: v.number(),
+  isVisible: v.boolean(),
 });
 
 /**
@@ -139,4 +155,8 @@ export const paginatedPendingDocumentListValidator =
 
 export const paginatedPublishedDocumentListValidator = paginatedValidator(
   publishedDocumentListItemValidator,
+);
+
+export const paginatedAdminPublishedDocumentListValidator = paginatedValidator(
+  adminPublishedDocumentListItemValidator,
 );

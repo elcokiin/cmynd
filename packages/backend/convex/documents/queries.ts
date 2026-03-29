@@ -1,4 +1,5 @@
 import type {
+  AdminPublishedDocumentListItem,
   DocumentStats,
   PublishedDocument,
 } from "../../lib/types/documents";
@@ -11,12 +12,14 @@ import { getByIdForAuthor, paginationOptsValidator } from "./helpers";
 import {
   toDocumentListItem,
   toAdminDocumentListItem,
+  toAdminPublishedDocumentListItem,
   toPublicAuthor,
   toPublishedDocumentListItem,
 } from "./projections";
 import {
   paginatedDocumentListValidator,
   paginatedAdminDocumentListValidator,
+  paginatedAdminPublishedDocumentListValidator,
   paginatedPublishedDocumentListValidator,
 } from "../../lib/validators/documents";
 import { getDocumentByOldSlug } from "./slug_helpers";
@@ -65,7 +68,12 @@ export const getPublished = query({
   args: { documentId: v.id("documents") },
   handler: async (ctx, args): Promise<PublishedDocument | null> => {
     const document = await ctx.db.get(args.documentId);
-    if (!document || document.status !== "published" || !document.publishedAt) {
+    if (
+      !document ||
+      document.status !== "published" ||
+      !document.publishedAt ||
+      document.isVisible === false
+    ) {
       return null;
     }
 
@@ -106,7 +114,12 @@ export const getPublishedBySlug = query({
       document = await getDocumentByOldSlug(ctx, args.slug);
     }
 
-    if (!document || document.status !== "published" || !document.publishedAt) {
+    if (
+      !document ||
+      document.status !== "published" ||
+      !document.publishedAt ||
+      document.isVisible === false
+    ) {
       return null;
     }
 
@@ -144,8 +157,10 @@ export const listPublished = query({
       .order("desc")
       .paginate(args.paginationOpts);
 
-    // Filter documents with publishedAt
-    const publishedDocs = result.page.filter((doc) => doc.publishedAt);
+    // Filter documents with publishedAt and visible flag enabled
+    const publishedDocs = result.page.filter(
+      (doc) => doc.publishedAt && doc.isVisible !== false,
+    );
 
     // Batch fetch all unique authors in parallel (fixes N+1 query)
     const uniqueAuthorIds = [
@@ -360,6 +375,56 @@ export const listForAdmin = query({
 });
 
 /**
+ * List published documents for admin visibility management.
+ * Supports optional title search.
+ *
+ * @throws AdminRequiredError if user is not an admin.
+ */
+export const listPublishedForAdmin = query({
+  args: {
+    paginationOpts: paginationOptsValidator,
+    search: v.optional(v.string()),
+  },
+  returns: paginatedAdminPublishedDocumentListValidator,
+  handler: async (ctx, args) => {
+    await Auth.requireAdmin(ctx);
+
+    let result;
+
+    if (args.search) {
+      result = await ctx.db
+        .query("documents")
+        .withSearchIndex("search_title", (q) =>
+          q.search("title", args.search!).eq("status", "published"),
+        )
+        .paginate(args.paginationOpts);
+    } else {
+      result = await ctx.db
+        .query("documents")
+        .withIndex("by_status", (q) => q.eq("status", "published"))
+        .order("desc")
+        .paginate(args.paginationOpts);
+    }
+
+    const page = result.page
+      .map((doc) => {
+        if (doc.status !== "published" || !doc.publishedAt) {
+          return null;
+        }
+        return toAdminPublishedDocumentListItem(doc);
+      })
+      .filter(
+        (doc): doc is AdminPublishedDocumentListItem => doc !== null,
+      );
+
+    return {
+      ...result,
+      page,
+    };
+  },
+});
+
+/**
  * Get a document for admin review (admin only).
  * Returns the full document content without author info (anonymous review).
  *
@@ -440,6 +505,7 @@ export const getForAdminReviewBySlug = query({
       submittedAt: document.submittedAt,
       createdAt: document.createdAt,
       status: document.status,
+      isVisible: document.isVisible !== false,
       isRedirect,
       currentSlug,
     };

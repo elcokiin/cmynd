@@ -2,6 +2,7 @@ import type { Doc } from "../_generated/dataModel";
 import type {
   DocumentListItem,
   AdminDocumentListItem,
+  AdminPublishedDocumentListItem,
   PublishedDocumentListItem,
 } from "../../lib/types/documents";
 import type { PublicAuthor } from "../../lib/types/authors";
@@ -37,6 +38,7 @@ export function toDocumentListItem(doc: Doc<"documents">): DocumentListItem {
     updatedAt: doc.updatedAt,
     submittedAt: doc.submittedAt,
     rejectionReason: doc.rejectionReason,
+    isVisible: doc.isVisible,
   };
 }
 
@@ -56,6 +58,25 @@ export function toAdminDocumentListItem(
     submittedAt: doc.submittedAt,
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
+    isVisible: doc.isVisible,
+  };
+}
+
+/**
+ * Project published document to admin list item for visibility management.
+ */
+export function toAdminPublishedDocumentListItem(
+  doc: Doc<"documents">,
+): AdminPublishedDocumentListItem {
+  return {
+    _id: doc._id,
+    title: doc.title,
+    slug: doc.slug,
+    type: doc.type,
+    status: "published",
+    publishedAt: doc.publishedAt!,
+    updatedAt: doc.updatedAt,
+    isVisible: doc.isVisible ?? true,
   };
 }
 
