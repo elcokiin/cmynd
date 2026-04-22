@@ -97,6 +97,7 @@ export function toPublishedDocumentListItem(
     _id: doc._id,
     title: doc.title,
     slug: doc.slug,
+    description: doc.description,
     type: doc.type,
     coverImageId: doc.coverImageId,
     publishedAt: doc.publishedAt!,

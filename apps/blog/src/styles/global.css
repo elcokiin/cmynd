@@ -5,20 +5,20 @@
   --primary-blue: #0a192f;
   --primary-aquamarine: #64ffda;
   --cool-gray: #8892b0;
-  --surface: #f8fbff;
-  --text: #142238;
-  --card: #ffffff;
-  --border: #d8e3f2;
+  --surface: #0a192f;
+  --text: #d7e2f2;
+  --card: #0f2138;
+  --border: #274264;
 
   --color-primary-blue: var(--primary-blue);
   --color-primary-aquamarine: var(--primary-aquamarine);
 }
 
-html[data-theme="dark"] {
-  --surface: #070f1d;
-  --text: #d7e2f2;
-  --card: #0b1a32;
-  --border: #274264;
+html[data-theme="light"] {
+  --surface: #f8fbff;
+  --text: #142238;
+  --card: #ffffff;
+  --border: #d8e3f2;
 }
 
 * {
@@ -29,10 +29,7 @@ body {
   margin: 0;
   font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
   color: var(--text);
-  background:
-    radial-gradient(90rem 45rem at 0% 0%, #e5efff 0%, transparent 50%),
-    radial-gradient(80rem 50rem at 100% 20%, #d5fff7 0%, transparent 45%),
-    var(--surface);
+  background: #0A192F;
 }
 
 a {
@@ -164,13 +161,13 @@ a {
   padding: 2rem 0 3.5rem;
 }
 
-html[data-theme="dark"] .logo,
-html[data-theme="dark"] .nav a {
-  color: #e7f0ff;
+html[data-theme="light"] .logo,
+html[data-theme="light"] .nav a {
+  color: #0a192f;
 }
 
-html[data-theme="dark"] .post-prose a {
-  color: var(--primary-aquamarine);
+html[data-theme="light"] .post-prose a {
+  color: #64ffda;
 }
 
 .post-article {

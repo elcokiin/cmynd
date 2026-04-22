@@ -133,6 +133,7 @@ export const publishedDocumentListItemValidator = v.object({
   _id: v.id("documents"),
   title: v.string(),
   slug: v.string(),
+  description: v.optional(v.string()),
   type: documentTypeValidator,
   coverImageId: v.optional(v.id("_storage")),
   publishedAt: v.number(),

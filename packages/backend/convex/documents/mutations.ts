@@ -17,6 +17,7 @@ import {
   hasContent,
   type JSONContent,
 } from "../../lib/utils/title";
+import { extractFirstWords } from "../../lib/utils/text-manipulation";
 import {
   slugExists,
   addToSlugHistory,
@@ -343,11 +344,20 @@ export const publish = mutation({
     const text = document.markdownSource ?? "";
     const estimatedReadTime = getReadingTimeMinutes(text);
 
+    let description = document.description?.trim() || "";
+    if (!description && document.content) {
+      description = extractFirstWords(document.content as JSONContent);
+    }
+    if (!description) {
+      description = "Check out this post";
+    }
+
     await ctx.db.patch(args.documentId, {
       status: "published",
       isVisible: true,
       publishedAt: Date.now(),
       estimatedReadTime,
+      description,
       updatedAt: Date.now(),
     });
 
@@ -439,11 +449,20 @@ export const approve = mutation({
     const text = document.markdownSource ?? "";
     const estimatedReadTime = getReadingTimeMinutes(text);
 
+    let description = document.description?.trim() || "";
+    if (!description && document.content) {
+      description = extractFirstWords(document.content as JSONContent);
+    }
+    if (!description) {
+      description = "Check out this post";
+    }
+
     await ctx.db.patch(args.documentId, {
       status: "published",
       isVisible: true,
       publishedAt: Date.now(),
       estimatedReadTime,
+      description,
       updatedAt: Date.now(),
     });
 
