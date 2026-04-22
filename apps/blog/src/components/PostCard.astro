@@ -1,25 +1,25 @@
 ---
 import type { BlogPostListItem } from "../lib/types";
 import { formatPublishedDate } from "../lib/utils";
+import Card from "./react/PostCard";
 
 type Props = {
   post: BlogPostListItem;
 };
 
 const { post } = Astro.props;
+
+const cardProps = {
+  title: post.title,
+  description: post.description || "",
+  image: post.coverUrl || "",
+  author: post.author,
+  date: formatPublishedDate(post.publishedAt),
+  minDuration: "5",
+  type: "featured" as const,
+};
 ---
 
-<article class="post-card">
-  <a href={`/posts/${post.slug}/`}>
-    {
-      post.coverUrl && (
-        <img src={post.coverUrl} alt={post.title} class="post-card-image" loading="lazy" />
-      )
-    }
-    <div class="post-card-body">
-      <p class="post-card-meta">{post.author.name} · {formatPublishedDate(post.publishedAt)}</p>
-      <h2>{post.title}</h2>
-      <p class="post-card-type">{post.type}</p>
-    </div>
-  </a>
-</article>
+<a class="post-card" href={`/posts/${post.slug}/`}>
+  <Card client:load {...cardProps} />
+</a>

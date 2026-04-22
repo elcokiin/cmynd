@@ -6,6 +6,7 @@
   "exports": {
     "./styles": "./src/styles/global.css",
     "./lib/utils": "./src/lib/utils.ts",
+    "./avatar": "./src/components/avatar.tsx",
     "./breadcrumb": "./src/components/breadcrumb.tsx",
     "./button": "./src/components/button.tsx",
     "./card": "./src/components/card.tsx",

@@ -6,6 +6,7 @@ import PostCard from "../components/PostCard.astro";
 import { listAllPublishedDocuments, getPublicStorageUrl } from "../lib/convex";
 import { SITE } from "../lib/config";
 
+import "@elcokiin/ui/styles";
 import "../styles/global.css";
 
 const cacheControl = "public, max-age=120, s-maxage=600, stale-while-revalidate=3600";
@@ -33,7 +34,8 @@ const posts = await Promise.all(
       </p>
     </section>
 
-    <section class="posts-grid" aria-label="Published posts">
+<!--<section class="posts-grid" aria-label="Published posts">-->
+    <section aria-label="Published posts">
       {posts.map(post => <PostCard post={post} />)}
     </section>
   </main>

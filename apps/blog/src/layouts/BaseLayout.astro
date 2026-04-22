@@ -27,51 +27,8 @@ const canonical = new URL(canonicalPath, SITE.url).toString();
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    <script is:inline>
-      (() => {
-        const saved = localStorage.getItem("theme");
-        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-        const theme = saved === "dark" || saved === "light" ? saved : prefersDark ? "dark" : "light";
-        document.documentElement.setAttribute("data-theme", theme);
-      })();
-    </script>
   </head>
   <body>
     <slot />
-    <script is:inline>
-      (() => {
-        const updateLabel = (theme) => {
-          const label = document.getElementById("theme-toggle-text");
-          if (label) {
-            label.textContent = theme === "dark" ? "Light" : "Dark";
-          }
-        };
-
-        const setTheme = (theme) => {
-          document.documentElement.setAttribute("data-theme", theme);
-          localStorage.setItem("theme", theme);
-          updateLabel(theme);
-        };
-
-        const init = () => {
-          const currentTheme = document.documentElement.getAttribute("data-theme") || "light";
-          updateLabel(currentTheme);
-
-          const button = document.getElementById("theme-toggle");
-          if (!button || button.dataset.bound === "true") {
-            return;
-          }
-
-          button.dataset.bound = "true";
-          button.addEventListener("click", () => {
-            const now = document.documentElement.getAttribute("data-theme") || "light";
-            setTheme(now === "dark" ? "light" : "dark");
-          });
-        };
-
-        init();
-        document.addEventListener("astro:page-load", init);
-      })();
-    </script>
   </body>
 </html>

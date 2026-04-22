@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@source "../components/**/*.tsx";
 
 :root {
   --primary-blue: #0a192f;
@@ -8,6 +9,9 @@
   --text: #142238;
   --card: #ffffff;
   --border: #d8e3f2;
+
+  --color-primary-blue: var(--primary-blue);
+  --color-primary-aquamarine: var(--primary-aquamarine);
 }
 
 html[data-theme="dark"] {
@@ -217,4 +221,25 @@ html[data-theme="dark"] .post-prose a {
   .post-card {
     grid-column: span 4;
   }
+}
+
+.post-card-glass {
+  position: relative;
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: all 0.3s ease-out;
+}
+
+.post-card-glass:hover {
+  transform: scale(1.02);
+}
+
+.post-card-image-container {
+  position: relative;
+  z-index: 10;
+}
+
+.post-card-content {
+  position: relative;
+  z-index: 10;
 }

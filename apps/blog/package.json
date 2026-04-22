@@ -9,7 +9,9 @@
     "check-types": "astro check"
   },
   "dependencies": {
+    "@elcokiin/ui": "workspace:*",
     "@astrojs/node": "^9.4.2",
+    "@astrojs/react": "^5.0.3",
     "@astrojs/rss": "^4.0.12",
     "@astrojs/sitemap": "^3.4.1",
     "@elcokiin/backend": "workspace:*",
@@ -24,9 +26,13 @@
     "@tiptap/extension-underline": "^2.10.4",
     "@tiptap/html": "^2.10.4",
     "@tiptap/starter-kit": "^2.10.4",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "astro": "^5.16.6",
     "convex": "catalog:",
     "dayjs": "^1.11.13",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
     "sanitize-html": "^2.17.0",
     "tailwindcss": "^4.1.18"
   },

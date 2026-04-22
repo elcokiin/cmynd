@@ -1,5 +1,21 @@
 {
   "extends": "astro/tsconfigs/strict",
-  "include": [".astro/types.d.ts", "src/**/*", "astro.config.ts"],
-  "exclude": ["dist", "astro-paper", "elcokiinBlog"]
+  "include": [
+    ".astro/types.d.ts",
+    "src/**/*",
+    "astro.config.ts"
+  ],
+  "exclude": [
+    "dist",
+    "astro-paper",
+    "elcokiinBlog"
+  ],
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "baseUrl": ".",
+    "paths": {
+      "@elcokiin/ui/*": ["../../packages/ui/src/components/*"]
+    }
+  }
 }
