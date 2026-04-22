@@ -56,6 +56,7 @@ export const documentValidator = {
   createdAt: v.number(),
   updatedAt: v.number(),
   publishedAt: v.optional(v.number()),
+  estimatedReadTime: v.optional(v.number()),
   isVisible: v.optional(v.boolean()),
   submittedAt: v.optional(v.number()),
   rejectionReason: v.optional(v.string()),

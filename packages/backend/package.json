@@ -31,6 +31,7 @@
     "better-auth": "catalog:",
     "convex": "catalog:",
     "dotenv": "catalog:",
+    "reading-time-estimator": "^2.6.0",
     "resend": "^4.0.0",
     "slug": "11.0.1",
     "zod": "catalog:"

@@ -176,7 +176,7 @@ function Card({
                 </Avatar>
                 <div className="flex flex-col">
                   <span className="text-sm font-bold uppercase text-[#0a192f]">{author.name}</span>
-                  <span className="text-xs text-[#0a192f]/60">{date}</span>
+                  <span className="text-xs text-[#0a192f]/60">{date} • {minDuration} min read</span>
                 </div>
               </div>
             )}
@@ -238,7 +238,7 @@ function Card({
                 </Avatar>
                 <div className="flex flex-col">
                   <span className="text-sm font-bold uppercase text-[#0a192f]">{author.name}</span>
-                  <span className="text-xs text-[#0a192f]/60">{date}</span>
+                  <span className="text-xs text-[#0a192f]/60">{date} • {minDuration} min read</span>
                 </div>
               </div>
             )}
@@ -300,7 +300,7 @@ function Card({
                 </Avatar>
                 <div className="flex flex-col">
                   <span className="text-sm font-bold uppercase text-[#0a192f]">{author.name}</span>
-                  <span className="text-xs text-[#0a192f]/60">{date}</span>
+                  <span className="text-xs text-[#0a192f]/60">{date} • {minDuration} min read</span>
                 </div>
               </div>
             )}

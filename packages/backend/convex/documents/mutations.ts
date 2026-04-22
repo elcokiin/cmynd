@@ -26,6 +26,7 @@ import {
   decrementStatusCount,
   updateStatusCount,
 } from "./stats_helpers";
+import { getReadingTimeMinutes } from "../../lib/reading-time-estimator";
 
 /**
  * Create a new document.
@@ -339,10 +340,14 @@ export const publish = mutation({
       );
     }
 
+    const text = document.markdownSource ?? "";
+    const estimatedReadTime = getReadingTimeMinutes(text);
+
     await ctx.db.patch(args.documentId, {
       status: "published",
       isVisible: true,
       publishedAt: Date.now(),
+      estimatedReadTime,
       updatedAt: Date.now(),
     });
 
@@ -431,10 +436,14 @@ export const approve = mutation({
       );
     }
 
+    const text = document.markdownSource ?? "";
+    const estimatedReadTime = getReadingTimeMinutes(text);
+
     await ctx.db.patch(args.documentId, {
       status: "published",
       isVisible: true,
       publishedAt: Date.now(),
+      estimatedReadTime,
       updatedAt: Date.now(),
     });
 
