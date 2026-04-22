@@ -12,6 +12,29 @@
 
   --color-primary-blue: var(--primary-blue);
   --color-primary-aquamarine: var(--primary-aquamarine);
+
+  --glass-dark-base: rgba(11, 26, 50, 0.1);
+  --glass-dark-border: rgba(136, 146, 176, 0.2);
+  --glass-dark-glow: rgba(136, 146, 176, 0.15);
+  --glass-dark-glow-mid: rgba(136, 146, 176, 0.08);
+  --glass-dark-highlight: rgba(136, 146, 176, 0.25);
+  --glass-dark-shadow: rgba(0, 0, 0, 0.4);
+
+  --glass-light-base: rgba(255, 255, 255, 0.9);
+  --glass-light-border: rgba(0, 0, 0, 0.08);
+  --glass-light-glow: rgba(255, 255, 255, 0.95);
+  --glass-light-glow-mid: rgba(248, 250, 252, 0.9);
+  --glass-light-highlight: rgba(255, 255, 255, 0.9);
+  --glass-light-shadow: rgba(0, 0, 0, 0.1);
+
+  --hover-border-dark: rgba(136, 146, 176, 0.3);
+  --hover-border-light: rgba(0, 0, 0, 0.12);
+
+  --text-title-dark: #ffffff;
+  --text-title-light: #gray-900;
+  --text-desc-dark: #cbd5e1;
+  --text-desc-light: #0a192f;
+  --text-hover: var(--primary-aquamarine);
 }
 
 html[data-theme="light"] {

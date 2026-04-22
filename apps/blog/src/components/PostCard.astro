@@ -5,7 +5,7 @@ import Card from "./react/PostCard";
 
 type Props = {
   post: BlogPostListItem;
-  type?: "featured" | "grid-medium" | "grid-large" | "grid-simple";
+  type?: "featured" | "grid-medium" | "grid-large";
 };
 
 const { post, type = "grid-medium" } = Astro.props;

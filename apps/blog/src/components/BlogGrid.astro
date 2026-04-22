@@ -8,41 +8,35 @@ type Props = {
 
 const { posts } = Astro.props;
 
-// Group posts based on the requested layout
-const featuredPost = posts.length > 0 ? posts[0] : null;
-const mediumPosts = posts.slice(1, 4); // Next 3
-const largePosts = posts.slice(4, 6); // Next 2
-const simplePosts = posts.slice(6); // The rest
+const sections: { type: "featured" | "grid-medium" | "grid-large"; posts: BlogPostListItem[] }[] = [];
+
+let remaining = [...posts];
+
+if (remaining.length > 0) {
+  sections.push({ type: "featured", posts: [remaining.shift()!] });
+}
+
+while (remaining.length > 0) {
+  const medium = remaining.splice(0, 3);
+  const large = remaining.splice(0, 2);
+
+  if (medium.length > 0) sections.push({ type: "grid-medium", posts: medium });
+  if (large.length > 0) sections.push({ type: "grid-large", posts: large });
+}
 ---
 
 <div class="blog-grid-container flex flex-col gap-8 md:gap-12 w-full py-8">
-  {featuredPost && (
-    <section aria-label="Featured post" class="w-full">
-      <PostCard post={featuredPost} type="featured" />
-    </section>
-  )}
-
-  {mediumPosts.length > 0 && (
-    <section aria-label="Recent posts" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-      {mediumPosts.map((post) => (
-        <PostCard post={post} type="grid-medium" />
-      ))}
-    </section>
-  )}
-
-  {largePosts.length > 0 && (
-    <section aria-label="Highlight posts" class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-      {largePosts.map((post) => (
-        <PostCard post={post} type="grid-large" />
-      ))}
-    </section>
-  )}
-
-  {simplePosts.length > 0 && (
-    <section aria-label="More posts" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mt-4">
-      {simplePosts.map((post) => (
-        <PostCard post={post} type="grid-simple" />
-      ))}
-    </section>
-  )}
+  {sections.map((section) => (
+    section.type === "featured" ? (
+      <section aria-label="Featured post" class="w-full">
+        <PostCard post={section.posts[0]} type="featured" />
+      </section>
+    ) : (
+      <section aria-label={`${section.type} posts`} class={`grid ${section.type === "grid-medium" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1 md:grid-cols-2"} gap-6 md:gap-8`}>
+        {section.posts.map((post) => (
+          <PostCard post={post} type={section.type} />
+        ))}
+      </section>
+    )
+  ))}
 </div>
