@@ -5,9 +5,10 @@ import Card from "./react/PostCard";
 
 type Props = {
   post: BlogPostListItem;
+  type?: "featured" | "grid-medium" | "grid-large" | "grid-simple";
 };
 
-const { post } = Astro.props;
+const { post, type = "grid-medium" } = Astro.props;
 
 const cardProps = {
   title: post.title,
@@ -16,10 +17,10 @@ const cardProps = {
   author: post.author,
   date: formatPublishedDate(post.publishedAt),
   minDuration: "5",
-  type: "featured" as const,
+  type,
 };
 ---
 
-<a class="post-card" href={`/posts/${post.slug}/`}>
+<a class="group block h-full w-full" href={`/posts/${post.slug}/`}>
   <Card client:load {...cardProps} />
 </a>

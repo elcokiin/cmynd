@@ -184,7 +184,7 @@ function Card({
   if (type === "featured") {
     return (
       <article
-        className="w-full rounded-2xl overflow-hidden relative transition-all duration-300 ease-out cursor-pointer hover:scale-[1.01]"
+        className="w-full h-full rounded-2xl overflow-hidden relative transition-all duration-300 ease-out cursor-pointer hover:scale-[1.01]"
         style={getGlassStyles()}
         onMouseMove={handleMouseMove}
         onMouseEnter={() => setIsHovering(true)}
@@ -243,7 +243,7 @@ function Card({
   if (type === "grid-large") {
     return (
       <article
-        className="rounded-2xl overflow-hidden relative transition-all duration-300 ease-out cursor-pointer hover:scale-[1.02]"
+        className="w-full h-full rounded-2xl overflow-hidden flex flex-col relative transition-all duration-300 ease-out cursor-pointer hover:scale-[1.02]"
         style={getGlassStyles()}
         onMouseMove={handleMouseMove}
         onMouseEnter={() => setIsHovering(true)}
@@ -251,8 +251,8 @@ function Card({
       >
         {renderHoverEffects()}
 
-        <div className="relative z-10">
-          <div className="w-full h-72">
+        <div className="relative z-10 h-full flex flex-col">
+          <div className="w-full h-72 shrink-0">
             <img
               className={`w-full h-full object-cover transition-all duration-300 ${
                 isHovering ? "brightness-110 scale-105" : "scale-100"
@@ -263,8 +263,9 @@ function Card({
             />
           </div>
 
-          <div className="p-8">
-            <h2
+          <div className="p-8 flex-grow flex flex-col justify-between">
+            <div>
+              <h2
               className={`font-bold text-2xl mb-1 transition-colors duration-300 ${
                 isHovering ? "text-[#64ffda]" : isDark ? "text-white" : "text-gray-900"
               }`}
@@ -278,6 +279,7 @@ function Card({
             >
               {description}
             </p>
+            </div>
 
             {author && (
               <div className="flex items-center gap-3 mt-4">
@@ -302,7 +304,7 @@ function Card({
   if (type === "grid-medium") {
     return (
       <article
-        className="rounded-2xl overflow-hidden relative transition-all duration-300 ease-out cursor-pointer hover:scale-[1.02]"
+        className="w-full h-full flex flex-col rounded-2xl overflow-hidden relative transition-all duration-300 ease-out cursor-pointer hover:scale-[1.02]"
         style={getGlassStyles()}
         onMouseMove={handleMouseMove}
         onMouseEnter={() => setIsHovering(true)}
@@ -310,8 +312,8 @@ function Card({
       >
         {renderHoverEffects()}
 
-        <div className="relative z-10">
-          <div className="w-full h-48">
+        <div className="relative z-10 h-full flex flex-col">
+          <div className="w-full h-48 shrink-0">
             <img
               className={`w-full h-full object-cover transition-all duration-300 ${
                 isHovering ? "brightness-110 scale-105" : "scale-100"
@@ -322,8 +324,9 @@ function Card({
             />
           </div>
 
-          <div className="p-6">
-            <h2
+          <div className="p-6 flex-grow flex flex-col justify-between">
+            <div>
+              <h2
               className={`font-bold text-lg mb-1 transition-colors duration-300 ${
                 isHovering ? "text-[#64ffda]" : isDark ? "text-white" : "text-gray-900"
               }`}
@@ -337,6 +340,7 @@ function Card({
             >
               {description}
             </p>
+            </div>
 
             {author && (
               <div className="flex items-center gap-3 mt-4">
@@ -361,7 +365,7 @@ function Card({
   if (type === "grid-simple") {
     return (
       <article
-        className="w-full max-h-[320px] rounded-2xl overflow-hidden relative transition-all duration-300 ease-out cursor-pointer hover:scale-[1.02]"
+        className="w-full h-full flex flex-col max-h-[320px] rounded-2xl overflow-hidden relative transition-all duration-300 ease-out cursor-pointer hover:scale-[1.02]"
         style={getGlassStyles()}
         onMouseMove={handleMouseMove}
         onMouseEnter={() => setIsHovering(true)}
@@ -369,8 +373,8 @@ function Card({
       >
         {renderHoverEffects()}
 
-        <div className="relative z-10">
-          <div className="w-full h-40">
+        <div className="relative z-10 h-full flex flex-col">
+          <div className="w-full h-40 shrink-0">
             <img
               className={`w-full h-full object-cover transition-all duration-300 ${
                 isHovering ? "brightness-110 scale-105" : "scale-100"
@@ -381,8 +385,9 @@ function Card({
             />
           </div>
 
-          <div className="p-5">
-            <h2
+          <div className="p-5 flex-grow flex flex-col justify-between">
+            <div>
+              <h2
               className={`font-bold text-base mb-1 transition-colors duration-300 ${
                 isHovering ? "text-[#64ffda]" : isDark ? "text-white" : "text-gray-900"
               }`}
@@ -396,6 +401,7 @@ function Card({
             >
               {description}
             </p>
+            </div>
 
             {renderSimpleAuthorInfo()}
           </div>
