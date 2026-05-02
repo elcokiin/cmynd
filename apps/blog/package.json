@@ -6,15 +6,17 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "check-types": "astro check"
+    "check-types": "astro check",
+    "deploy:prod": "astro build && wrangler deploy --var CONVEX_URL:https://useful-lemming-995.convex.cloud"
   },
   "dependencies": {
-    "@elcokiin/ui": "workspace:*",
-    "@astrojs/node": "^9.4.2",
-    "@astrojs/react": "^5.0.3",
-    "@astrojs/rss": "^4.0.12",
-    "@astrojs/sitemap": "^3.4.1",
+    "@astrojs/cloudflare": "^13.3.0",
+    "@astrojs/node": "^10.0.6",
+    "@astrojs/react": "^5.0.4",
+    "@astrojs/rss": "^4.0.18",
+    "@astrojs/sitemap": "^3.7.2",
     "@elcokiin/backend": "workspace:*",
+    "@elcokiin/ui": "workspace:*",
     "@tailwindcss/vite": "^4.1.18",
     "@tiptap/extension-color": "^2.10.4",
     "@tiptap/extension-highlight": "^2.10.4",
@@ -28,16 +30,17 @@
     "@tiptap/starter-kit": "^2.10.4",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "astro": "^5.16.6",
+    "astro": "^6.2.1",
     "convex": "catalog:",
     "dayjs": "^1.11.13",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "sanitize-html": "^2.17.0",
-    "tailwindcss": "^4.1.18"
+    "tailwindcss": "^4.1.18",
+    "wrangler": "^4.87.0"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.8",
+    "@astrojs/check": "^0.9.9",
     "@types/sanitize-html": "^2.16.0",
     "typescript": "catalog:"
   }

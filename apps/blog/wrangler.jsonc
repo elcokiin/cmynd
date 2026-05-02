@@ -1,0 +1,25 @@
+{
+	"name": "elcokiin-blog-astro",
+	"compatibility_date": "2026-05-02",
+	"compatibility_flags": [
+		"nodejs_compat",
+		"global_fetch_strictly_public"
+	],
+	"assets": {
+		"binding": "ASSETS",
+		"directory": "./dist"
+	},
+	"observability": {
+		"enabled": true
+	},
+	"vars": {
+		"CONVEX_URL": "https://basic-ant-509.convex.cloud"
+	},
+	"env": {
+		"production": {
+			"vars": {
+				"CONVEX_URL": "https://useful-lemming-995.convex.cloud"
+			}
+		}
+	}
+}

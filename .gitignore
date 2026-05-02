@@ -52,7 +52,6 @@ temp
 # START Ruler Generated Files
 /.vscode/mcp.json
 /.vscode/mcp.json.bak
-/AGENTS.md
 /AGENTS.md.bak
 /opencode.json
 /opencode.json.bak
@@ -63,6 +62,12 @@ temp
 elcokiin-before-blog
 portfolio-to-migrate
 prd.md
+
+# Wrangler
+.wrangler
+
+# Astro
+.astro
 
 # Blog reference projects
 apps/blog/astro-paper/
