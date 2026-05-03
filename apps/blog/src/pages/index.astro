@@ -26,9 +26,10 @@ const posts = await Promise.all(
 
 <BaseLayout title={`${SITE.title} · Blog`} description={SITE.description} canonicalPath="/">
   <SiteHeader />
+  <div class="w-full">
+    <SiteHero /> 
+  </div>
   <main class="container mx-auto px-4 md:px-8 max-w-7xl">
-  <SiteHero /> 
-
     <BlogGrid posts={posts as any} />
   </main>
   <SiteFooter />

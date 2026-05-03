@@ -18,6 +18,9 @@ export default defineConfig({
     // Astro 5 currently uses Vite 6 internally.
     // Tailwind Vite plugin types target Vite 7 and require this cast.
     plugins: [tailwindcss()],
+    resolve: {
+      dedupe: ["react", "react-dom"],
+    },
   },
 
   integrations: [react()],
