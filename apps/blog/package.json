@@ -33,6 +33,7 @@
     "astro": "^6.2.1",
     "convex": "catalog:",
     "dayjs": "^1.11.13",
+    "gsap": "^3.15.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "sanitize-html": "^2.17.0",

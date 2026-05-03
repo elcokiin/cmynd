@@ -9,7 +9,7 @@ const { phrase, author } = getRandomPhrase();
 <Atmosphere client:load className="relative flex flex-col items-center justify-center min-h-[60vh] py-10 sm:py-24 sm:px-8 md:py-32 overflow-hidden">
   <div class="relative z-10 flex flex-col items-center">
     <h2 class="hero-title cursor-pointer font-bold text-4xl text-[var(--primary-blue)] dark:text-[var(--primary-aquamarine)] sm:text-6xl lg:text-5xl mb-6">
-      <a href="https://elcokiin.my">
+      <a href="https://elcokiin.my" target="_blank" rel="noopener noreferrer" class="animated-underline">
         Diego Tenjo
       </a>
     </h2>
@@ -24,7 +24,10 @@ const { phrase, author } = getRandomPhrase();
 
 <script>
   import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
   import SplitType from 'split-type';
+
+  gsap.registerPlugin(ScrollTrigger);
 
   const initAnimations = () => {
     const titleLink = document.querySelector('.hero-title a');
@@ -55,6 +58,63 @@ const { phrase, author } = getRandomPhrase();
         delay: 0.3
       });
     }
+
+    if (titleLink) {
+      const headerAuthorName = document.getElementById('header-author-name');
+
+      gsap.to(titleLink, {
+        scrollTrigger: {
+          trigger: titleLink,
+          start: "top top+=212",
+          end: "+=250",
+          scrub: 1,
+          pin: true,
+          pinSpacing: false, // Evita que se añada espacio fantasma al hacer scroll
+          invalidateOnRefresh: true,
+          id: "hero-title-scroll",
+          onUpdate: (self) => {
+            // Intercambiamos la visibilidad casi al final de la animación
+            if (headerAuthorName) {
+              if (self.progress > 0.95) {
+                headerAuthorName.classList.remove('opacity-0', 'pointer-events-none');
+                headerAuthorName.classList.add('opacity-100', 'pointer-events-auto');
+                (titleLink as HTMLElement).style.opacity = '0';
+              } else {
+                headerAuthorName.classList.add('opacity-0', 'pointer-events-none');
+                headerAuthorName.classList.remove('opacity-100', 'pointer-events-auto');
+                (titleLink as HTMLElement).style.opacity = '1';
+              }
+            }
+          }
+        },
+        x: () => {
+          // Calculamos la distancia horizontal para alinearlo con el elemento destino
+          if (headerAuthorName) {
+            const titleRect = titleLink.getBoundingClientRect();
+            const targetRect = headerAuthorName.getBoundingClientRect();
+            // Alinear el lado derecho del título con el lado derecho del objetivo
+            return targetRect.right - titleRect.right;
+          }
+          // Fallback si no está el header
+          const rect = titleLink.getBoundingClientRect();
+          return (window.innerWidth - 90) - rect.right;
+        },
+        y: () => {
+           // Como el elemento está en pin (fijo visualmente), solo calculamos la diferencia 
+           // vertical entre ambos elementos para asegurarnos que termine a la misma altura
+           if (headerAuthorName) {
+             const titleRect = titleLink.getBoundingClientRect();
+             const targetRect = headerAuthorName.getBoundingClientRect();
+             return (targetRect.top + targetRect.height / 2) - (titleRect.top + titleRect.height / 2);
+           }
+           return -10;
+        },
+        scale: 0.4,
+        color: 'white',
+        transformOrigin: 'right center', // El origen anterior que daba el efecto visual hacia abajo y derecha
+        ease: 'power1.inOut'
+      });
+    }
   };
 
   const setup = () => {
@@ -73,29 +133,6 @@ const { phrase, author } = getRandomPhrase();
 </script>
 
 <style>
-  .hero-title a {
-    position: relative;
-    display: inline-block;
-  }
-  
-  .hero-title a::after {
-    content: '';
-    position: absolute;
-    width: 100%;
-    transform: scaleX(0);
-    height: 3px;
-    bottom: -4px;
-    left: 0;
-    background-color: currentColor;
-    transform-origin: bottom right;
-    transition: transform 0.25s ease-out;
-  }
-  
-  .hero-title a:hover::after {
-    transform: scaleX(1);
-    transform-origin: bottom left;
-  }
-
   /* Ensure split-type elements display inline correctly */
   :global(.word), :global(.char) {
     display: inline-block;
