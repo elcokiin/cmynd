@@ -5,10 +5,33 @@ type Props = {
   title: string;
   description?: string;
   canonicalPath?: string;
+  image?: string;
+  type?: "website" | "article";
 };
 
-const { title, description = SITE.description, canonicalPath = "/" } = Astro.props;
+const { 
+  title, 
+  description = SITE.description, 
+  canonicalPath = "/",
+  image = "/favicon.png",
+  type = "website"
+} = Astro.props;
 const canonical = new URL(canonicalPath, SITE.url).toString();
+const imageUrl = new URL(image, SITE.url).toString();
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": type === "article" ? "Article" : "WebSite",
+  name: SITE.title,
+  headline: title,
+  description: description,
+  url: canonical,
+  image: imageUrl,
+  author: {
+    "@type": "Person",
+    name: "Elcokiin",
+  },
+};
 ---
 
 <!doctype html>
@@ -20,14 +43,18 @@ const canonical = new URL(canonicalPath, SITE.url).toString();
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     <link rel="icon" type="image/png" href="/favicon.png" />
-    <meta property="og:type" content="website" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta property="og:type" content={type} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={imageUrl} />
     <meta property="og:site_name" content={SITE.title} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imageUrl} />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   </head>
   <body>
     <slot />
