@@ -28,9 +28,12 @@
     "dev:setup": "turbo -F @elcokiin/backend dev:setup"
   },
   "dependencies": {
+    "@elcokiin/env": "workspace:*",
+    "blog": "^1.0.0",
     "dotenv": "catalog:",
-    "zod": "catalog:",
-    "@elcokiin/env": "workspace:*"
+    "gsap": "^3.15.0",
+    "split-type": "^0.3.4",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "turbo": "^2.6.3",
