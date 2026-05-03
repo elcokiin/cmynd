@@ -21,6 +21,10 @@ export default defineConfig({
     resolve: {
       dedupe: ["react", "react-dom"],
     },
+    optimizeDeps: {
+      include: ["gsap", "split-type"],
+      exclude: ["astro", "@elcokiin/ui", "@elcokiin/backend"],
+    },
   },
 
   integrations: [react()],

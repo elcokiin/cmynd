@@ -7,7 +7,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "check-types": "astro check",
-    "deploy:prod": "astro build && wrangler deploy --var CONVEX_URL:https://useful-lemming-995.convex.cloud"
+    "deploy": "astro build && wrangler deploy --var CONVEX_URL:https://useful-lemming-995.convex.cloud"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^13.3.0",
