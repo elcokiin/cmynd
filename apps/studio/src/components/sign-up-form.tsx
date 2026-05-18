@@ -1,11 +1,5 @@
-import { signUpValidator } from "@elcokiin/backend/lib/validators/auth";
-import { Button } from "@elcokiin/ui/button";
-import { Input } from "@elcokiin/ui/input";
-import { Label } from "@elcokiin/ui/label";
-import { useForm } from "@tanstack/react-form";
-import { toast } from "sonner";
-
 import { authClient } from "@/lib/auth-client";
+import { ArrowRight } from "lucide-react";
 
 type SignUpFormProps = {
   onSwitchToSignIn: () => void;
@@ -14,132 +8,19 @@ type SignUpFormProps = {
 export function SignUpForm({
   onSwitchToSignIn,
 }: SignUpFormProps): React.ReactNode {
-  const form = useForm({
-    defaultValues: {
-      email: "",
-      password: "",
-      name: "",
-    },
-    onSubmit: async ({ value }) => {
-      await authClient.signUp.email(
-        {
-          email: value.email,
-          password: value.password,
-          name: value.name,
-          callbackURL: `${window.location.origin}/`,
-        },
-        {
-          onSuccess: () => {
-            toast.success("Verification email sent! Please check your inbox.");
-          },
-          onError: (error) => {
-            toast.error(error.error.message || error.error.statusText);
-          },
-        },
-      );
-    },
-    validators: {
-      onSubmit: signUpValidator,
-    },
-  });
-
   return (
-    <div className="mx-auto w-full mt-10 max-w-md p-6">
-      <h1 className="mb-6 text-center text-3xl font-bold">Create Account</h1>
+    <div className="mx-auto flex w-full max-w-[800px] flex-col items-center justify-center px-4 text-center selection:bg-zinc-800 selection:text-white">
+      <h1 className="mb-4 text-4xl font-medium tracking-tight text-white sm:text-5xl md:text-6xl">
+        Join the future of <br className="hidden sm:block" />
+        collaboration.
+      </h1>
+      <p className="mb-10 max-w-[500px] text-base text-zinc-400 sm:text-lg">
+        Create an account to start building and collaborating effortlessly.
+      </p>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          form.handleSubmit();
-        }}
-        className="space-y-4"
-      >
-        <div>
-          <form.Field name="name">
-            {(field) => (
-              <div className="space-y-2">
-                <Label htmlFor={field.name}>Name</Label>
-                <Input
-                  id={field.name}
-                  name={field.name}
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
-                {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
-                    {error?.message}
-                  </p>
-                ))}
-              </div>
-            )}
-          </form.Field>
-        </div>
-
-        <div>
-          <form.Field name="email">
-            {(field) => (
-              <div className="space-y-2">
-                <Label htmlFor={field.name}>Email</Label>
-                <Input
-                  id={field.name}
-                  name={field.name}
-                  type="email"
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
-                {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
-                    {error?.message}
-                  </p>
-                ))}
-              </div>
-            )}
-          </form.Field>
-        </div>
-
-        <div>
-          <form.Field name="password">
-            {(field) => (
-              <div className="space-y-2">
-                <Label htmlFor={field.name}>Password</Label>
-                <Input
-                  id={field.name}
-                  name={field.name}
-                  type="password"
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
-                {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
-                    {error?.message}
-                  </p>
-                ))}
-              </div>
-            )}
-          </form.Field>
-        </div>
-
-        <form.Subscribe>
-          {(state) => (
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={!state.canSubmit || state.isSubmitting}
-            >
-              {state.isSubmitting ? "Submitting..." : "Sign Up"}
-            </Button>
-          )}
-        </form.Subscribe>
-      </form>
-
-      <div className="mt-4">
-        <Button
-          variant="outline"
-          className="w-full"
+      <div className="w-full max-w-sm space-y-6">
+        <button
+          className="group relative flex h-14 w-full items-center justify-between rounded-md bg-white px-5 text-base font-medium text-black transition-all hover:bg-zinc-200 active:scale-[0.98]"
           onClick={async () => {
             await authClient.signIn.social({
               provider: "google",
@@ -147,18 +28,39 @@ export function SignUpForm({
             });
           }}
         >
-          Sign up with Google
-        </Button>
-      </div>
+          <div className="flex items-center gap-3">
+            <svg className="h-5 w-5" viewBox="0 0 24 24">
+              <path
+                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                fill="#4285F4"
+              />
+              <path
+                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                fill="#34A853"
+              />
+              <path
+                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                fill="#FBBC05"
+              />
+              <path
+                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                fill="#EA4335"
+              />
+            </svg>
+            Sign up with Google
+          </div>
+          <ArrowRight className="h-5 w-5 text-zinc-400 transition-colors group-hover:text-zinc-900" />
+        </button>
 
-      <div className="mt-4 text-center">
-        <Button
-          variant="link"
-          onClick={onSwitchToSignIn}
-          className="text-indigo-600 hover:text-indigo-800"
-        >
-          Already have an account? Sign In
-        </Button>
+        <div className="flex flex-col items-center gap-1 text-sm text-zinc-500">
+          <p>By creating an account, you agree to our Terms.</p>
+          <button
+            onClick={onSwitchToSignIn}
+            className="mt-2 text-zinc-400 hover:text-white transition-colors"
+          >
+            Already have an account? Sign in
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -16,7 +16,7 @@ import {
   SidebarMenuItem,
 } from "@elcokiin/ui/sidebar";
 
-import LogoStudio from "@/assets/images/s_letter.svg";
+import LogoStudio from "@/assets/images/logo.png";
 
 export function AppSidebar() {
   const location = useLocation();
@@ -49,7 +49,7 @@ export function AppSidebar() {
             alt="Studio logo"
             width={32}
             height={32}
-            className="rounded-full"
+            className="rounded-full object-cover"
           />
         </Link>
       </SidebarHeader>

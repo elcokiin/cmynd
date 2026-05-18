@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 
 import { cn } from "../lib/utils";
@@ -9,24 +9,25 @@ import "../styles/atmosphere.css";
 interface AtmosphereProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;
   transparent?: boolean;
+  withGrid?: boolean;
 }
 
-export function Atmosphere({ className, children, transparent = true, ...props }: AtmosphereProps) {
+export function Atmosphere({ className, children, transparent = true, withGrid = false, ...props }: AtmosphereProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     if (!containerRef.current) return;
     const container = containerRef.current;
 
-    // Initialize Shery Mouse Follower if not already initialized
-    // Usually it's better to do this once per app, but for this specific component
-    // we can use a custom mouse trail using GSAP to match the "soft stardust" exactly.
-    
-    // Custom GSAP Stardust Trail
     const handleMouseMove = (e: MouseEvent) => {
       const rect = container.getBoundingClientRect();
       const baseX = e.clientX - rect.left;
       const baseY = e.clientY - rect.top;
+
+      if (withGrid) {
+        setMousePos({ x: e.clientX, y: e.clientY });
+      }
 
       // Spawn fewer sparkles per mouse move for a subtler trail
       const particleCount = Math.floor(Math.random() * 2); // 0 to 1 particle
@@ -119,7 +120,10 @@ export function Atmosphere({ className, children, transparent = true, ...props }
       container.removeEventListener("mousemove", handleMouseMove);
       container.removeEventListener("click", handleClick);
     };
-  }, []);
+  }, [withGrid]);
+
+  const gridX = withGrid ? (mousePos.x / (typeof window !== 'undefined' ? window.innerWidth : 1000) - 0.5) * -30 : 0;
+  const gridY = withGrid ? (mousePos.y / (typeof window !== 'undefined' ? window.innerHeight : 1000) - 0.5) * -30 : 0;
 
   return (
     <div
@@ -140,10 +144,18 @@ export function Atmosphere({ className, children, transparent = true, ...props }
         </>
       )}
 
+      {/* Optional Grid Background */}
+      {withGrid && (
+        <div 
+          className="absolute inset-[-50px] bg-[linear-gradient(to_right,var(--color-border)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-border)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] transition-transform duration-300 ease-out opacity-40 pointer-events-none"
+          style={{ transform: `translate(${gridX}px, ${gridY}px)` }}
+        />
+      )}
+
       {/* CSS Animated Stars layer */}
-      <div className="stars-layer-1"></div>
-      <div className="stars-layer-2"></div>
-      <div className="stars-layer-3"></div>
+      <div className="stars-layer-1 pointer-events-none"></div>
+      <div className="stars-layer-2 pointer-events-none"></div>
+      <div className="stars-layer-3 pointer-events-none"></div>
 
       <div className="relative z-10 w-full h-full">
         {children}
