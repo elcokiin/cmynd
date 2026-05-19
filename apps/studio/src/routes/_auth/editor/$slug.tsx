@@ -42,6 +42,7 @@ function EditorRoute() {
   } = useEditorWorkspaceState();
   const [content, setContent] = useState<JSONContent | undefined>(undefined);
   const contentRef = useRef<JSONContent | undefined>(undefined);
+  const [syncedDocumentId, setSyncedDocumentId] = useState<string | null>(null);
 
   // Redirect to current slug if accessed via old slug
   useEffect(() => {
@@ -91,6 +92,7 @@ function EditorRoute() {
     }
 
     syncContent(document.content as JSONContent | undefined);
+    setSyncedDocumentId(document._id);
   }, [document?._id, syncContent]);
 
   const handleExportMarkdown = useCallback(() => {
@@ -98,7 +100,7 @@ function EditorRoute() {
       return;
     }
 
-    const markdown = getExportMarkdown(document.content as JSONContent | undefined);
+    const markdown = getExportMarkdown(contentRef.current);
 
     downloadMarkdown(document.slug || document.title || "document", markdown);
   }, [document, getExportMarkdown]);
@@ -128,6 +130,10 @@ function EditorRoute() {
         </Button>
       </div>
     );
+  }
+
+  if (syncedDocumentId !== document._id) {
+    return <EditorSkeleton />;
   }
 
   const isEditable = document.status === "building";

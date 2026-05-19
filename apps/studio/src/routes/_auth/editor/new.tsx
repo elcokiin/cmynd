@@ -53,7 +53,7 @@ function NewDocumentRoute() {
   // Refs to hold latest values for callbacks
   const titleRef = useRef(title);
   const contentRef = useRef(content);
-  const isSavingRef = useRef(false);
+  const creationPromiseRef = useRef<Promise<void> | null>(null);
 
   const createDocument = useMutation(api.documents.mutations.create);
   const updateTitle = useMutation(api.documents.mutations.updateTitle);
@@ -96,7 +96,7 @@ function NewDocumentRoute() {
       if (
         documentIdRef.current &&
         !hasContent(contentRef.current) &&
-        isRandomTitle(title)
+        isRandomTitle(titleRef.current)
       ) {
         try {
           await removeDocument({ documentId: documentIdRef.current });
@@ -120,51 +120,50 @@ function NewDocumentRoute() {
 
   // Create the document for the first time
   const createNewDocument = useCallback(async (markdownOverride?: string) => {
-    if (isSavingRef.current || documentIdRef.current) return;
+    if (documentIdRef.current) return;
+    if (creationPromiseRef.current) return creationPromiseRef.current;
 
-    isSavingRef.current = true;
+    creationPromiseRef.current = (async () => {
+      try {
+        // Use random title if the user hasn't changed the default "Untitled"
+        const currentTitle = titleRef.current.trim();
+        const isDefaultTitle = currentTitle === "Untitled" || currentTitle === "";
+        const finalTitle = isDefaultTitle ? getRandomTitle() : currentTitle;
 
-    try {
-      // Use random title if the user hasn't changed the default "Untitled"
-      const currentTitle = titleRef.current.trim();
-      const isDefaultTitle = currentTitle === "Untitled" || currentTitle === "";
-      const finalTitle = isDefaultTitle ? getRandomTitle() : currentTitle;
+        // Update the UI with the random title
+        if (isDefaultTitle) {
+          setTitle(finalTitle);
+          titleRef.current = finalTitle;
+        }
 
-      // Update the UI with the random title
-      if (isDefaultTitle) {
-        setTitle(finalTitle);
-        titleRef.current = finalTitle;
+        const isMarkdownMode = editorMode === "markdown";
+        const result = await createDocument({
+          title: finalTitle,
+          type: "own",
+          content: contentRef.current,
+          markdownSource:
+            (markdownOverride ?? markdownDraft) || jsonToMarkdown(contentRef.current),
+          contentFormat: isMarkdownMode ? "markdown_imported" : "rich_json",
+        } as any);
+
+        documentIdRef.current = result.documentId;
+      } catch (error) {
+        handleError(error, { context: "Failed to create document" });
       }
+    })();
 
-      const isMarkdownMode = editorMode === "markdown";
-      const result = await createDocument({
-        title: finalTitle,
-        type: "own",
-        content: contentRef.current,
-        markdownSource:
-          (markdownOverride ?? markdownDraft) || jsonToMarkdown(contentRef.current),
-        contentFormat: isMarkdownMode ? "markdown_imported" : "rich_json",
-      } as any);
-
-      documentIdRef.current = result.documentId;
-    } catch (error) {
-      handleError(error, { context: "Failed to create document" });
-    } finally {
-      isSavingRef.current = false;
-    }
+    await creationPromiseRef.current;
+    creationPromiseRef.current = null;
   }, [createDocument, editorMode, handleError, markdownDraft]);
 
   // Save title changes (only if document exists)
   const saveTitleChange = useCallback(async () => {
-    if (isSavingRef.current) return;
-
     // If document doesn't exist yet, create it
     if (!documentIdRef.current) {
       await createNewDocument();
-      return;
     }
-
-    isSavingRef.current = true;
+    
+    if (!documentIdRef.current) return;
 
     try {
       await updateTitle({
@@ -173,22 +172,17 @@ function NewDocumentRoute() {
       });
     } catch (error) {
       handleError(error, { context: "Failed to save title" });
-    } finally {
-      isSavingRef.current = false;
     }
   }, [createNewDocument, updateTitle, handleError]);
 
   // Save content changes (only if document exists)
   const saveContentChange = useCallback(async (markdownOverride?: string) => {
-    if (isSavingRef.current) return;
-
     // If document doesn't exist yet, create it
     if (!documentIdRef.current) {
       await createNewDocument(markdownOverride);
-      return;
     }
-
-    isSavingRef.current = true;
+    
+    if (!documentIdRef.current) return;
 
     try {
       await updateContent({
@@ -199,10 +193,8 @@ function NewDocumentRoute() {
       } as any);
     } catch (error) {
       handleError(error, { context: "Failed to save content" });
-    } finally {
-      isSavingRef.current = false;
     }
-  }, [createNewDocument, updateContent, handleError]);
+  }, [createNewDocument, updateContent, handleError, markdownDraft]);
 
   const {
     handleVisualUpdate,
