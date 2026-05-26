@@ -28,6 +28,7 @@
         "@astrojs/sitemap": "^3.7.2",
         "@elcokiin/backend": "workspace:*",
         "@elcokiin/ui": "workspace:*",
+        "@tailwindcss/typography": "^0.5.19",
         "@tailwindcss/vite": "^4.1.18",
         "@tiptap/extension-color": "^2.10.4",
         "@tiptap/extension-highlight": "^2.10.4",
