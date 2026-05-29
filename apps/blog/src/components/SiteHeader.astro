@@ -8,12 +8,12 @@ import logo from '../assets/logo.png';
   class="z-10 fixed top-0 flex items-center justify-between p-2 w-full sm:p-4 md:px-20 text-white bg-primary-blue border-b border-transparent transition-all duration-255"
 >
   <div class="flex items-center w-32 justify-between sm:w-40">
-    <a href="/">
+    <a href="/" data-astro-prefetch>
       <figure class="w-14 h-14 rounded-full object-cover sm:w-20 sm:h-20 lg:w-14 lg:h-14">
         <Image src={logo} alt="elcokiin logo" class="object-cover rounded-full w-full h-full" />
       </figure>
     </a>
-    <a href="/" class="font-bold sm:text-2xl">
+    <a href="/" class="font-bold sm:text-2xl" data-astro-prefetch>
       Inicio
     </a>
   </div>

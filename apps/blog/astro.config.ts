@@ -6,6 +6,7 @@ import cloudflare from "@astrojs/cloudflare";
 import sitemap from "@astrojs/sitemap";
 
 export default defineConfig({
+  prefetch: true,
   output: "server",
   adapter: cloudflare({
     platformProxy: {
