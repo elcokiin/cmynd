@@ -10,6 +10,12 @@ import {
   DialogTitle,
 } from "@elcokiin/ui/dialog";
 import { Label } from "@elcokiin/ui/label";
+import { Switch } from "@elcokiin/ui/switch";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@elcokiin/ui/tooltip";
 import { cn } from "@elcokiin/ui/lib/utils";
 import { useMutation, useQuery } from "convex/react";
 import { useState, useRef, useEffect } from "react";
@@ -73,8 +79,12 @@ export function DocumentSettingsDialog({
   );
   const updateMetadata = useMutation(api.documents.mutations.updateMetadata);
   const updateReprint = useMutation(api.documents.mutations.updateReprint);
+  const updateType = useMutation(api.documents.mutations.updateType);
   const deleteFile = useMutation(api.storage.deleteFile);
   const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
+
+  const isReprint = document?.type === "reprint";
+  const isInspiration = document?.type === "inspiration";
 
   const [originalAuthor, setOriginalAuthor] = useState("");
   const [originalTitle, setOriginalTitle] = useState("");
@@ -83,6 +93,19 @@ export function DocumentSettingsDialog({
   const [license, setLicense] = useState("");
   const [translator, setTranslator] = useState("");
   const [reprintNotes, setReprintNotes] = useState("");
+
+  const handleToggleReprint = async (checked: boolean) => {
+    try {
+      await updateType({
+        documentId,
+        type: checked ? "reprint" : "own",
+      });
+    } catch (error) {
+      handleError(error, {
+        context: "DocumentSettingsDialog.handleToggleReprint",
+      });
+    }
+  };
 
   useEffect(() => {
     if (!open || !document) return;
@@ -417,11 +440,35 @@ export function DocumentSettingsDialog({
 
             {activeSection === "reprint" && (
               <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-medium mb-1">Reprint</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Provide information about the original author and source for this reprinted content.
-                  </p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-medium mb-1">Reprint</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Mark this document as a reprint if the content was originally
+                      written by another author.
+                    </p>
+                  </div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="reprint-toggle" className="text-sm cursor-pointer select-none">
+                          This is a reprint
+                        </Label>
+                        <Switch
+                          id="reprint-toggle"
+                          checked={isReprint}
+                          onCheckedChange={handleToggleReprint}
+                          disabled={isInspiration}
+                        />
+                      </div>
+                    </TooltipTrigger>
+                    {isInspiration && (
+                      <TooltipContent>
+                        Inspiration documents cannot be changed to reprint.
+                        Change the document type to Original first.
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -430,16 +477,18 @@ export function DocumentSettingsDialog({
                       Original Author <span className="text-destructive">*</span>
                     </Label>
                     <div className="relative">
-                      <UserIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <UserIcon className={cn("absolute left-2.5 top-2.5 h-4 w-4", isReprint ? "text-muted-foreground" : "text-muted-foreground/30")} />
                       <input
                         id="originalAuthor"
                         value={originalAuthor}
                         onChange={(e) => { setOriginalAuthor(e.target.value); saveReprintDebounced(); }}
+                        disabled={!isReprint}
                         placeholder="e.g. Gabriel García Márquez"
                         className={cn(
                           "w-full pl-8 pr-3 py-2 text-sm rounded-md border",
                           "bg-background placeholder:text-muted-foreground",
                           "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                          !isReprint && "opacity-50 cursor-not-allowed",
                         )}
                       />
                     </div>
@@ -450,16 +499,18 @@ export function DocumentSettingsDialog({
                       Original Title
                     </Label>
                     <div className="relative">
-                      <BookOpenIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <BookOpenIcon className={cn("absolute left-2.5 top-2.5 h-4 w-4", isReprint ? "text-muted-foreground" : "text-muted-foreground/30")} />
                       <input
                         id="originalTitle"
                         value={originalTitle}
                         onChange={(e) => { setOriginalTitle(e.target.value); saveReprintDebounced(); }}
+                        disabled={!isReprint}
                         placeholder="e.g. Cien años de soledad"
                         className={cn(
                           "w-full pl-8 pr-3 py-2 text-sm rounded-md border",
                           "bg-background placeholder:text-muted-foreground",
                           "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                          !isReprint && "opacity-50 cursor-not-allowed",
                         )}
                       />
                     </div>
@@ -470,7 +521,7 @@ export function DocumentSettingsDialog({
                       Original Year
                     </Label>
                     <div className="relative">
-                      <CalendarIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <CalendarIcon className={cn("absolute left-2.5 top-2.5 h-4 w-4", isReprint ? "text-muted-foreground" : "text-muted-foreground/30")} />
                       <input
                         id="originalDate"
                         type="number"
@@ -478,11 +529,13 @@ export function DocumentSettingsDialog({
                         max={2100}
                         value={originalDate}
                         onChange={(e) => { setOriginalDate(e.target.value); saveReprintDebounced(); }}
+                        disabled={!isReprint}
                         placeholder="e.g. 1967"
                         className={cn(
                           "w-full pl-8 pr-3 py-2 text-sm rounded-md border",
                           "bg-background placeholder:text-muted-foreground",
                           "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                          !isReprint && "opacity-50 cursor-not-allowed",
                         )}
                       />
                     </div>
@@ -493,17 +546,19 @@ export function DocumentSettingsDialog({
                       Source URL
                     </Label>
                     <div className="relative">
-                      <GlobeIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <GlobeIcon className={cn("absolute left-2.5 top-2.5 h-4 w-4", isReprint ? "text-muted-foreground" : "text-muted-foreground/30")} />
                       <input
                         id="sourceUrl"
                         type="url"
                         value={sourceUrl}
                         onChange={(e) => { setSourceUrl(e.target.value); saveReprintDebounced(); }}
+                        disabled={!isReprint}
                         placeholder="e.g. https://example.com/original-work"
                         className={cn(
                           "w-full pl-8 pr-3 py-2 text-sm rounded-md border",
                           "bg-background placeholder:text-muted-foreground",
                           "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                          !isReprint && "opacity-50 cursor-not-allowed",
                         )}
                       />
                     </div>
@@ -514,16 +569,18 @@ export function DocumentSettingsDialog({
                       License
                     </Label>
                     <div className="relative">
-                      <BadgeIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <BadgeIcon className={cn("absolute left-2.5 top-2.5 h-4 w-4", isReprint ? "text-muted-foreground" : "text-muted-foreground/30")} />
                       <input
                         id="license"
                         value={license}
                         onChange={(e) => { setLicense(e.target.value); saveReprintDebounced(); }}
+                        disabled={!isReprint}
                         placeholder="e.g. Public Domain"
                         className={cn(
                           "w-full pl-8 pr-3 py-2 text-sm rounded-md border",
                           "bg-background placeholder:text-muted-foreground",
                           "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                          !isReprint && "opacity-50 cursor-not-allowed",
                         )}
                       />
                     </div>
@@ -534,16 +591,18 @@ export function DocumentSettingsDialog({
                       Translator
                     </Label>
                     <div className="relative">
-                      <LanguagesIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <LanguagesIcon className={cn("absolute left-2.5 top-2.5 h-4 w-4", isReprint ? "text-muted-foreground" : "text-muted-foreground/30")} />
                       <input
                         id="translator"
                         value={translator}
                         onChange={(e) => { setTranslator(e.target.value); saveReprintDebounced(); }}
+                        disabled={!isReprint}
                         placeholder="e.g. Gregory Rabassa"
                         className={cn(
                           "w-full pl-8 pr-3 py-2 text-sm rounded-md border",
                           "bg-background placeholder:text-muted-foreground",
                           "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                          !isReprint && "opacity-50 cursor-not-allowed",
                         )}
                       />
                     </div>
@@ -554,16 +613,18 @@ export function DocumentSettingsDialog({
                       Notes
                     </Label>
                     <div className="relative">
-                      <FileTextIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <FileTextIcon className={cn("absolute left-2.5 top-2.5 h-4 w-4", isReprint ? "text-muted-foreground" : "text-muted-foreground/30")} />
                       <textarea
                         id="reprintNotes"
                         value={reprintNotes}
                         onChange={(e) => { setReprintNotes(e.target.value); saveReprintDebounced(); }}
+                        disabled={!isReprint}
                         placeholder="Additional context, acknowledgments, or notes about this reprint..."
                         className={cn(
                           "w-full pl-8 pr-3 py-2 text-sm rounded-md border resize-y min-h-[80px]",
                           "bg-background placeholder:text-muted-foreground",
                           "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                          !isReprint && "opacity-50 cursor-not-allowed",
                         )}
                       />
                     </div>
