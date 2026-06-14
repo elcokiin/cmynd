@@ -704,6 +704,71 @@ export function DocumentSettingsDialog({
               </div>
             )}
 
+            {/* Author Selection Dialog */}
+            {showAuthorDialog && isReprint && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                <div className="w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+                  <div className="bg-background rounded-lg shadow-lg p-6">
+                    <h3 className="text-lg font-medium mb-4">Select Original Author</h3>
+                    <div className="space-y-4">
+                      <Label>Search Existing Reprinted Authors</Label>
+                      <Command className="rounded-lg border">
+                        <CommandInput
+                          placeholder="Search authors..."
+                          value={authorSearch}
+                          onValueChange={setAuthorSearch}
+                        />
+                        <CommandList>
+                          <CommandEmpty>No authors found.</CommandEmpty>
+                          <CommandGroup>
+                            {reprintedAuthors?.page
+                              .filter((author) =>
+                                authorSearch
+                                  ? author.name.toLowerCase().includes(authorSearch.toLowerCase())
+                                  : true
+                              )
+                              .map((author) => (
+                                <CommandItem
+                                  key={author._id}
+                                  value={author.name}
+                                  onSelect={() => {
+                                    setOriginalAuthor(author.name);
+                                    setShowAuthorDialog(false);
+                                  }}
+                                >
+                                  <UserIcon className="h-4 w-4 mr-2" />
+                                  <span>{author.name}</span>
+                                  {!author.isVerified && (
+                                    <span className="ml-auto text-xs text-yellow-600">
+                                      (unverified)
+                                    </span>
+                                  )}
+                                </CommandItem>
+                              ))}
+                          </CommandGroup>
+                          <CommandSeparator />
+                          <CommandGroup>
+                            <CommandItem onSelect={() => setShowAuthorDialog(false)}>
+                              <PlusIcon className="h-4 w-4 mr-2" />
+                              <span>Add new author</span>
+                            </CommandItem>
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setShowAuthorDialog(false)}>
+                          Cancel
+                        </Button>
+                        <Button onClick={() => { setShowAuthorDialog(false); setNewAuthorName(""); }}>
+                          Done
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {activeSection === "inspirations" && (
               <div className="space-y-6">
                 <div>
@@ -783,117 +848,7 @@ export function ButtonSettings({
           open={open}
           onOpenChange={setOpen}
         />
-                )}
-              </div>
-            )}
-
-            {/* Author Selection Dialog */}
-            {showAuthorDialog && isReprint && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-                <div className="w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-                  <Dialog open={showAuthorDialog} onOpenChange={setShowAuthorDialog}>
-                    <DialogContent className="max-w-2xl">
-                      <DialogHeader>
-                        <DialogTitle>Select Original Author</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label>Search Existing Reprinted Authors</Label>
-                          <Command className="rounded-lg border">
-                            <CommandInput
-                              placeholder="Search authors..."
-                              value={authorSearch}
-                              onValueChange={setAuthorSearch}
-                            />
-                            <CommandList>
-                              <CommandEmpty>No authors found.</CommandEmpty>
-                              <CommandGroup>
-                                {reprintedAuthors?.page
-                                  .filter((author) =>
-                                    authorSearch
-                                      ? author.name.toLowerCase().includes(authorSearch.toLowerCase())
-                                      : true
-                                  )
-                                  .map((author) => (
-                                    <CommandItem
-                                      key={author._id}
-                                      value={author.name}
-                                      onSelect={() => {
-                                        setOriginalAuthor(author.name);
-                                        setShowAuthorDialog(false);
-                                      }}
-                                    >
-                                      <UserIcon className="h-4 w-4 mr-2" />
-                                      <span>{author.name}</span>
-                                      {!author.isVerified && (
-                                        <span className="ml-auto text-xs text-yellow-600">
-                                          (unverified)
-                                        </span>
-                                      )}
-                                    </CommandItem>
-                                  ))}
-                              </CommandGroup>
-                              <CommandSeparator />
-                              <CommandGroup>
-                                <CommandItem
-                                  onSelect={() => {
-                                    setShowAuthorDialog(false);
-                                  }}
-                                >
-                                  <PlusIcon className="h-4 w-4 mr-2" />
-                                  <span>Add new author</span>
-                                </CommandItem>
-                              </CommandGroup>
-                            </CommandList>
-                          </Command>
-                        </div>
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="outline"
-                            onClick={() => setShowAuthorDialog(false)}
-                          >
-                            Cancel
-                          </Button>
-                          <Button
-                            onClick={() => {
-                              setShowAuthorDialog(false);
-                              setNewAuthorName("");
-                            }}
-                          >
-                            Done
-                          </Button>
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              </div>
-            )}
-
-            {activeSection === "export" && onExportMarkdown && (
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-medium mb-1">Export</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Download your document as a Markdown file.
-                  </p>
-                </div>
-                <div className="rounded-lg border bg-muted/20 p-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full justify-start"
-                    onClick={onExportMarkdown}
-                  >
-                    <DownloadIcon className="h-4 w-4 mr-2" />
-                    Export as .md
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+      )}
+    </>
   );
 }

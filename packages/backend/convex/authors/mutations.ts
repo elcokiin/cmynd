@@ -15,7 +15,7 @@ export const createReprinted = mutation({
     bio: v.optional(v.string()),
     avatarUrl: v.optional(v.string()),
   },
-  handler: async (ctx, args): Promise<void> {
+  handler: async (ctx, args): Promise<void> => {
     await Auth.requireAdmin(ctx);
 
     await ctx.db.insert("authors", {
@@ -42,7 +42,7 @@ export const update = mutation({
     bio: v.optional(v.string()),
     phrases: v.optional(v.array(phraseValidator)),
   },
-  handler: async (ctx, args): Promise<void> {
+  handler: async (ctx, args): Promise<void> => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throwConvexError(ErrorCode.UNAUTHENTICATED);
@@ -83,7 +83,7 @@ export const approve = mutation({
   args: {
     authorId: v.id("authors"),
   },
-  handler: async (ctx, args): Promise<void> {
+  handler: async (ctx, args): Promise<void> => {
     await Auth.requireAdmin(ctx);
 
     const author = await getAuthorById(ctx, args.authorId);
