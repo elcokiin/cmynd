@@ -13,7 +13,7 @@ import { useDebouncedCallback } from "use-debounce";
 import type { JSONContent } from "novel";
 
 import { ButtonSubmit } from "@/components/editor/button-submit";
-import { ButtonSettings } from "@/components/editor/document-settings-dialog";
+import { ButtonSettings } from "@/components/editor/document-settings";
 import { EditableDocumentTitle } from "@/components/editor/editable-document-title";
 import { EditorModeToggle } from "@/components/editor/editor-mode-toggle";
 import { EditorWorkspace } from "@/components/editor/editor-workspace";

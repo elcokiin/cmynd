@@ -28,7 +28,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { DocumentSettingsDialog } from "@/components/editor/document-settings-dialog";
+import { DocumentSettingsDialog } from "@/components/editor/document-settings";
 import { useErrorHandler } from "@/hooks/use-error-handler";
 import { downloadMarkdown, jsonToMarkdown } from "@/lib/markdown-conversion";
 

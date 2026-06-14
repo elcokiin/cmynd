@@ -13,7 +13,7 @@ import {
   MessageCircleWarningIcon,
 } from "lucide-react";
 
-import { ButtonSettings } from "./document-settings-dialog";
+import { ButtonSettings } from "./document-settings";
 import { EditableDocumentTitle } from "./editable-document-title";
 import { ButtonSubmit } from "./button-submit";
 import { EditorModeToggle } from "./editor-mode-toggle";
