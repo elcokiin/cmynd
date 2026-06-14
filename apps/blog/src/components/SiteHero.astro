@@ -8,7 +8,7 @@ const { phrase, author } = getRandomPhrase();
 
 <Atmosphere client:load className="relative flex flex-col items-center justify-center min-h-[60vh] py-10 sm:py-24 sm:px-8 md:py-32 overflow-hidden">
   <div class="relative z-10 flex flex-col items-center">
-    <h2 class="hero-title cursor-pointer font-bold text-4xl text-[var(--primary-blue)] dark:text-[var(--primary-aquamarine)] sm:text-6xl lg:text-5xl mb-6">
+    <h2 class="hero-title cursor-pointer font-bold text-4xl sm:text-6xl lg:text-5xl mb-6" style="color: var(--hero-title-color)">
       <a href="https://elcokiin.my" target="_blank" rel="noopener noreferrer" class="animated-underline">
         Diego Tenjo
       </a>
@@ -106,15 +106,25 @@ const { phrase, author } = getRandomPhrase();
            return -10;
         },
         scale: 0.4,
-        color: 'white',
         transformOrigin: 'right center',
         ease: 'power1.inOut'
       });
     }
   };
 
+  const refreshGsapOnThemeChange = () => {
+    const observer = new MutationObserver(() => {
+      ScrollTrigger.refresh(true);
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme']
+    });
+  };
+
   const setup = () => {
     initAnimations();
+    refreshGsapOnThemeChange();
   };
 
   // Run on initial load and view transitions

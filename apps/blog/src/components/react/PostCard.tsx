@@ -19,7 +19,7 @@ function getTitleColor(isHovering: boolean, isDark: boolean) {
 }
 
 function getDescColor(isHovering: boolean, isDark: boolean) {
-  if (isHovering) return "text-gray-400";
+  if (isHovering) return "text-[var(--desc-hover-color)]";
   return isDark ? "text-[var(--text-desc-dark)]" : "text-[var(--text-desc-light)]";
 }
 
@@ -63,8 +63,12 @@ function HoverEffects({ mousePosition }: { mousePosition: { x: number; y: number
       />
 
       <div className="absolute top-4 right-4 transition-all duration-300 z-20">
-        <div className="w-8 h-8 rounded-full bg-[#64ffda]/20 flex items-center justify-center border border-[#64ffda]/40">
-          <svg className="w-4 h-4 text-[#64ffda]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="w-8 h-8 rounded-full flex items-center justify-center border"
+          style={{
+            backgroundColor: "color-mix(in srgb, var(--accent) 20%, transparent)",
+            borderColor: "color-mix(in srgb, var(--accent) 40%, transparent)",
+          }}>
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: "var(--accent)" }}>
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </div>
