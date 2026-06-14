@@ -23,7 +23,7 @@ import { useQuery } from "convex/react";
 import { PlusIcon, UserIcon, SearchIcon } from "lucide-react";
 import { useState } from "react";
 
-import { CreateAuthorDialog } from "@/components/admin/create-author-dialog";
+import { CreateAuthorDialog } from "@/components/authors/create-author-dialog";
 
 type AuthorSelectDialogProps = {
   open: boolean;

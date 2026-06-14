@@ -13,7 +13,7 @@ import { Label } from "@elcokiin/ui/label";
 
 import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
 import { useErrorHandler } from "@/hooks/use-error-handler";
-import { CreateAuthorDialog } from "@/components/admin/create-author-dialog";
+import { CreateAuthorDialog } from "@/components/authors/create-author-dialog";
 
 export const Route = createFileRoute("/_auth/admin/authors")({
   component: AdminAuthorsPage,
