@@ -68,12 +68,12 @@ export function CreateAuthorDialog({ open, onOpenChange, onSuccess }: CreateAuth
             </DialogDescription>
             <div className="mt-2">
               {isAdmin ? (
-                <Badge variant="default" className="gap-1.5 bg-green-600/15 text-green-700 hover:bg-green-600/20 dark:bg-green-400/10 dark:text-green-400">
+                <Badge variant="default" className="gap-1.5 bg-success/15 text-success hover:bg-success/20">
                   <CheckIcon className="h-3 w-3" />
                   Auto-verified
                 </Badge>
               ) : (
-                <Badge variant="outline" className="gap-1.5 border-yellow-600/30 text-yellow-700 dark:border-yellow-400/30 dark:text-yellow-400">
+                <Badge variant="outline" className="gap-1.5 border-warning/30 text-warning">
                   <ClockIcon className="h-3 w-3" />
                   Requires verification
                 </Badge>
