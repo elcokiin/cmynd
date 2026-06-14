@@ -55,7 +55,6 @@ export const listForAdmin = query({
       cursor: v.union(v.string(), v.null()),
     }),
     verified: v.optional(v.boolean()),
-    onlyReprinted: v.optional(v.boolean()),
   },
   returns: paginatedAdminAuthorsValidator,
   handler: async (ctx, args) => {
@@ -65,10 +64,6 @@ export const listForAdmin = query({
 
     if (args.verified !== undefined) {
       query = query.filter((q) => q.eq(q.field("isVerified"), args.verified));
-    }
-
-    if (args.onlyReprinted !== undefined) {
-      query = query.filter((q) => q.eq(q.field("isReprinted"), args.onlyReprinted));
     }
 
     const result = await query.paginate(args.paginationOpts);
@@ -97,8 +92,7 @@ export const getForAdmin = query({
 /**
  * List original author candidates.
  * Returns authors suitable as original authors for reprints:
- * - Authors marked as reprinted, OR
- * - Verified authors not linked to a user account, OR
+ * - Verified authors, OR
  * - Unverified authors created by the current user
  */
 export const listOriginalAuthors = query({
@@ -119,12 +113,8 @@ export const listOriginalAuthors = query({
       .query("authors")
       .filter((q) =>
         q.or(
-          q.eq(q.field("isReprinted"), true),
-          q.and(
-            q.eq(q.field("isVerified"), true),
-            q.eq(q.field("userId"), undefined),
-          ),
-          q.eq(q.field("userId"), identity!.subject),
+          q.eq(q.field("isVerified"), true),
+          q.eq(q.field("createdBy"), identity.subject),
         ),
       )
       .order("desc")

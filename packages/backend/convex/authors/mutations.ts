@@ -7,8 +7,8 @@ import * as Auth from "../_lib/auth";
 import { ErrorCode, throwConvexError } from "@elcokiin/errors";
 
 /**
- * Create a new reprinted author (unverified).
- * Only admins can create reprinted authors.
+ * Create a new author (admin-only).
+ * Auto-verified since the creator is an admin.
  */
 export const createReprinted = mutation({
   args: {
@@ -24,8 +24,7 @@ export const createReprinted = mutation({
       avatarUrl: args.avatarUrl,
       bio: args.bio,
       createdBy: user._id,
-      isReprinted: true,
-      isVerified: false,
+      isVerified: true,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
@@ -109,7 +108,6 @@ export const createAuthor = mutation({
       avatarUrl: args.avatarUrl,
       bio: args.bio,
       createdBy: identity.subject,
-      isReprinted: false,
       isVerified: admin,
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -120,8 +118,7 @@ export const createAuthor = mutation({
 });
 
 /**
- * Admin approves (verifies) a reprinted author.
- * Makes the author verified so it can be linked to user accounts.
+ * Admin approves (verifies) an author.
  */
 export const approve = mutation({
   args: {
@@ -131,10 +128,6 @@ export const approve = mutation({
     await Auth.requireAdmin(ctx);
 
     const author = await getAuthorById(ctx, args.authorId);
-
-    if (!author.isReprinted) {
-      throwConvexError(ErrorCode.AUTHOR_NOT_REPRINTED);
-    }
 
     if (author.isVerified) {
       throwConvexError(ErrorCode.AUTHOR_ALREADY_VERIFIED);

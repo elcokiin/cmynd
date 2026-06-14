@@ -12,8 +12,7 @@ export type Phrase = {
 
 /**
  * Full author record from database.
- * Authors can be linked to Better-Auth users (userId present) or guest authors (userId absent).
- * Reprinted authors are those from external sources, unverified until admin approves.
+ * Authors can be created by users or admins.
  */
 export type Author = Doc<"authors">;
 
@@ -27,7 +26,6 @@ export type PublicAuthor = {
   avatarUrl?: string;
   bio?: string;
   phrases?: Phrase[];
-  isReprinted?: boolean;
   isVerified?: boolean;
   createdBy?: string;
   createdAt: number;
@@ -46,7 +44,6 @@ export type AdminAuthor = {
   createdBy?: string;
   bio?: string;
   phrases?: Phrase[];
-  isReprinted?: boolean;
   isVerified?: boolean;
   createdAt: number;
   updatedAt: number;

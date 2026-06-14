@@ -24,12 +24,12 @@ export function AdminAuthorsPage() {
   const [search, setSearch] = useState("");
   const [showVerified, setShowVerified] = useState(false);
   const [showUnverified, setShowUnverified] = useState(true);
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+
+  const verifiedFilter = showVerified ? true : showUnverified ? false : undefined;
 
   const authorsQuery = useQuery(api.authors.queries.listForAdmin, {
     paginationOpts: { numItems: 10, cursor: null },
-    verified: showVerified || showVerified === undefined ? undefined : showVerified,
-    onlyReprinted: showUnverified ? true : undefined,
+    verified: verifiedFilter,
   });
 
   const authors = authorsQuery?.page || [];
@@ -134,9 +134,6 @@ export function AdminAuthorsPage() {
                     <div>
                       <h4 className="font-medium">{author.name}</h4>
                       <div className="flex items-center gap-2 mt-1">
-                        {author.isReprinted && (
-                          <Badge variant="secondary" className="text-xs">Reprinted</Badge>
-                        )}
                         {author.isVerified ? (
                           <Badge variant="default" className="text-xs bg-green-100 text-green-800">Verified</Badge>
                         ) : (

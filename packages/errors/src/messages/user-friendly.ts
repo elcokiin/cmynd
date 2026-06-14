@@ -41,7 +41,6 @@ export const USER_FRIENDLY_MESSAGES: Record<ErrorCode, string> = {
   [ErrorCode.AUTHOR_NOT_FOUND]: "Author not found",
   [ErrorCode.AUTHOR_OWNERSHIP]: "You don't own this author profile",
   [ErrorCode.AUTHOR_INVALID_AVATAR_URL]: "Invalid avatar URL",
-  [ErrorCode.AUTHOR_NOT_REPRINTED]: "This author is not a reprinted author",
   [ErrorCode.AUTHOR_ALREADY_VERIFIED]: "This author has already been verified",
   [ErrorCode.AUTHOR_UNVERIFIED]: "The original author needs to be verified before this document can be published",
 
