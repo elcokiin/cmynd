@@ -128,7 +128,7 @@ export function DocumentSettingsDialog({
     setLicense(document.reprint?.license ?? "");
     setTranslator(document.reprint?.translator ?? "");
     setReprintNotes(document.reprint?.notes ?? "");
-  }, [open, document?._id, document?.coverImagePrompt, document?.description, document?.type, document?.reprint]);
+  }, [open, document?._id]);
 
   const normalizeOptionalText = (value: string): string | undefined => {
     const trimmed = value.trim();
@@ -302,7 +302,7 @@ export function DocumentSettingsDialog({
           </div>
 
           {/* Content Area */}
-          <div className="flex-1 p-6 overflow-y-auto min-h-0">
+          <div className="flex-1 p-6 overflow-y-auto min-h-0 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20">
             {activeSection === "cover" && (
               <div className="space-y-6">
                 <div>
