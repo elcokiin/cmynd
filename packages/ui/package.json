@@ -29,7 +29,9 @@
     "./resizable": "./src/components/resizable.tsx",
     "./scroll-area": "./src/components/scroll-area.tsx",
     "./sheet": "./src/components/sheet.tsx",
-    "./atmosphere": "./src/components/atmosphere.tsx"
+    "./atmosphere": "./src/components/atmosphere.tsx",
+    "./switch": "./src/components/switch.tsx",
+    "./tooltip": "./src/components/tooltip.tsx"
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",
