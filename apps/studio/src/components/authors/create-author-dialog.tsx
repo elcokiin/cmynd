@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect } from "react";
+import { z } from "zod";
+import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { Badge } from "@elcokiin/ui/badge";
@@ -12,10 +14,18 @@ import {
   DialogFooter,
 } from "@elcokiin/ui/dialog";
 import { Label } from "@elcokiin/ui/label";
-import { UserIcon, ImageIcon, FileTextIcon, CheckIcon, ClockIcon } from "lucide-react";
+import { UserIcon, ImageIcon, FileTextIcon, CheckIcon, ClockIcon, LoaderIcon } from "lucide-react";
 
 import { InputWithIcon, TextareaWithIcon } from "@/components/ui/input-with-icon";
 import { useErrorHandler } from "@/hooks/use-error-handler";
+
+const createAuthorSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  bio: z.string().max(500, "Bio must be under 500 characters"),
+  avatarUrl: z.string().url("Must be a valid URL").or(z.literal("")),
+});
+
+type CreateAuthorFormValues = z.infer<typeof createAuthorSchema>;
 
 interface CreateAuthorDialogProps {
   open: boolean;
@@ -28,46 +38,59 @@ export function CreateAuthorDialog({ open, onOpenChange, onSuccess }: CreateAuth
   const createAuthor = useMutation(api.authors.mutations.createAuthor);
   const isAdmin = useQuery(api.auth.isCurrentUserAdmin);
 
-  const [name, setName] = useState("");
-  const [bio, setBio] = useState("");
-  const [avatarUrl, setAvatarUrl] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const form = useForm({
+    defaultValues: {
+      name: "",
+      bio: "",
+      avatarUrl: "",
+    } as CreateAuthorFormValues,
+    validators: {
+      onSubmit: createAuthorSchema,
+    },
+    onSubmit: async ({ value }) => {
+      try {
+        const name = value.name.trim();
+        await createAuthor({
+          name,
+          bio: value.bio?.trim() || undefined,
+          avatarUrl: value.avatarUrl?.trim() || undefined,
+        });
+        onOpenChange(false);
+        onSuccess?.(name);
+        form.reset();
+      } catch (error) {
+        handleError(error, { context: "CreateAuthorDialog.handleSubmit" });
+      }
+    },
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) return;
-
-    setSubmitting(true);
-    try {
-      const createdName = name.trim();
-      await createAuthor({
-        name: createdName,
-        bio: bio.trim() || undefined,
-        avatarUrl: avatarUrl.trim() || undefined,
-      });
-      onOpenChange(false);
-      onSuccess?.(createdName);
-      setName("");
-      setBio("");
-      setAvatarUrl("");
-    } catch (error) {
-      handleError(error, { context: "CreateAuthorDialog.handleSubmit" });
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  useEffect(() => {
+    if (open) form.reset();
+  }, [open]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
-        <form onSubmit={handleSubmit}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
+          }}
+          onReset={() => form.reset()}
+        >
           <DialogHeader>
             <DialogTitle>Create Author</DialogTitle>
             <DialogDescription>
               Add a new author to the platform.
             </DialogDescription>
             <div className="mt-2">
-              {isAdmin ? (
+              {isAdmin === undefined ? (
+                <Badge variant="outline" className="gap-1.5">
+                  <LoaderIcon className="h-3 w-3 animate-spin" />
+                  Checking...
+                </Badge>
+              ) : isAdmin ? (
                 <Badge variant="default" className="gap-1.5 bg-success/15 text-success hover:bg-success/20">
                   <CheckIcon className="h-3 w-3" />
                   Auto-verified
@@ -82,70 +105,97 @@ export function CreateAuthorDialog({ open, onOpenChange, onSuccess }: CreateAuth
           </DialogHeader>
 
           <div className="grid gap-5 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name" className="text-sm font-medium">Name</Label>
-              <InputWithIcon
-                icon={<UserIcon />}
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Gabriel García Márquez"
-                required
-              />
-            </div>
+            <form.Field name="name">
+              {(field) => (
+                <div className="grid gap-2">
+                  <Label htmlFor={field.name} className="text-sm font-medium">Name</Label>
+                  <InputWithIcon
+                    icon={<UserIcon />}
+                    id={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    placeholder="e.g. Gabriel García Márquez"
+                    required
+                  />
+                  {field.state.meta.errors.map((error) => (
+                    <p key={error?.message} className="text-xs text-destructive">
+                      {error?.message}
+                    </p>
+                  ))}
+                </div>
+              )}
+            </form.Field>
 
-            <div className="grid gap-2">
-              <Label htmlFor="avatarUrl" className="text-sm font-medium">Avatar</Label>
-              <div className="flex items-center gap-3">
-                {avatarUrl.trim() && (
-                  <div className="relative size-10 shrink-0 overflow-hidden rounded-full border bg-muted">
-                    <img
-                      src={avatarUrl.trim()}
-                      alt="Preview"
-                      className="size-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = "none";
-                      }}
+            <form.Field name="avatarUrl">
+              {(field) => (
+                <div className="grid gap-2">
+                  <Label htmlFor={field.name} className="text-sm font-medium">Avatar</Label>
+                  <div className="flex items-center gap-3">
+                    {field.state.value?.trim() && (
+                      <div className="relative size-10 shrink-0 overflow-hidden rounded-full border bg-muted">
+                        <img
+                          src={field.state.value.trim()}
+                          alt="Preview"
+                          className="size-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = "none";
+                          }}
+                        />
+                      </div>
+                    )}
+                    <InputWithIcon
+                      icon={<ImageIcon />}
+                      id={field.name}
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      placeholder="https://example.com/avatar.jpg"
+                      type="url"
+                      className="flex-1"
                     />
                   </div>
-                )}
-                <InputWithIcon
-                  icon={<ImageIcon />}
-                  id="avatarUrl"
-                  value={avatarUrl}
-                  onChange={(e) => setAvatarUrl(e.target.value)}
-                  placeholder="https://example.com/avatar.jpg"
-                  type="url"
-                  className="flex-1"
-                />
-              </div>
-            </div>
+                  {field.state.meta.errors.map((error) => (
+                    <p key={error?.message} className="text-xs text-destructive">
+                      {error?.message}
+                    </p>
+                  ))}
+                </div>
+              )}
+            </form.Field>
 
-            <div className="grid gap-2">
-              <Label htmlFor="bio" className="text-sm font-medium">Bio</Label>
-              <TextareaWithIcon
-                icon={<FileTextIcon />}
-                id="bio"
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                placeholder="Author biography"
-                rows={3}
-              />
-            </div>
+            <form.Field name="bio">
+              {(field) => (
+                <div className="grid gap-2">
+                  <Label htmlFor={field.name} className="text-sm font-medium">Bio</Label>
+                  <TextareaWithIcon
+                    icon={<FileTextIcon />}
+                    id={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    placeholder="Author biography"
+                    rows={3}
+                  />
+                </div>
+              )}
+            </form.Field>
           </div>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={submitting}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={submitting || !name.trim()}>
-              {submitting ? "Creating..." : "Create Author"}
-            </Button>
+            <form.Subscribe>
+              {(state) => (
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={() => onOpenChange(false)}
+                    disabled={state.isSubmitting}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={!state.canSubmit || state.isSubmitting}>
+                    {state.isSubmitting ? "Creating..." : "Create Author"}
+                  </Button>
+                </>
+              )}
+            </form.Subscribe>
           </DialogFooter>
         </form>
       </DialogContent>
