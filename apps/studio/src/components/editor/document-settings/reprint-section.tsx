@@ -27,7 +27,7 @@ import { useEffect, useState } from "react";
 import { useDebouncedSave } from "@/hooks/use-debounced-save";
 import { useErrorHandler } from "@/hooks/use-error-handler";
 
-import { AuthorSelectDialog } from "./author-select-dialog";
+import { AuthorSelectDialog } from "@/components/authors/author-select-dialog";
 import { InputWithIcon, TextareaWithIcon } from "@/components/ui/input-with-icon";
 
 type ReprintFormValues = {
