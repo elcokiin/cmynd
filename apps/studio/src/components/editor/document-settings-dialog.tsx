@@ -302,7 +302,7 @@ export function DocumentSettingsDialog({
           </div>
 
           {/* Content Area */}
-          <div className="flex-1 p-6 overflow-y-auto min-h-0 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20">
+          <div className="flex-1 p-6 overflow-y-auto min-h-0 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-primary/50 [&::-webkit-scrollbar-thumb]:hover:bg-primary/70">
             {activeSection === "cover" && (
               <div className="space-y-6">
                 <div>
