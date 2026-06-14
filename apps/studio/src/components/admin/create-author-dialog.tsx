@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@elcokiin/backend/convex/_generated/api";
-
+import { Badge } from "@elcokiin/ui/badge";
 import { Button } from "@elcokiin/ui/button";
 import {
   Dialog,
@@ -11,10 +11,10 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@elcokiin/ui/dialog";
-import { Input } from "@elcokiin/ui/input";
-import { Textarea } from "@elcokiin/ui/textarea";
 import { Label } from "@elcokiin/ui/label";
+import { UserIcon, ImageIcon, FileTextIcon, CheckIcon, ClockIcon } from "lucide-react";
 
+import { InputWithIcon, TextareaWithIcon } from "@/components/ui/input-with-icon";
 import { useErrorHandler } from "@/hooks/use-error-handler";
 
 interface CreateAuthorDialogProps {
@@ -59,47 +59,72 @@ export function CreateAuthorDialog({ open, onOpenChange, onSuccess }: CreateAuth
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Create Author</DialogTitle>
             <DialogDescription>
               Add a new author to the platform.
-              {isAdmin ? (
-                <span className="block mt-1 text-green-600 dark:text-green-400">
-                  This author will be automatically verified.
-                </span>
-              ) : (
-                <span className="block mt-1 text-yellow-600 dark:text-yellow-400">
-                  This author will require verification.
-                </span>
-              )}
             </DialogDescription>
+            <div className="mt-2">
+              {isAdmin ? (
+                <Badge variant="default" className="gap-1.5 bg-green-600/15 text-green-700 hover:bg-green-600/20 dark:bg-green-400/10 dark:text-green-400">
+                  <CheckIcon className="h-3 w-3" />
+                  Auto-verified
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="gap-1.5 border-yellow-600/30 text-yellow-700 dark:border-yellow-400/30 dark:text-yellow-400">
+                  <ClockIcon className="h-3 w-3" />
+                  Requires verification
+                </Badge>
+              )}
+            </div>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
+
+          <div className="grid gap-5 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="name">Name</Label>
-              <Input
+              <Label htmlFor="name" className="text-sm font-medium">Name</Label>
+              <InputWithIcon
+                icon={<UserIcon />}
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Author name"
+                placeholder="e.g. Gabriel García Márquez"
                 required
               />
             </div>
+
             <div className="grid gap-2">
-              <Label htmlFor="avatarUrl">Avatar URL</Label>
-              <Input
-                id="avatarUrl"
-                value={avatarUrl}
-                onChange={(e) => setAvatarUrl(e.target.value)}
-                placeholder="https://example.com/avatar.jpg"
-                type="url"
-              />
+              <Label htmlFor="avatarUrl" className="text-sm font-medium">Avatar</Label>
+              <div className="flex items-center gap-3">
+                {avatarUrl.trim() && (
+                  <div className="relative size-10 shrink-0 overflow-hidden rounded-full border bg-muted">
+                    <img
+                      src={avatarUrl.trim()}
+                      alt="Preview"
+                      className="size-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  </div>
+                )}
+                <InputWithIcon
+                  icon={<ImageIcon />}
+                  id="avatarUrl"
+                  value={avatarUrl}
+                  onChange={(e) => setAvatarUrl(e.target.value)}
+                  placeholder="https://example.com/avatar.jpg"
+                  type="url"
+                  className="flex-1"
+                />
+              </div>
             </div>
+
             <div className="grid gap-2">
-              <Label htmlFor="bio">Bio</Label>
-              <Textarea
+              <Label htmlFor="bio" className="text-sm font-medium">Bio</Label>
+              <TextareaWithIcon
+                icon={<FileTextIcon />}
                 id="bio"
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
@@ -108,6 +133,7 @@ export function CreateAuthorDialog({ open, onOpenChange, onSuccess }: CreateAuth
               />
             </div>
           </div>
+
           <DialogFooter>
             <Button
               type="button"
