@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_auth/admin/")({
   },
 });
 
-export function AdminDashboard() {
+function AdminDashboard() {
   const { page: urlPage = 1, status = "pending", search = "" } = Route.useSearch();
 
   return (

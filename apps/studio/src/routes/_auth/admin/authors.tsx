@@ -17,7 +17,7 @@ export const Route = createFileRoute("/_auth/admin/authors")({
   component: AdminAuthorsPage,
 });
 
-export function AdminAuthorsPage() {
+function AdminAuthorsPage() {
   const { handleError } = useErrorHandler();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "verified" | "unverified">("unverified");

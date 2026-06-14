@@ -17,7 +17,7 @@ export const Route = createFileRoute("/_auth/admin/published")({
   },
 });
 
-export function AdminPublishedPage() {
+function AdminPublishedPage() {
   const { page: urlPage = 1, search = "" } = Route.useSearch();
 
   return (
