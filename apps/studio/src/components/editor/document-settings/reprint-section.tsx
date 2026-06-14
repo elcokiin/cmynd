@@ -10,6 +10,7 @@ import {
   TooltipTrigger,
 } from "@elcokiin/ui/tooltip";
 import { cn } from "@elcokiin/ui/lib/utils";
+import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery } from "convex/react";
 import {
   BadgeIcon,
@@ -29,9 +30,24 @@ import { useErrorHandler } from "@/hooks/use-error-handler";
 import { AuthorSelectDialog } from "./author-select-dialog";
 import { InputWithIcon, TextareaWithIcon } from "@/components/ui/input-with-icon";
 
+type ReprintFormValues = {
+  originalAuthor: string;
+  originalTitle: string;
+  originalDate: string;
+  sourceUrl: string;
+  license: string;
+  translator: string;
+  reprintNotes: string;
+};
+
 type ReprintSectionProps = {
   documentId: Id<"documents">;
 };
+
+function normalizeOptionalText(value: string): string | undefined {
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}
 
 export function ReprintSection({ documentId }: ReprintSectionProps) {
   const { handleError } = useErrorHandler();
@@ -45,29 +61,54 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
   const isInspiration = document?.type === "inspiration";
 
   const [localIsReprint, setLocalIsReprint] = useState(false);
-  const [originalAuthor, setOriginalAuthor] = useState("");
-  const [originalTitle, setOriginalTitle] = useState("");
-  const [originalDate, setOriginalDate] = useState("");
-  const [sourceUrl, setSourceUrl] = useState("");
-  const [license, setLicense] = useState("");
-  const [translator, setTranslator] = useState("");
-  const [reprintNotes, setReprintNotes] = useState("");
   const [showAuthorDialog, setShowAuthorDialog] = useState(false);
+
+  const form = useForm({
+    defaultValues: {
+      originalAuthor: "",
+      originalTitle: "",
+      originalDate: "",
+      sourceUrl: "",
+      license: "",
+      translator: "",
+      reprintNotes: "",
+    } as ReprintFormValues,
+    onSubmit: async ({ value }) => {
+      try {
+        await updateReprint({
+          documentId,
+          reprint: {
+            originalAuthor: value.originalAuthor.trim() || "(unknown)",
+            originalTitle: normalizeOptionalText(value.originalTitle),
+            originalDate: value.originalDate ? Number(value.originalDate) : undefined,
+            sourceUrl: normalizeOptionalText(value.sourceUrl),
+            license: normalizeOptionalText(value.license),
+            translator: normalizeOptionalText(value.translator),
+            notes: normalizeOptionalText(value.reprintNotes),
+          },
+        });
+      } catch (error) {
+        handleError(error, {
+          context: "ReprintSection.saveReprint",
+        });
+      }
+    },
+  });
 
   useEffect(() => {
     if (!document) return;
     setLocalIsReprint(document.type === "reprint");
-    setOriginalAuthor(document.reprint?.originalAuthor ?? "");
-    setOriginalTitle(document.reprint?.originalTitle ?? "");
-    setOriginalDate(
-      document.reprint?.originalDate
+    form.reset({
+      originalAuthor: document.reprint?.originalAuthor ?? "",
+      originalTitle: document.reprint?.originalTitle ?? "",
+      originalDate: document.reprint?.originalDate
         ? String(document.reprint.originalDate)
         : "",
-    );
-    setSourceUrl(document.reprint?.sourceUrl ?? "");
-    setLicense(document.reprint?.license ?? "");
-    setTranslator(document.reprint?.translator ?? "");
-    setReprintNotes(document.reprint?.notes ?? "");
+      sourceUrl: document.reprint?.sourceUrl ?? "",
+      license: document.reprint?.license ?? "",
+      translator: document.reprint?.translator ?? "",
+      reprintNotes: document.reprint?.notes ?? "",
+    });
   }, [document]);
 
   const handleToggleReprint = async (checked: boolean) => {
@@ -85,30 +126,8 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
     }
   };
 
-  const normalizeOptionalText = (value: string): string | undefined => {
-    const trimmed = value.trim();
-    return trimmed.length > 0 ? trimmed : undefined;
-  };
-
   const save = useDebouncedSave(async () => {
-    try {
-      await updateReprint({
-        documentId,
-        reprint: {
-          originalAuthor: originalAuthor.trim() || "(unknown)",
-          originalTitle: normalizeOptionalText(originalTitle),
-          originalDate: originalDate ? Number(originalDate) : undefined,
-          sourceUrl: normalizeOptionalText(sourceUrl),
-          license: normalizeOptionalText(license),
-          translator: normalizeOptionalText(translator),
-          notes: normalizeOptionalText(reprintNotes),
-        },
-      });
-    } catch (error) {
-      handleError(error, {
-        context: "ReprintSection.saveReprint",
-      });
-    }
+    await form.handleSubmit();
   }, 700);
 
   return (
@@ -140,183 +159,212 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2 sm:col-span-2">
-          <div className="flex items-center justify-between">
-            <Label
-              htmlFor="originalAuthor"
-              className="text-sm font-medium"
-            >
-              Original Author{" "}
-              <span className="text-destructive">*</span>
-            </Label>
-            {isReprint && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-6 text-xs"
-                onClick={() => setShowAuthorDialog(true)}
-              >
-                <SearchIcon className="h-3 w-3 mr-1" />
-                Search Existing
-              </Button>
-            )}
-          </div>
-          {isReprint ? (
-            <div className="relative">
-              <UserIcon
-                className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"
-              />
-              <div
-                className={cn(
-                  "w-full pl-8 pr-3 py-2 text-sm rounded-md border cursor-pointer",
-                  "bg-background placeholder:text-muted-foreground",
-                  "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+        <form.Field name="originalAuthor">
+          {(field) => (
+            <div className="space-y-2 sm:col-span-2">
+              <div className="flex items-center justify-between">
+                <Label
+                  htmlFor={field.name}
+                  className="text-sm font-medium"
+                >
+                  Original Author{" "}
+                  <span className="text-destructive">*</span>
+                </Label>
+                {isReprint && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-6 text-xs"
+                    onClick={() => setShowAuthorDialog(true)}
+                  >
+                    <SearchIcon className="h-3 w-3 mr-1" />
+                    Search Existing
+                  </Button>
                 )}
-                onClick={() => setShowAuthorDialog(true)}
-              >
-                {originalAuthor || "Select an author..."}
               </div>
+              {isReprint ? (
+                <div className="relative">
+                  <UserIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <div
+                    className={cn(
+                      "w-full pl-8 pr-3 py-2 text-sm rounded-md border cursor-pointer",
+                      "bg-background placeholder:text-muted-foreground",
+                      "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                    )}
+                    onClick={() => setShowAuthorDialog(true)}
+                  >
+                    {field.state.value || "Select an author..."}
+                  </div>
+                </div>
+              ) : (
+                <InputWithIcon
+                  icon={<UserIcon className="h-4 w-4" />}
+                  disabled
+                  id={field.name}
+                  value={field.state.value}
+                  onChange={(e) => {
+                    field.handleChange(e.target.value);
+                    save();
+                  }}
+                  placeholder="e.g. Gabriel García Márquez"
+                />
+              )}
             </div>
-          ) : (
-            <InputWithIcon
-              icon={<UserIcon className="h-4 w-4" />}
-              disabled
-              id="originalAuthor"
-              value={originalAuthor}
-              onChange={(e) => {
-                setOriginalAuthor(e.target.value);
-                save();
-              }}
-              placeholder="e.g. Gabriel García Márquez"
-            />
           )}
-        </div>
+        </form.Field>
 
-        <div className="space-y-2">
-          <Label
-            htmlFor="originalTitle"
-            className="text-sm font-medium"
-          >
-            Original Title
-          </Label>
-          <InputWithIcon
-            icon={<BookOpenIcon className="h-4 w-4" />}
-            disabled={!isReprint}
-            id="originalTitle"
-            value={originalTitle}
-            onChange={(e) => {
-              setOriginalTitle(e.target.value);
-              save();
-            }}
-            placeholder="e.g. Cien años de soledad"
-          />
-        </div>
+        <form.Field name="originalTitle">
+          {(field) => (
+            <div className="space-y-2">
+              <Label
+                htmlFor={field.name}
+                className="text-sm font-medium"
+              >
+                Original Title
+              </Label>
+              <InputWithIcon
+                icon={<BookOpenIcon className="h-4 w-4" />}
+                disabled={!isReprint}
+                id={field.name}
+                value={field.state.value}
+                onChange={(e) => {
+                  field.handleChange(e.target.value);
+                  save();
+                }}
+                placeholder="e.g. Cien años de soledad"
+              />
+            </div>
+          )}
+        </form.Field>
 
-        <div className="space-y-2">
-          <Label
-            htmlFor="originalDate"
-            className="text-sm font-medium"
-          >
-            Original Year
-          </Label>
-          <InputWithIcon
-            icon={<CalendarIcon className="h-4 w-4" />}
-            disabled={!isReprint}
-            id="originalDate"
-            type="number"
-            min={0}
-            max={2100}
-            value={originalDate}
-            onChange={(e) => {
-              setOriginalDate(e.target.value);
-              save();
-            }}
-            placeholder="e.g. 1967"
-          />
-        </div>
+        <form.Field name="originalDate">
+          {(field) => (
+            <div className="space-y-2">
+              <Label
+                htmlFor={field.name}
+                className="text-sm font-medium"
+              >
+                Original Year
+              </Label>
+              <InputWithIcon
+                icon={<CalendarIcon className="h-4 w-4" />}
+                disabled={!isReprint}
+                id={field.name}
+                type="number"
+                min={0}
+                max={2100}
+                value={field.state.value}
+                onChange={(e) => {
+                  field.handleChange(e.target.value);
+                  save();
+                }}
+                placeholder="e.g. 1967"
+              />
+            </div>
+          )}
+        </form.Field>
 
-        <div className="space-y-2 sm:col-span-2">
-          <Label
-            htmlFor="sourceUrl"
-            className="text-sm font-medium"
-          >
-            Source URL
-          </Label>
-          <InputWithIcon
-            icon={<GlobeIcon className="h-4 w-4" />}
-            disabled={!isReprint}
-            id="sourceUrl"
-            type="url"
-            value={sourceUrl}
-            onChange={(e) => {
-              setSourceUrl(e.target.value);
-              save();
-            }}
-            placeholder="e.g. https://example.com/original-work"
-          />
-        </div>
+        <form.Field name="sourceUrl">
+          {(field) => (
+            <div className="space-y-2 sm:col-span-2">
+              <Label
+                htmlFor={field.name}
+                className="text-sm font-medium"
+              >
+                Source URL
+              </Label>
+              <InputWithIcon
+                icon={<GlobeIcon className="h-4 w-4" />}
+                disabled={!isReprint}
+                id={field.name}
+                type="url"
+                value={field.state.value}
+                onChange={(e) => {
+                  field.handleChange(e.target.value);
+                  save();
+                }}
+                placeholder="e.g. https://example.com/original-work"
+              />
+            </div>
+          )}
+        </form.Field>
 
-        <div className="space-y-2">
-          <Label htmlFor="license" className="text-sm font-medium">
-            License
-          </Label>
-          <InputWithIcon
-            icon={<BadgeIcon className="h-4 w-4" />}
-            disabled={!isReprint}
-            id="license"
-            value={license}
-            onChange={(e) => {
-              setLicense(e.target.value);
-              save();
-            }}
-            placeholder="e.g. Public Domain"
-          />
-        </div>
+        <form.Field name="license">
+          {(field) => (
+            <div className="space-y-2">
+              <Label htmlFor={field.name} className="text-sm font-medium">
+                License
+              </Label>
+              <InputWithIcon
+                icon={<BadgeIcon className="h-4 w-4" />}
+                disabled={!isReprint}
+                id={field.name}
+                value={field.state.value}
+                onChange={(e) => {
+                  field.handleChange(e.target.value);
+                  save();
+                }}
+                placeholder="e.g. Public Domain"
+              />
+            </div>
+          )}
+        </form.Field>
 
-        <div className="space-y-2">
-          <Label
-            htmlFor="translator"
-            className="text-sm font-medium"
-          >
-            Translator
-          </Label>
-          <InputWithIcon
-            icon={<LanguagesIcon className="h-4 w-4" />}
-            disabled={!isReprint}
-            id="translator"
-            value={translator}
-            onChange={(e) => {
-              setTranslator(e.target.value);
-              save();
-            }}
-            placeholder="e.g. Gregory Rabassa"
-          />
-        </div>
+        <form.Field name="translator">
+          {(field) => (
+            <div className="space-y-2">
+              <Label
+                htmlFor={field.name}
+                className="text-sm font-medium"
+              >
+                Translator
+              </Label>
+              <InputWithIcon
+                icon={<LanguagesIcon className="h-4 w-4" />}
+                disabled={!isReprint}
+                id={field.name}
+                value={field.state.value}
+                onChange={(e) => {
+                  field.handleChange(e.target.value);
+                  save();
+                }}
+                placeholder="e.g. Gregory Rabassa"
+              />
+            </div>
+          )}
+        </form.Field>
 
-        <div className="space-y-2 sm:col-span-2">
-          <Label
-            htmlFor="reprintNotes"
-            className="text-sm font-medium"
-          >
-            Notes
-          </Label>
-          <TextareaWithIcon
-            icon={<FileTextIcon className="h-4 w-4" />}
-            disabled={!isReprint}
-            id="reprintNotes"
-            value={reprintNotes}
-            onChange={(e) => {
-              setReprintNotes(e.target.value);
-              save();
-            }}
-            placeholder="Additional context, acknowledgments, or notes about this reprint..."
-          />
-        </div>
+        <form.Field name="reprintNotes">
+          {(field) => (
+            <div className="space-y-2 sm:col-span-2">
+              <Label
+                htmlFor={field.name}
+                className="text-sm font-medium"
+              >
+                Notes
+              </Label>
+              <TextareaWithIcon
+                icon={<FileTextIcon className="h-4 w-4" />}
+                disabled={!isReprint}
+                id={field.name}
+                value={field.state.value}
+                onChange={(e) => {
+                  field.handleChange(e.target.value);
+                  save();
+                }}
+                placeholder="Additional context, acknowledgments, or notes about this reprint..."
+              />
+            </div>
+          )}
+        </form.Field>
       </div>
 
       <AuthorSelectDialog
         open={showAuthorDialog}
-        onSelect={(name) => setOriginalAuthor(name)}
+        onSelect={(name) => {
+          form.setFieldValue("originalAuthor", name);
+          save();
+        }}
         onClose={() => setShowAuthorDialog(false)}
       />
     </div>
