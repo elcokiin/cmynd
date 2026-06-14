@@ -1,3 +1,4 @@
+import { ErrorCode, throwConvexError } from "@elcokiin/errors";
 import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { getAuthorById } from "./helpers";
@@ -98,7 +99,7 @@ export const getForAdmin = query({
  * Returns authors suitable as original authors for reprints:
  * - Authors marked as reprinted, OR
  * - Verified authors not linked to a user account, OR
- * - Unverified authors created by the current user (no userId assigned)
+ * - Unverified authors created by the current user
  */
 export const listOriginalAuthors = query({
   args: {
@@ -109,14 +110,21 @@ export const listOriginalAuthors = query({
   },
   returns: paginatedAuthorsValidator,
   handler: async (ctx, args) => {
-    await Auth.requireAuth(ctx);
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throwConvexError(ErrorCode.UNAUTHENTICATED);
+    }
 
     const result = await ctx.db
       .query("authors")
       .filter((q) =>
         q.or(
           q.eq(q.field("isReprinted"), true),
-          q.eq(q.field("userId"), undefined),
+          q.and(
+            q.eq(q.field("isVerified"), true),
+            q.eq(q.field("userId"), undefined),
+          ),
+          q.eq(q.field("userId"), identity!.subject),
         ),
       )
       .order("desc")

@@ -107,6 +107,7 @@ export const createAuthor = mutation({
       name: args.name,
       avatarUrl: args.avatarUrl,
       bio: args.bio,
+      userId: identity.subject,
       isReprinted: false,
       isVerified: admin,
       createdAt: Date.now(),
