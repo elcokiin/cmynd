@@ -33,6 +33,7 @@ export async function getOrCreateAuthorForUser(
     name: identity.name ?? "Anonymous",
     avatarUrl: identity.pictureUrl,
     userId,
+    createdBy: userId,
     createdAt: Date.now(),
     updatedAt: Date.now(),
   });

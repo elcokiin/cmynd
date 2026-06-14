@@ -17,12 +17,13 @@ export const createReprinted = mutation({
     avatarUrl: v.optional(v.string()),
   },
   handler: async (ctx, args): Promise<void> => {
-    await Auth.requireAdmin(ctx);
+    const user = await Auth.requireAdmin(ctx);
 
     await ctx.db.insert("authors", {
       name: args.name,
       avatarUrl: args.avatarUrl,
       bio: args.bio,
+      createdBy: user._id,
       isReprinted: true,
       isVerified: false,
       createdAt: Date.now(),
@@ -108,6 +109,7 @@ export const createAuthor = mutation({
       avatarUrl: args.avatarUrl,
       bio: args.bio,
       userId: identity.subject,
+      createdBy: identity.subject,
       isReprinted: false,
       isVerified: admin,
       createdAt: Date.now(),

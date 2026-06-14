@@ -14,6 +14,7 @@ export const authorValidator = v.object({
   name: v.string(),
   avatarUrl: v.optional(v.string()),
   userId: v.optional(v.string()),
+  createdBy: v.optional(v.string()),
   bio: v.optional(v.string()),
   phrases: v.optional(v.array(phraseValidator)),
   isReprinted: v.optional(v.boolean()),
@@ -32,6 +33,7 @@ export const publicAuthorValidator = v.object({
   phrases: v.optional(v.array(phraseValidator)),
   isReprinted: v.optional(v.boolean()),
   isVerified: v.optional(v.boolean()),
+  createdBy: v.optional(v.string()),
   createdAt: v.number(),
   updatedAt: v.number(),
 });
@@ -47,6 +49,7 @@ export const adminAuthorValidator = v.object({
   name: v.string(),
   avatarUrl: v.optional(v.string()),
   userId: v.optional(v.string()),
+  createdBy: v.optional(v.string()),
   bio: v.optional(v.string()),
   phrases: v.optional(v.array(phraseValidator)),
   isReprinted: v.optional(v.boolean()),

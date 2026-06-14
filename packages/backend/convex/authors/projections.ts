@@ -14,6 +14,7 @@ export function toPublicAuthor(author: Doc<"authors">): PublicAuthor {
     phrases: author.phrases,
     isReprinted: author.isReprinted,
     isVerified: author.isVerified,
+    createdBy: author.createdBy,
     createdAt: author.createdAt,
     updatedAt: author.updatedAt,
   };
@@ -29,6 +30,7 @@ export function toAdminAuthor(author: Doc<"authors">): AdminAuthor {
     name: author.name,
     avatarUrl: author.avatarUrl,
     userId: author.userId,
+    createdBy: author.createdBy,
     bio: author.bio,
     phrases: author.phrases,
     isReprinted: author.isReprinted,

@@ -29,6 +29,7 @@ export type PublicAuthor = {
   phrases?: Phrase[];
   isReprinted?: boolean;
   isVerified?: boolean;
+  createdBy?: string;
   createdAt: number;
   updatedAt: number;
 };
@@ -42,6 +43,7 @@ export type AdminAuthor = {
   name: string;
   avatarUrl?: string;
   userId?: string;
+  createdBy?: string;
   bio?: string;
   phrases?: Phrase[];
   isReprinted?: boolean;
