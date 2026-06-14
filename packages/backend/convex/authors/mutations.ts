@@ -2,7 +2,33 @@ import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { phraseValidator } from "../../lib/validators/authors";
 import { getAuthorById } from "./helpers";
+import * as Auth from "../_lib/auth";
 import { ErrorCode, throwConvexError } from "@elcokiin/errors";
+
+/**
+ * Create a new reprinted author (unverified).
+ * Only admins can create reprinted authors.
+ */
+export const createReprinted = mutation({
+  args: {
+    name: v.string(),
+    bio: v.optional(v.string()),
+    avatarUrl: v.optional(v.string()),
+  },
+  handler: async (ctx, args): Promise<void> {
+    await Auth.requireAdmin(ctx);
+
+    await ctx.db.insert("authors", {
+      name: args.name,
+      avatarUrl: args.avatarUrl,
+      bio: args.bio,
+      isReprinted: true,
+      isVerified: false,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+  },
+});
 
 /**
  * Update own author profile.
@@ -16,7 +42,7 @@ export const update = mutation({
     bio: v.optional(v.string()),
     phrases: v.optional(v.array(phraseValidator)),
   },
-  handler: async (ctx, args): Promise<void> => {
+  handler: async (ctx, args): Promise<void> {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throwConvexError(ErrorCode.UNAUTHENTICATED);
@@ -46,5 +72,33 @@ export const update = mutation({
     if (args.phrases !== undefined) updates.phrases = args.phrases;
 
     await ctx.db.patch(args.authorId, updates);
+  },
+});
+
+/**
+ * Admin approves (verifies) a reprinted author.
+ * Makes the author verified so it can be linked to user accounts.
+ */
+export const approve = mutation({
+  args: {
+    authorId: v.id("authors"),
+  },
+  handler: async (ctx, args): Promise<void> {
+    await Auth.requireAdmin(ctx);
+
+    const author = await getAuthorById(ctx, args.authorId);
+
+    if (!author.isReprinted) {
+      throwConvexError(ErrorCode.AUTHOR_NOT_REPRINTED);
+    }
+
+    if (author.isVerified) {
+      throwConvexError(ErrorCode.AUTHOR_ALREADY_VERIFIED);
+    }
+
+    await ctx.db.patch(args.authorId, {
+      isVerified: true,
+      updatedAt: Date.now(),
+    });
   },
 });

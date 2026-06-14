@@ -16,6 +16,8 @@ export const authorValidator = v.object({
   userId: v.optional(v.string()),
   bio: v.optional(v.string()),
   phrases: v.optional(v.array(phraseValidator)),
+  isReprinted: v.optional(v.boolean()),
+  isVerified: v.optional(v.boolean()),
   createdAt: v.number(),
   updatedAt: v.number(),
 });
@@ -36,3 +38,28 @@ export const publicAuthorValidator = v.object({
 export const paginatedAuthorsValidator = paginatedValidator(
   publicAuthorValidator,
 );
+
+// Admin author validator
+export const adminAuthorValidator = v.object({
+  _id: v.id("authors"),
+  name: v.string(),
+  avatarUrl: v.optional(v.string()),
+  userId: v.optional(v.string()),
+  bio: v.optional(v.string()),
+  phrases: v.optional(v.array(phraseValidator)),
+  isReprinted: v.optional(v.boolean()),
+  isVerified: v.optional(v.boolean()),
+  createdAt: v.number(),
+  updatedAt: v.number(),
+});
+
+export const paginatedAdminAuthorsValidator = paginatedValidator(
+  adminAuthorValidator,
+);
+
+// Create reprinted author args
+export const createReprintedAuthorValidator = v.object({
+  name: v.string(),
+  bio: v.optional(v.string()),
+  avatarUrl: v.optional(v.string()),
+});

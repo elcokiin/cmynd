@@ -1,46 +1,128 @@
-import { Button } from "@elcokiin/ui/button";
-import { ErrorCode } from "@elcokiin/errors/codes";
-import { getUserFriendlyMessage, parseError } from "@elcokiin/errors/utils";
-import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
-import { ArrowLeftIcon } from "lucide-react";
+import { useState } from "react";
+import { useNavigate, useLocation } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
+import { FileTextIcon, UsersIcon, FileCheckIcon, DownloadIcon } from "lucide-react";
+
+import { MobileTabBar } from "@/components/admin/mobile-tab-bar";
+import { AdminDashboard } from "@/routes/_auth/admin/index";
+import { AdminPublishedPage } from "@/routes/_auth/admin/published";
+import { AdminAuthorsPage } from "@/routes/_auth/admin/authors";
+
+import { useIsMobile } from "@/hooks/use-is-mobile";
+
+type AdminTab = "dashboard" | "authors" | "published" | "review";
+
+type MobileTab = "dashboard" | "authors" | "published" | "review";
 
 export const Route = createFileRoute("/_auth/admin")({
   component: AdminLayout,
-  errorComponent: AdminErrorBoundary,
 });
 
 function AdminLayout() {
-  return <Outlet />;
-}
-
-function AdminErrorBoundary({
-  error,
-  reset,
-}: {
-  error: Error;
-  reset: () => void;
-}) {
+  const location = useLocation();
   const navigate = useNavigate();
-  const parsed = parseError(error);
+  const isMobile = useIsMobile();
+  const [mobileTab, setMobileTab] = useState<MobileTab>("dashboard");
 
-  const isAccessDenied =
-    parsed.code === ErrorCode.ADMIN_REQUIRED ||
-    parsed.code === ErrorCode.UNAUTHENTICATED ||
-    parsed.code === ErrorCode.UNAUTHORIZED;
+  const currentPath = location.pathname;
+  let activeTab: AdminTab = "dashboard";
 
-  const title = isAccessDenied ? "Access Denied" : "Something went wrong";
-  const message = getUserFriendlyMessage(error);
+  if (currentPath === "/admin/authors") activeTab = "authors";
+  else if (currentPath === "/admin/published") activeTab = "published";
+  else if (currentPath === "/admin") activeTab = "dashboard";
+
+    const tabs = [
+      {
+        id: "dashboard" as const,
+        label: "Dashboard",
+        icon: FileTextIcon,
+      },
+      {
+        id: "authors" as const,
+        label: "Authors",
+        icon: UsersIcon,
+      },
+      {
+        id: "published" as const,
+        label: "Published",
+        icon: FileCheckIcon,
+      },
+    ];
+
+    const handleTabChange = (tabId: string): void => {
+      setMobileTab(tabId as MobileTab);
+
+      switch (tabId) {
+        case "dashboard":
+          navigate({ to: "/admin" });
+          break;
+        case "authors":
+          navigate({ to: "/admin/authors" });
+          break;
+        case "published":
+          navigate({ to: "/admin/published" });
+          break;
+      }
+    };
+
+    const renderContent = () => {
+      switch (activeTab) {
+        case "dashboard":
+          return <AdminDashboard />;
+        case "authors":
+          return <AdminAuthorsPage />;
+        case "published":
+          return <AdminPublishedPage />;
+        default:
+          return <AdminDashboard />;
+      }
+    };
 
   return (
-    <div className="flex flex-col items-center justify-center h-full gap-4">
-      <h1 className="text-2xl font-bold">{title}</h1>
-      <p className="text-muted-foreground max-w-md text-center">{message}</p>
-      <div className="flex gap-2">
-        <Button onClick={() => navigate({ to: "/" })} variant="outline">
-          <ArrowLeftIcon className="mr-2 h-4 w-4" />
-          Go to Home
-        </Button>
-        {!isAccessDenied && <Button onClick={reset}>Try Again</Button>}
+    <div className="flex flex-col h-full">
+      {/* Mobile Tab Bar */}
+      {isMobile ? (
+        <MobileTabBar
+          tabs={tabs.map((tab) => ({
+            ...tab,
+            id: tab.id as MobileTab,
+          }))}
+          activeTab={mobileTab}
+          onTabChange={handleTabChange}
+        />
+      ) : null}
+
+      {/* Desktop Layout */}
+      <div className="flex-1 flex overflow-auto">
+        {/* Sidebar Navigation */}
+        <div className="hidden md:flex w-56 border-r bg-muted/30 p-4 flex-col gap-1">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => handleTabChange(tab.id)}
+                className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors text-left
+                  ${isActive
+                    ? "bg-background shadow-sm font-medium"
+                    : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+                  }
+                `}
+              >
+                <Icon className="h-4 w-4" />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Content Area */}
+        <div className="flex-1 p-6 overflow-y-auto">
+          {renderContent()}
+        </div>
       </div>
     </div>
   );
