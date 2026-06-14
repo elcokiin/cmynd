@@ -5,6 +5,7 @@ import { mutation } from "../_generated/server";
 import {
   documentTypeValidator,
   documentContentFormatValidator,
+  reprintDataValidator,
 } from "../../lib/validators/documents";
 import { ErrorCode, throwConvexError } from "@elcokiin/errors";
 import * as Auth from "../_lib/auth";
@@ -241,6 +242,33 @@ export const updateMetadata = mutation({
     }
 
     await ctx.db.patch(args.documentId, updates);
+  },
+});
+
+/**
+ * Update document reprint metadata.
+ * Only allowed for documents in "building" status.
+ */
+export const updateReprint = mutation({
+  args: {
+    documentId: v.id("documents"),
+    reprint: reprintDataValidator,
+  },
+  handler: async (ctx, args) => {
+    const document = await getByIdForAuthor(ctx, args.documentId);
+
+    if (document.status === "published") {
+      throwConvexError(ErrorCode.DOCUMENT_PUBLISHED);
+    }
+
+    if (document.status === "pending") {
+      throwConvexError(ErrorCode.DOCUMENT_PENDING_REVIEW);
+    }
+
+    await ctx.db.patch(args.documentId, {
+      reprint: args.reprint,
+      updatedAt: Date.now(),
+    });
   },
 });
 

@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@elcokiin/ui/dialog";
+import { Label } from "@elcokiin/ui/label";
 import { cn } from "@elcokiin/ui/lib/utils";
 import { useMutation, useQuery } from "convex/react";
 import { useState, useRef, useEffect } from "react";
@@ -23,6 +24,12 @@ import {
   SettingsIcon,
   SparklesIcon,
   TextIcon,
+  UserIcon,
+  GlobeIcon,
+  BadgeIcon,
+  LanguagesIcon,
+  FileTextIcon,
+  CalendarIcon,
 } from "lucide-react";
 
 import { useErrorHandler } from "@/hooks/use-error-handler";
@@ -65,14 +72,30 @@ export function DocumentSettingsDialog({
     api.documents.mutations.updateCoverImage,
   );
   const updateMetadata = useMutation(api.documents.mutations.updateMetadata);
+  const updateReprint = useMutation(api.documents.mutations.updateReprint);
   const deleteFile = useMutation(api.storage.deleteFile);
   const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
+
+  const [originalAuthor, setOriginalAuthor] = useState("");
+  const [originalTitle, setOriginalTitle] = useState("");
+  const [originalDate, setOriginalDate] = useState("");
+  const [sourceUrl, setSourceUrl] = useState("");
+  const [license, setLicense] = useState("");
+  const [translator, setTranslator] = useState("");
+  const [reprintNotes, setReprintNotes] = useState("");
 
   useEffect(() => {
     if (!open || !document) return;
     setCoverImagePrompt(document.coverImagePrompt ?? "");
     setDescription(document.description ?? "");
-  }, [open, document?._id, document?.coverImagePrompt, document?.description]);
+    setOriginalAuthor(document.reprint?.originalAuthor ?? "");
+    setOriginalTitle(document.reprint?.originalTitle ?? "");
+    setOriginalDate(document.reprint?.originalDate ? String(document.reprint.originalDate) : "");
+    setSourceUrl(document.reprint?.sourceUrl ?? "");
+    setLicense(document.reprint?.license ?? "");
+    setTranslator(document.reprint?.translator ?? "");
+    setReprintNotes(document.reprint?.notes ?? "");
+  }, [open, document?._id, document?.coverImagePrompt, document?.description, document?.reprint]);
 
   const normalizeOptionalText = (value: string): string | undefined => {
     const trimmed = value.trim();
@@ -98,6 +121,30 @@ export function DocumentSettingsDialog({
       } catch (error) {
         handleError(error, {
           context: `DocumentSettingsDialog.saveMetadata.${field}`,
+        });
+      }
+    },
+    700,
+  );
+
+  const saveReprintDebounced = useDebouncedCallback(
+    async () => {
+      try {
+        await updateReprint({
+          documentId,
+          reprint: {
+            originalAuthor: originalAuthor.trim() || "(unknown)",
+            originalTitle: normalizeOptionalText(originalTitle),
+            originalDate: originalDate ? Number(originalDate) : undefined,
+            sourceUrl: normalizeOptionalText(sourceUrl),
+            license: normalizeOptionalText(license),
+            translator: normalizeOptionalText(translator),
+            notes: normalizeOptionalText(reprintNotes),
+          },
+        });
+      } catch (error) {
+        handleError(error, {
+          context: "DocumentSettingsDialog.saveReprint",
         });
       }
     },
@@ -373,15 +420,153 @@ export function DocumentSettingsDialog({
                 <div>
                   <h3 className="text-lg font-medium mb-1">Reprint</h3>
                   <p className="text-sm text-muted-foreground">
-                    Configure reprint settings for your document.
+                    Provide information about the original author and source for this reprinted content.
                   </p>
                 </div>
-                <div className="flex items-center justify-center h-48 rounded-lg border border-dashed bg-muted/30">
-                  <div className="text-center">
-                    <BookOpenIcon className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
-                    <p className="text-sm text-muted-foreground">
-                      This feature is still being built.
-                    </p>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label htmlFor="originalAuthor" className="text-sm font-medium">
+                      Original Author <span className="text-destructive">*</span>
+                    </Label>
+                    <div className="relative">
+                      <UserIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <input
+                        id="originalAuthor"
+                        value={originalAuthor}
+                        onChange={(e) => { setOriginalAuthor(e.target.value); saveReprintDebounced(); }}
+                        placeholder="e.g. Gabriel García Márquez"
+                        className={cn(
+                          "w-full pl-8 pr-3 py-2 text-sm rounded-md border",
+                          "bg-background placeholder:text-muted-foreground",
+                          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="originalTitle" className="text-sm font-medium">
+                      Original Title
+                    </Label>
+                    <div className="relative">
+                      <BookOpenIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <input
+                        id="originalTitle"
+                        value={originalTitle}
+                        onChange={(e) => { setOriginalTitle(e.target.value); saveReprintDebounced(); }}
+                        placeholder="e.g. Cien años de soledad"
+                        className={cn(
+                          "w-full pl-8 pr-3 py-2 text-sm rounded-md border",
+                          "bg-background placeholder:text-muted-foreground",
+                          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="originalDate" className="text-sm font-medium">
+                      Original Year
+                    </Label>
+                    <div className="relative">
+                      <CalendarIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <input
+                        id="originalDate"
+                        type="number"
+                        min={0}
+                        max={2100}
+                        value={originalDate}
+                        onChange={(e) => { setOriginalDate(e.target.value); saveReprintDebounced(); }}
+                        placeholder="e.g. 1967"
+                        className={cn(
+                          "w-full pl-8 pr-3 py-2 text-sm rounded-md border",
+                          "bg-background placeholder:text-muted-foreground",
+                          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label htmlFor="sourceUrl" className="text-sm font-medium">
+                      Source URL
+                    </Label>
+                    <div className="relative">
+                      <GlobeIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <input
+                        id="sourceUrl"
+                        type="url"
+                        value={sourceUrl}
+                        onChange={(e) => { setSourceUrl(e.target.value); saveReprintDebounced(); }}
+                        placeholder="e.g. https://example.com/original-work"
+                        className={cn(
+                          "w-full pl-8 pr-3 py-2 text-sm rounded-md border",
+                          "bg-background placeholder:text-muted-foreground",
+                          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="license" className="text-sm font-medium">
+                      License
+                    </Label>
+                    <div className="relative">
+                      <BadgeIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <input
+                        id="license"
+                        value={license}
+                        onChange={(e) => { setLicense(e.target.value); saveReprintDebounced(); }}
+                        placeholder="e.g. Public Domain"
+                        className={cn(
+                          "w-full pl-8 pr-3 py-2 text-sm rounded-md border",
+                          "bg-background placeholder:text-muted-foreground",
+                          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="translator" className="text-sm font-medium">
+                      Translator
+                    </Label>
+                    <div className="relative">
+                      <LanguagesIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <input
+                        id="translator"
+                        value={translator}
+                        onChange={(e) => { setTranslator(e.target.value); saveReprintDebounced(); }}
+                        placeholder="e.g. Gregory Rabassa"
+                        className={cn(
+                          "w-full pl-8 pr-3 py-2 text-sm rounded-md border",
+                          "bg-background placeholder:text-muted-foreground",
+                          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label htmlFor="reprintNotes" className="text-sm font-medium">
+                      Notes
+                    </Label>
+                    <div className="relative">
+                      <FileTextIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <textarea
+                        id="reprintNotes"
+                        value={reprintNotes}
+                        onChange={(e) => { setReprintNotes(e.target.value); saveReprintDebounced(); }}
+                        placeholder="Additional context, acknowledgments, or notes about this reprint..."
+                        className={cn(
+                          "w-full pl-8 pr-3 py-2 text-sm rounded-md border resize-y min-h-[80px]",
+                          "bg-background placeholder:text-muted-foreground",
+                          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                        )}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
