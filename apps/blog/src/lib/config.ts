@@ -1,5 +1,5 @@
 export const SITE = {
-  title: "elcokiin Blog",
+  title: "Blog - elcokiin ",
   description: "Published documents from the elcokiin universe.",
   url: "https://blog.elcokiin.my",
   locale: "en",
