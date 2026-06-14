@@ -373,6 +373,19 @@ export const publish = mutation({
       );
     }
 
+    if (document.type === "reprint" && document.reprint?.originalAuthorId) {
+      const author = await ctx.db.get(document.reprint.originalAuthorId);
+      if (author && !author.isVerified) {
+        const isAdmin = await Auth.isAdmin(ctx);
+        if (!isAdmin) {
+          throwConvexError(
+            ErrorCode.AUTHOR_UNVERIFIED,
+            `Original author "${author.name}" must be verified before publishing`,
+          );
+        }
+      }
+    }
+
     const text = document.markdownSource ?? "";
     const estimatedReadTime = getReadingTimeMinutes(text);
 

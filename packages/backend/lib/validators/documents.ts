@@ -27,6 +27,7 @@ export const documentContentFormatValidator = v.union(
 
 export const reprintDataValidator = v.object({
   originalAuthor: v.string(),
+  originalAuthorId: v.optional(v.id("authors")),
   originalTitle: v.optional(v.string()),
   originalDate: v.optional(v.number()),
   sourceUrl: v.optional(v.string()),

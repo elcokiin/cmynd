@@ -32,6 +32,7 @@ import { InputWithIcon, TextareaWithIcon } from "@/components/ui/input-with-icon
 
 type ReprintFormValues = {
   originalAuthor: string;
+  originalAuthorId: Id<"authors"> | "";
   originalTitle: string;
   originalDate: string;
   sourceUrl: string;
@@ -66,6 +67,7 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
   const form = useForm({
     defaultValues: {
       originalAuthor: "",
+      originalAuthorId: "",
       originalTitle: "",
       originalDate: "",
       sourceUrl: "",
@@ -79,6 +81,7 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
           documentId,
           reprint: {
             originalAuthor: value.originalAuthor.trim() || "(unknown)",
+            originalAuthorId: value.originalAuthorId || undefined,
             originalTitle: normalizeOptionalText(value.originalTitle),
             originalDate: value.originalDate ? Number(value.originalDate) : undefined,
             sourceUrl: normalizeOptionalText(value.sourceUrl),
@@ -100,6 +103,7 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
     setLocalIsReprint(document.type === "reprint");
     form.reset({
       originalAuthor: document.reprint?.originalAuthor ?? "",
+      originalAuthorId: document.reprint?.originalAuthorId ?? "",
       originalTitle: document.reprint?.originalTitle ?? "",
       originalDate: document.reprint?.originalDate
         ? String(document.reprint.originalDate)
@@ -361,8 +365,9 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
 
       <AuthorSelectDialog
         open={showAuthorDialog}
-        onSelect={(name) => {
+        onSelect={(name, id) => {
           form.setFieldValue("originalAuthor", name);
+          form.setFieldValue("originalAuthorId", id ?? "");
           save();
         }}
         onClose={() => setShowAuthorDialog(false)}

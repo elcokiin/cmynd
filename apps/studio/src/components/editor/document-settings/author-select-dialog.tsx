@@ -1,3 +1,5 @@
+import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
+
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { Button } from "@elcokiin/ui/button";
 import {
@@ -25,7 +27,7 @@ import { CreateAuthorDialog } from "@/components/admin/create-author-dialog";
 
 type AuthorSelectDialogProps = {
   open: boolean;
-  onSelect: (authorName: string) => void;
+  onSelect: (authorName: string, authorId?: Id<"authors">) => void;
   onClose: () => void;
 };
 
@@ -42,8 +44,8 @@ export function AuthorSelectDialog({
     { paginationOpts: { numItems: 100, cursor: null } },
   );
 
-  const handleSelectAuthor = (name: string) => {
-    onSelect(name);
+  const handleSelectAuthor = (name: string, id?: Id<"authors">) => {
+    onSelect(name, id);
     onClose();
   };
 
@@ -90,7 +92,7 @@ export function AuthorSelectDialog({
                     <CommandItem
                       key={author._id}
                       value={author.name}
-                      onSelect={() => handleSelectAuthor(author.name)}
+                      onSelect={() => handleSelectAuthor(author.name, author._id)}
                     >
                       <UserIcon className="h-4 w-4 mr-2" />
                       <span>{author.name}</span>

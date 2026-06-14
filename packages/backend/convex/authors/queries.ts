@@ -97,7 +97,8 @@ export const getForAdmin = query({
  * List original author candidates.
  * Returns authors suitable as original authors for reprints:
  * - Authors marked as reprinted, OR
- * - Verified authors not linked to a user account
+ * - Verified authors not linked to a user account, OR
+ * - Unverified authors created by the current user (no userId assigned)
  */
 export const listOriginalAuthors = query({
   args: {
@@ -115,10 +116,7 @@ export const listOriginalAuthors = query({
       .filter((q) =>
         q.or(
           q.eq(q.field("isReprinted"), true),
-          q.and(
-            q.eq(q.field("isVerified"), true),
-            q.eq(q.field("userId"), undefined),
-          ),
+          q.eq(q.field("userId"), undefined),
         ),
       )
       .order("desc")

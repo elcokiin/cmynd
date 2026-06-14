@@ -46,6 +46,7 @@ export const ERROR_DEFAULTS: Record<ErrorCode, string> = {
   [ErrorCodes.AUTHOR_INVALID_AVATAR_URL]: "Invalid avatar URL format",
   [ErrorCodes.AUTHOR_NOT_REPRINTED]: "Author is not a reprinted author",
   [ErrorCodes.AUTHOR_ALREADY_VERIFIED]: "Author is already verified",
+  [ErrorCodes.AUTHOR_UNVERIFIED]: "Original author must be verified before publishing",
 
   // Unknown Errors (9xxx)
   [ErrorCodes.UNKNOWN]: "An error occurred",
