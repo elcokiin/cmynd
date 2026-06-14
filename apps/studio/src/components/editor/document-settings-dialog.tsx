@@ -120,6 +120,7 @@ export function DocumentSettingsDialog({
     if (!open || !document) return;
     setCoverImagePrompt(document.coverImagePrompt ?? "");
     setDescription(document.description ?? "");
+    setLocalIsReprint(document.type === "reprint");
     setOriginalAuthor(document.reprint?.originalAuthor ?? "");
     setOriginalTitle(document.reprint?.originalTitle ?? "");
     setOriginalDate(document.reprint?.originalDate ? String(document.reprint.originalDate) : "");
@@ -127,11 +128,7 @@ export function DocumentSettingsDialog({
     setLicense(document.reprint?.license ?? "");
     setTranslator(document.reprint?.translator ?? "");
     setReprintNotes(document.reprint?.notes ?? "");
-  }, [open, document?._id, document?.coverImagePrompt, document?.description, document?.reprint]);
-
-  useEffect(() => {
-    setLocalIsReprint(document?.type === "reprint");
-  }, [document?.type]);
+  }, [open, document?._id, document?.coverImagePrompt, document?.description, document?.type, document?.reprint]);
 
   const normalizeOptionalText = (value: string): string | undefined => {
     const trimmed = value.trim();
