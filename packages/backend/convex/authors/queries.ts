@@ -94,10 +94,12 @@ export const getForAdmin = query({
 });
 
 /**
- * List reprinted authors (admin only).
- * Returns all authors marked as reprinted, both verified and unverified.
+ * List original author candidates (admin only).
+ * Returns authors suitable as original authors for reprints:
+ * - Authors marked as reprinted, OR
+ * - Verified authors not linked to a user account
  */
-export const listReprinted = query({
+export const listOriginalAuthors = query({
   args: {
     paginationOpts: v.object({
       numItems: v.number(),
@@ -110,7 +112,15 @@ export const listReprinted = query({
 
     const result = await ctx.db
       .query("authors")
-      .filter((q) => q.eq(q.field("isReprinted"), true))
+      .filter((q) =>
+        q.or(
+          q.eq(q.field("isReprinted"), true),
+          q.and(
+            q.eq(q.field("isVerified"), true),
+            q.eq(q.field("userId"), undefined),
+          ),
+        ),
+      )
       .order("desc")
       .paginate(args.paginationOpts);
 

@@ -38,7 +38,7 @@ export function AuthorSelectDialog({
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   const reprintedAuthors = useQuery(
-    api.authors.queries.listReprinted,
+    api.authors.queries.listOriginalAuthors,
     { paginationOpts: { numItems: 100, cursor: null } },
   );
 
