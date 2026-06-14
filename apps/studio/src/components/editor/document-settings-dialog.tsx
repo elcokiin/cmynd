@@ -275,7 +275,7 @@ export function DocumentSettingsDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[96vw] max-w-[96vw] sm:!max-w-4xl p-0 gap-0 h-[76vh]">
-        <div className="flex h-full">
+        <div className="flex h-full overflow-hidden">
           {/* Sidebar Navigation */}
           <div className="w-56 border-r bg-muted/30 p-4 flex flex-col gap-1">
             <DialogHeader className="pb-4">
@@ -305,7 +305,7 @@ export function DocumentSettingsDialog({
           </div>
 
           {/* Content Area */}
-          <div className="flex-1 p-6 overflow-y-auto">
+          <div className="flex-1 p-6 overflow-y-auto min-h-0">
             {activeSection === "cover" && (
               <div className="space-y-6">
                 <div>
@@ -463,21 +463,13 @@ export function DocumentSettingsDialog({
                       </p>
                     </div>
                     <Tooltip>
-                      <TooltipTrigger>
-                        <div className="flex items-center gap-3 shrink-0">
-                          <Label
-                            htmlFor="reprint-toggle"
-                            className="text-sm font-medium cursor-pointer select-none text-right leading-tight"
-                          >
-                            This is a<br />reprint
-                          </Label>
-                          <Switch
-                            id="reprint-toggle"
-                            checked={localIsReprint}
-                            onCheckedChange={handleToggleReprint}
-                            disabled={isInspiration}
-                          />
-                        </div>
+                      <TooltipTrigger asChild>
+                        <Switch
+                          id="reprint-toggle"
+                          checked={localIsReprint}
+                          onCheckedChange={handleToggleReprint}
+                          disabled={isInspiration}
+                        />
                       </TooltipTrigger>
                       {isInspiration && (
                         <TooltipContent>
