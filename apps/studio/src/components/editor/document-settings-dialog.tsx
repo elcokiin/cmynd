@@ -83,9 +83,6 @@ export function DocumentSettingsDialog({
   const deleteFile = useMutation(api.storage.deleteFile);
   const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
 
-  const isReprint = document?.type === "reprint";
-  const isInspiration = document?.type === "inspiration";
-
   const [originalAuthor, setOriginalAuthor] = useState("");
   const [originalTitle, setOriginalTitle] = useState("");
   const [originalDate, setOriginalDate] = useState("");
@@ -94,17 +91,29 @@ export function DocumentSettingsDialog({
   const [translator, setTranslator] = useState("");
   const [reprintNotes, setReprintNotes] = useState("");
 
-  const handleToggleReprint = async (checked: boolean) => {
-    try {
-      await updateType({
-        documentId,
-        type: checked ? "reprint" : "own",
-      });
-    } catch (error) {
-      handleError(error, {
-        context: "DocumentSettingsDialog.handleToggleReprint",
-      });
-    }
+  const isInspiration = document?.type === "inspiration";
+  const [localIsReprint, setLocalIsReprint] = useState(false);
+
+  const saveTypeDebounced = useDebouncedCallback(
+    async (checked: boolean) => {
+      try {
+        await updateType({
+          documentId,
+          type: checked ? "reprint" : "own",
+        });
+      } catch (error) {
+        handleError(error, {
+          context: "DocumentSettingsDialog.saveType",
+        });
+        setLocalIsReprint(!checked);
+      }
+    },
+    500,
+  );
+
+  const handleToggleReprint = (checked: boolean) => {
+    setLocalIsReprint(checked);
+    saveTypeDebounced(checked);
   };
 
   useEffect(() => {
@@ -119,6 +128,10 @@ export function DocumentSettingsDialog({
     setTranslator(document.reprint?.translator ?? "");
     setReprintNotes(document.reprint?.notes ?? "");
   }, [open, document?._id, document?.coverImagePrompt, document?.description, document?.reprint]);
+
+  useEffect(() => {
+    setLocalIsReprint(document?.type === "reprint");
+  }, [document?.type]);
 
   const normalizeOptionalText = (value: string): string | undefined => {
     const trimmed = value.trim();
@@ -439,197 +452,176 @@ export function DocumentSettingsDialog({
             )}
 
             {activeSection === "reprint" && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-medium mb-1">Reprint</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Mark this document as a reprint if the content was originally
-                      written by another author.
+              <div className="space-y-8">
+                <div className="rounded-xl border bg-muted/10 p-5">
+                  <div className="flex items-start justify-between gap-6">
+                    <div className="space-y-1">
+                      <h3 className="text-lg font-medium">Reprint</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        Enable this if the content was originally written by another
+                        author. You'll provide attribution details below.
+                      </p>
+                    </div>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <div className="flex items-center gap-3 shrink-0">
+                          <Label
+                            htmlFor="reprint-toggle"
+                            className="text-sm font-medium cursor-pointer select-none text-right leading-tight"
+                          >
+                            This is a<br />reprint
+                          </Label>
+                          <Switch
+                            id="reprint-toggle"
+                            checked={localIsReprint}
+                            onCheckedChange={handleToggleReprint}
+                            disabled={isInspiration}
+                          />
+                        </div>
+                      </TooltipTrigger>
+                      {isInspiration && (
+                        <TooltipContent>
+                          Inspiration documents cannot be changed to reprint.
+                          Change the document type to Original first.
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </div>
+                </div>
+
+                {localIsReprint ? (
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground border-b pb-3">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 text-primary px-2.5 py-0.5 font-medium">
+                        <UserIcon className="h-3 w-3" />
+                        Attribution
+                      </span>
+                      <span className="text-muted-foreground/50">—</span>
+                      <span>Fill in the details about the original work</span>
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-2 sm:col-span-2">
+                        <Label htmlFor="originalAuthor" className="text-sm font-medium">
+                          Original Author <span className="text-destructive">*</span>
+                        </Label>
+                        <div className="relative">
+                          <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <input
+                            id="originalAuthor"
+                            value={originalAuthor}
+                            onChange={(e) => { setOriginalAuthor(e.target.value); saveReprintDebounced(); }}
+                            placeholder="e.g. Gabriel García Márquez"
+                            className="w-full pl-10 pr-3 py-2 text-sm rounded-lg border bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="originalTitle" className="text-sm font-medium">
+                          Original Title
+                        </Label>
+                        <div className="relative">
+                          <BookOpenIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <input
+                            id="originalTitle"
+                            value={originalTitle}
+                            onChange={(e) => { setOriginalTitle(e.target.value); saveReprintDebounced(); }}
+                            placeholder="e.g. Cien años de soledad"
+                            className="w-full pl-10 pr-3 py-2 text-sm rounded-lg border bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="originalDate" className="text-sm font-medium">
+                          Original Year
+                        </Label>
+                        <div className="relative">
+                          <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <input
+                            id="originalDate"
+                            type="number"
+                            min={0}
+                            max={2100}
+                            value={originalDate}
+                            onChange={(e) => { setOriginalDate(e.target.value); saveReprintDebounced(); }}
+                            placeholder="e.g. 1967"
+                            className="w-full pl-10 pr-3 py-2 text-sm rounded-lg border bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2 sm:col-span-2">
+                        <Label htmlFor="sourceUrl" className="text-sm font-medium">
+                          Source URL
+                        </Label>
+                        <div className="relative">
+                          <GlobeIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <input
+                            id="sourceUrl"
+                            type="url"
+                            value={sourceUrl}
+                            onChange={(e) => { setSourceUrl(e.target.value); saveReprintDebounced(); }}
+                            placeholder="e.g. https://example.com/original-work"
+                            className="w-full pl-10 pr-3 py-2 text-sm rounded-lg border bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="license" className="text-sm font-medium">
+                          License
+                        </Label>
+                        <div className="relative">
+                          <BadgeIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <input
+                            id="license"
+                            value={license}
+                            onChange={(e) => { setLicense(e.target.value); saveReprintDebounced(); }}
+                            placeholder="e.g. Public Domain"
+                            className="w-full pl-10 pr-3 py-2 text-sm rounded-lg border bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="translator" className="text-sm font-medium">
+                          Translator
+                        </Label>
+                        <div className="relative">
+                          <LanguagesIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <input
+                            id="translator"
+                            value={translator}
+                            onChange={(e) => { setTranslator(e.target.value); saveReprintDebounced(); }}
+                            placeholder="e.g. Gregory Rabassa"
+                            className="w-full pl-10 pr-3 py-2 text-sm rounded-lg border bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2 sm:col-span-2">
+                        <Label htmlFor="reprintNotes" className="text-sm font-medium">
+                          Notes
+                        </Label>
+                        <div className="relative">
+                          <FileTextIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                          <textarea
+                            id="reprintNotes"
+                            value={reprintNotes}
+                            onChange={(e) => { setReprintNotes(e.target.value); saveReprintDebounced(); }}
+                            placeholder="Additional context, acknowledgments, or notes about this reprint..."
+                            className="w-full pl-10 pr-3 py-2 text-sm rounded-lg border bg-background placeholder:text-muted-foreground resize-y min-h-[80px] focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <div className="rounded-full bg-muted/40 p-4 mb-4">
+                      <BookOpenIcon className="h-8 w-8 text-muted-foreground/40" />
+                    </div>
+                    <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
+                      Toggle the switch above to provide attribution details for
+                      content originally written by another author.
                     </p>
                   </div>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center gap-2">
-                        <Label htmlFor="reprint-toggle" className="text-sm cursor-pointer select-none">
-                          This is a reprint
-                        </Label>
-                        <Switch
-                          id="reprint-toggle"
-                          checked={isReprint}
-                          onCheckedChange={handleToggleReprint}
-                          disabled={isInspiration}
-                        />
-                      </div>
-                    </TooltipTrigger>
-                    {isInspiration && (
-                      <TooltipContent>
-                        Inspiration documents cannot be changed to reprint.
-                        Change the document type to Original first.
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2 sm:col-span-2">
-                    <Label htmlFor="originalAuthor" className="text-sm font-medium">
-                      Original Author <span className="text-destructive">*</span>
-                    </Label>
-                    <div className="relative">
-                      <UserIcon className={cn("absolute left-2.5 top-2.5 h-4 w-4", isReprint ? "text-muted-foreground" : "text-muted-foreground/30")} />
-                      <input
-                        id="originalAuthor"
-                        value={originalAuthor}
-                        onChange={(e) => { setOriginalAuthor(e.target.value); saveReprintDebounced(); }}
-                        disabled={!isReprint}
-                        placeholder="e.g. Gabriel García Márquez"
-                        className={cn(
-                          "w-full pl-8 pr-3 py-2 text-sm rounded-md border",
-                          "bg-background placeholder:text-muted-foreground",
-                          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                          !isReprint && "opacity-50 cursor-not-allowed",
-                        )}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="originalTitle" className="text-sm font-medium">
-                      Original Title
-                    </Label>
-                    <div className="relative">
-                      <BookOpenIcon className={cn("absolute left-2.5 top-2.5 h-4 w-4", isReprint ? "text-muted-foreground" : "text-muted-foreground/30")} />
-                      <input
-                        id="originalTitle"
-                        value={originalTitle}
-                        onChange={(e) => { setOriginalTitle(e.target.value); saveReprintDebounced(); }}
-                        disabled={!isReprint}
-                        placeholder="e.g. Cien años de soledad"
-                        className={cn(
-                          "w-full pl-8 pr-3 py-2 text-sm rounded-md border",
-                          "bg-background placeholder:text-muted-foreground",
-                          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                          !isReprint && "opacity-50 cursor-not-allowed",
-                        )}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="originalDate" className="text-sm font-medium">
-                      Original Year
-                    </Label>
-                    <div className="relative">
-                      <CalendarIcon className={cn("absolute left-2.5 top-2.5 h-4 w-4", isReprint ? "text-muted-foreground" : "text-muted-foreground/30")} />
-                      <input
-                        id="originalDate"
-                        type="number"
-                        min={0}
-                        max={2100}
-                        value={originalDate}
-                        onChange={(e) => { setOriginalDate(e.target.value); saveReprintDebounced(); }}
-                        disabled={!isReprint}
-                        placeholder="e.g. 1967"
-                        className={cn(
-                          "w-full pl-8 pr-3 py-2 text-sm rounded-md border",
-                          "bg-background placeholder:text-muted-foreground",
-                          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                          !isReprint && "opacity-50 cursor-not-allowed",
-                        )}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 sm:col-span-2">
-                    <Label htmlFor="sourceUrl" className="text-sm font-medium">
-                      Source URL
-                    </Label>
-                    <div className="relative">
-                      <GlobeIcon className={cn("absolute left-2.5 top-2.5 h-4 w-4", isReprint ? "text-muted-foreground" : "text-muted-foreground/30")} />
-                      <input
-                        id="sourceUrl"
-                        type="url"
-                        value={sourceUrl}
-                        onChange={(e) => { setSourceUrl(e.target.value); saveReprintDebounced(); }}
-                        disabled={!isReprint}
-                        placeholder="e.g. https://example.com/original-work"
-                        className={cn(
-                          "w-full pl-8 pr-3 py-2 text-sm rounded-md border",
-                          "bg-background placeholder:text-muted-foreground",
-                          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                          !isReprint && "opacity-50 cursor-not-allowed",
-                        )}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="license" className="text-sm font-medium">
-                      License
-                    </Label>
-                    <div className="relative">
-                      <BadgeIcon className={cn("absolute left-2.5 top-2.5 h-4 w-4", isReprint ? "text-muted-foreground" : "text-muted-foreground/30")} />
-                      <input
-                        id="license"
-                        value={license}
-                        onChange={(e) => { setLicense(e.target.value); saveReprintDebounced(); }}
-                        disabled={!isReprint}
-                        placeholder="e.g. Public Domain"
-                        className={cn(
-                          "w-full pl-8 pr-3 py-2 text-sm rounded-md border",
-                          "bg-background placeholder:text-muted-foreground",
-                          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                          !isReprint && "opacity-50 cursor-not-allowed",
-                        )}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="translator" className="text-sm font-medium">
-                      Translator
-                    </Label>
-                    <div className="relative">
-                      <LanguagesIcon className={cn("absolute left-2.5 top-2.5 h-4 w-4", isReprint ? "text-muted-foreground" : "text-muted-foreground/30")} />
-                      <input
-                        id="translator"
-                        value={translator}
-                        onChange={(e) => { setTranslator(e.target.value); saveReprintDebounced(); }}
-                        disabled={!isReprint}
-                        placeholder="e.g. Gregory Rabassa"
-                        className={cn(
-                          "w-full pl-8 pr-3 py-2 text-sm rounded-md border",
-                          "bg-background placeholder:text-muted-foreground",
-                          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                          !isReprint && "opacity-50 cursor-not-allowed",
-                        )}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 sm:col-span-2">
-                    <Label htmlFor="reprintNotes" className="text-sm font-medium">
-                      Notes
-                    </Label>
-                    <div className="relative">
-                      <FileTextIcon className={cn("absolute left-2.5 top-2.5 h-4 w-4", isReprint ? "text-muted-foreground" : "text-muted-foreground/30")} />
-                      <textarea
-                        id="reprintNotes"
-                        value={reprintNotes}
-                        onChange={(e) => { setReprintNotes(e.target.value); saveReprintDebounced(); }}
-                        disabled={!isReprint}
-                        placeholder="Additional context, acknowledgments, or notes about this reprint..."
-                        className={cn(
-                          "w-full pl-8 pr-3 py-2 text-sm rounded-md border resize-y min-h-[80px]",
-                          "bg-background placeholder:text-muted-foreground",
-                          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                          !isReprint && "opacity-50 cursor-not-allowed",
-                        )}
-                      />
-                    </div>
-                  </div>
-                </div>
+                )}
               </div>
             )}
 
