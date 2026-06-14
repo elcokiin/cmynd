@@ -1,12 +1,9 @@
-import { useState } from "react";
-import { useNavigate, useLocation } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
+import { Outlet, useNavigate, useLocation } from "@tanstack/react-router";
 import { createFileRoute } from "@tanstack/react-router";
 import { FileTextIcon, UsersIcon, FileCheckIcon, DownloadIcon } from "lucide-react";
 
 import { MobileTabBar } from "@/components/admin/mobile-tab-bar";
-import { AdminDashboard } from "@/routes/_auth/admin/index";
-import { AdminPublishedPage } from "@/routes/_auth/admin/published";
-import { AdminAuthorsPage } from "@/routes/_auth/admin/authors";
 
 import { useIsMobile } from "@/hooks/use-is-mobile";
 
@@ -22,9 +19,19 @@ function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const [mobileTab, setMobileTab] = useState<MobileTab>("dashboard");
-
   const currentPath = location.pathname;
+
+  const [mobileTab, setMobileTab] = useState<MobileTab>(() => {
+    if (currentPath === "/admin/authors") return "authors";
+    if (currentPath === "/admin/published") return "published";
+    return "dashboard";
+  });
+
+  useEffect(() => {
+    if (currentPath === "/admin/authors") setMobileTab("authors");
+    else if (currentPath === "/admin/published") setMobileTab("published");
+    else if (currentPath === "/admin") setMobileTab("dashboard");
+  }, [currentPath]);
   let activeTab: AdminTab = "dashboard";
 
   if (currentPath === "/admin/authors") activeTab = "authors";
@@ -62,19 +69,6 @@ function AdminLayout() {
         case "published":
           navigate({ to: "/admin/published" });
           break;
-      }
-    };
-
-    const renderContent = () => {
-      switch (activeTab) {
-        case "dashboard":
-          return <AdminDashboard />;
-        case "authors":
-          return <AdminAuthorsPage />;
-        case "published":
-          return <AdminPublishedPage />;
-        default:
-          return <AdminDashboard />;
       }
     };
 
@@ -121,7 +115,7 @@ function AdminLayout() {
 
         {/* Content Area */}
         <div className="flex-1 p-6 overflow-y-auto">
-          {renderContent()}
+          <Outlet />
         </div>
       </div>
     </div>

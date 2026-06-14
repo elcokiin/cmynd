@@ -19,6 +19,7 @@ import { Route as AuthEditorNewRouteImport } from './routes/_auth/editor/new'
 import { Route as AuthEditorSlugRouteImport } from './routes/_auth/editor/$slug'
 import { Route as AuthAdminReviewRouteImport } from './routes/_auth/admin/review'
 import { Route as AuthAdminPublishedRouteImport } from './routes/_auth/admin/published'
+import { Route as AuthAdminAuthorsRouteImport } from './routes/_auth/admin/authors'
 import { Route as AuthAdminReviewSlugRouteImport } from './routes/_auth/admin/review_.$slug'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -70,6 +71,11 @@ const AuthAdminPublishedRoute = AuthAdminPublishedRouteImport.update({
   path: '/published',
   getParentRoute: () => AuthAdminRouteRoute,
 } as any)
+const AuthAdminAuthorsRoute = AuthAdminAuthorsRouteImport.update({
+  id: '/authors',
+  path: '/authors',
+  getParentRoute: () => AuthAdminRouteRoute,
+} as any)
 const AuthAdminReviewSlugRoute = AuthAdminReviewSlugRouteImport.update({
   id: '/review_/$slug',
   path: '/review/$slug',
@@ -80,6 +86,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthIndexRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthAdminRouteRouteWithChildren
+  '/admin/authors': typeof AuthAdminAuthorsRoute
   '/admin/published': typeof AuthAdminPublishedRoute
   '/admin/review': typeof AuthAdminReviewRoute
   '/editor/$slug': typeof AuthEditorSlugRoute
@@ -91,6 +98,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/': typeof AuthIndexRoute
+  '/admin/authors': typeof AuthAdminAuthorsRoute
   '/admin/published': typeof AuthAdminPublishedRoute
   '/admin/review': typeof AuthAdminReviewRoute
   '/editor/$slug': typeof AuthEditorSlugRoute
@@ -105,6 +113,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_auth/admin': typeof AuthAdminRouteRouteWithChildren
   '/_auth/': typeof AuthIndexRoute
+  '/_auth/admin/authors': typeof AuthAdminAuthorsRoute
   '/_auth/admin/published': typeof AuthAdminPublishedRoute
   '/_auth/admin/review': typeof AuthAdminReviewRoute
   '/_auth/editor/$slug': typeof AuthEditorSlugRoute
@@ -119,6 +128,7 @@ export interface FileRouteTypes {
     | '/'
     | '/reset-password'
     | '/admin'
+    | '/admin/authors'
     | '/admin/published'
     | '/admin/review'
     | '/editor/$slug'
@@ -130,6 +140,7 @@ export interface FileRouteTypes {
   to:
     | '/reset-password'
     | '/'
+    | '/admin/authors'
     | '/admin/published'
     | '/admin/review'
     | '/editor/$slug'
@@ -143,6 +154,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_auth/admin'
     | '/_auth/'
+    | '/_auth/admin/authors'
     | '/_auth/admin/published'
     | '/_auth/admin/review'
     | '/_auth/editor/$slug'
@@ -230,6 +242,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthAdminPublishedRouteImport
       parentRoute: typeof AuthAdminRouteRoute
     }
+    '/_auth/admin/authors': {
+      id: '/_auth/admin/authors'
+      path: '/authors'
+      fullPath: '/admin/authors'
+      preLoaderRoute: typeof AuthAdminAuthorsRouteImport
+      parentRoute: typeof AuthAdminRouteRoute
+    }
     '/_auth/admin/review_/$slug': {
       id: '/_auth/admin/review_/$slug'
       path: '/review/$slug'
@@ -241,6 +260,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthAdminRouteRouteChildren {
+  AuthAdminAuthorsRoute: typeof AuthAdminAuthorsRoute
   AuthAdminPublishedRoute: typeof AuthAdminPublishedRoute
   AuthAdminReviewRoute: typeof AuthAdminReviewRoute
   AuthAdminIndexRoute: typeof AuthAdminIndexRoute
@@ -248,6 +268,7 @@ interface AuthAdminRouteRouteChildren {
 }
 
 const AuthAdminRouteRouteChildren: AuthAdminRouteRouteChildren = {
+  AuthAdminAuthorsRoute: AuthAdminAuthorsRoute,
   AuthAdminPublishedRoute: AuthAdminPublishedRoute,
   AuthAdminReviewRoute: AuthAdminReviewRoute,
   AuthAdminIndexRoute: AuthAdminIndexRoute,
@@ -284,12 +305,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

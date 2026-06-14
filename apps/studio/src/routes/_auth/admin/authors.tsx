@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_auth/admin/authors")({
   component: AdminAuthorsPage,
 });
 
-function AdminAuthorsPage() {
+export function AdminAuthorsPage() {
   const { handleError } = useErrorHandler();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
