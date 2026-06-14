@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
+import type { Id } from "../_generated/dataModel";
 import { phraseValidator } from "../../lib/validators/authors";
 import { getAuthorById } from "./helpers";
 import * as Auth from "../_lib/auth";
@@ -72,6 +73,47 @@ export const update = mutation({
     if (args.phrases !== undefined) updates.phrases = args.phrases;
 
     await ctx.db.patch(args.authorId, updates);
+  },
+});
+
+/**
+ * Create a new author.
+ * If the current user is an admin, the author is auto-verified.
+ * If not, the author is created unverified.
+ */
+export const createAuthor = mutation({
+  args: {
+    name: v.string(),
+    bio: v.optional(v.string()),
+    avatarUrl: v.optional(v.string()),
+  },
+  handler: async (ctx, args): Promise<Id<"authors">> => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throwConvexError(ErrorCode.UNAUTHENTICATED);
+    }
+
+    if (args.avatarUrl) {
+      try {
+        new URL(args.avatarUrl);
+      } catch {
+        throwConvexError(ErrorCode.AUTHOR_INVALID_AVATAR_URL);
+      }
+    }
+
+    const admin = await Auth.isAdmin(ctx);
+
+    const authorId = await ctx.db.insert("authors", {
+      name: args.name,
+      avatarUrl: args.avatarUrl,
+      bio: args.bio,
+      isReprinted: false,
+      isVerified: admin,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+
+    return authorId;
   },
 });
 

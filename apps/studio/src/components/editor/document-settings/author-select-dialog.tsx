@@ -9,10 +9,19 @@ import {
   CommandList,
   CommandSeparator,
 } from "@elcokiin/ui/command";
-import { Label } from "@elcokiin/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@elcokiin/ui/dialog";
 import { useQuery } from "convex/react";
-import { PlusIcon, UserIcon } from "lucide-react";
+import { PlusIcon, UserIcon, SearchIcon } from "lucide-react";
 import { useState } from "react";
+
+import { CreateAuthorDialog } from "@/components/admin/create-author-dialog";
 
 type AuthorSelectDialogProps = {
   open: boolean;
@@ -26,79 +35,96 @@ export function AuthorSelectDialog({
   onClose,
 }: AuthorSelectDialogProps) {
   const [authorSearch, setAuthorSearch] = useState("");
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   const reprintedAuthors = useQuery(
     api.authors.queries.listUnverifiedReprinted,
     { paginationOpts: { numItems: 100, cursor: null } },
   );
 
-  if (!open) return null;
+  const handleSelectAuthor = (name: string) => {
+    onSelect(name);
+    onClose();
+  };
+
+  const handleCreateSuccess = (name: string) => {
+    setShowCreateDialog(false);
+    onSelect(name);
+    onClose();
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-        <div className="bg-background rounded-lg shadow-lg p-6">
-          <h3 className="text-lg font-medium mb-4">
-            Select Original Author
-          </h3>
-          <div className="space-y-4">
-            <Label>Search Existing Reprinted Authors</Label>
-            <Command className="rounded-lg border">
-              <CommandInput
-                placeholder="Search authors..."
-                value={authorSearch}
-                onValueChange={setAuthorSearch}
-              />
-              <CommandList>
-                <CommandEmpty>No authors found.</CommandEmpty>
-                <CommandGroup>
-                  {reprintedAuthors?.page
-                    .filter((author) =>
-                      authorSearch
-                        ? author.name
-                            .toLowerCase()
-                            .includes(authorSearch.toLowerCase())
-                        : true,
-                    )
-                    .map((author) => (
-                      <CommandItem
-                        key={author._id}
-                        value={author.name}
-                        onSelect={() => {
-                          onSelect(author.name);
-                          onClose();
-                        }}
-                      >
-                        <UserIcon className="h-4 w-4 mr-2" />
-                        <span>{author.name}</span>
-                        {!author.isVerified && (
-                          <span className="ml-auto text-xs text-yellow-600">
-                            (unverified)
-                          </span>
-                        )}
-                      </CommandItem>
-                    ))}
-                </CommandGroup>
-                <CommandSeparator />
-                <CommandGroup>
-                  <CommandItem onSelect={onClose}>
-                    <PlusIcon className="h-4 w-4 mr-2" />
-                    <span>Add new author</span>
-                  </CommandItem>
-                </CommandGroup>
-              </CommandList>
-            </Command>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={onClose}>
-                Cancel
-              </Button>
-              <Button onClick={onClose}>
-                Done
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <>
+      <Dialog open={open} onOpenChange={(next) => { if (!next) onClose(); }}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Select Original Author</DialogTitle>
+            <DialogDescription>
+              Choose an existing author or add a new one.
+            </DialogDescription>
+          </DialogHeader>
+
+          <Command className="rounded-lg border">
+            <CommandInput
+              placeholder="Search authors..."
+              value={authorSearch}
+              onValueChange={setAuthorSearch}
+            />
+            <CommandList>
+              <CommandEmpty>
+                <div className="flex flex-col items-center gap-2 py-4">
+                  <SearchIcon className="h-8 w-8 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">No authors found</p>
+                </div>
+              </CommandEmpty>
+              <CommandGroup>
+                {reprintedAuthors?.page
+                  .filter((author) =>
+                    authorSearch
+                      ? author.name
+                          .toLowerCase()
+                          .includes(authorSearch.toLowerCase())
+                      : true,
+                  )
+                  .map((author) => (
+                    <CommandItem
+                      key={author._id}
+                      value={author.name}
+                      onSelect={() => handleSelectAuthor(author.name)}
+                    >
+                      <UserIcon className="h-4 w-4 mr-2" />
+                      <span>{author.name}</span>
+                      {!author.isVerified && (
+                        <span className="ml-auto text-xs text-yellow-600">
+                          (unverified)
+                        </span>
+                      )}
+                    </CommandItem>
+                  ))}
+              </CommandGroup>
+              <CommandSeparator />
+              <CommandGroup>
+                <CommandItem onSelect={() => setShowCreateDialog(true)}>
+                  <PlusIcon className="h-4 w-4 mr-2" />
+                  <span>Add new author</span>
+                </CommandItem>
+              </CommandGroup>
+            </CommandList>
+          </Command>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <CreateAuthorDialog
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+        onSuccess={handleCreateSuccess}
+      />
+    </>
   );
 }

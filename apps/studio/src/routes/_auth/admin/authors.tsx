@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { UserIcon, CheckIcon, XIcon, SearchIcon } from "lucide-react";
+import { UserIcon, CheckIcon, SearchIcon, PlusIcon } from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@elcokiin/backend/convex/_generated/api";
 
@@ -10,9 +10,10 @@ import { Input } from "@elcokiin/ui/input";
 import { Badge } from "@elcokiin/ui/badge";
 import { Switch } from "@elcokiin/ui/switch";
 import { Label } from "@elcokiin/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@elcokiin/ui/dialog";
 
+import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
 import { useErrorHandler } from "@/hooks/use-error-handler";
+import { CreateAuthorDialog } from "@/components/admin/create-author-dialog";
 
 export const Route = createFileRoute("/_auth/admin/authors")({
   component: AdminAuthorsPage,
@@ -20,11 +21,10 @@ export const Route = createFileRoute("/_auth/admin/authors")({
 
 export function AdminAuthorsPage() {
   const { handleError } = useErrorHandler();
-  const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [showVerified, setShowVerified] = useState(false);
   const [showUnverified, setShowUnverified] = useState(true);
-  const [selectedAuthor, setSelectedAuthor] = useState<string | null>(null);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   const authorsQuery = useQuery(api.authors.queries.listForAdmin, {
     paginationOpts: { numItems: 10, cursor: null },
@@ -37,7 +37,7 @@ export function AdminAuthorsPage() {
 
   const approveMutation = useMutation(api.authors.mutations.approve);
 
-  const handleApproveAuthor = async (authorId: string) => {
+  const handleApproveAuthor = async (authorId: Id<"authors">) => {
     try {
       await approveMutation({ authorId });
     } catch (error) {
@@ -64,7 +64,11 @@ export function AdminAuthorsPage() {
         <CardHeader>
           <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
             <CardTitle>Authors</CardTitle>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-4">
+              <Button onClick={() => setCreateDialogOpen(true)} size="sm">
+                <PlusIcon className="h-4 w-4 mr-1" />
+                Create Author
+              </Button>
               <div className="relative">
                 <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -166,16 +170,7 @@ export function AdminAuthorsPage() {
         </CardContent>
       </Card>
 
-      <Dialog open={!!selectedAuthor} onOpenChange={() => setSelectedAuthor(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Author Details</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p>Author details will be shown here.</p>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <CreateAuthorDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen} />
     </div>
   );
 }
