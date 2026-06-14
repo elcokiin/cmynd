@@ -1,6 +1,6 @@
 import type { AdminPublishedDocumentListItem } from "@elcokiin/backend/lib/types/documents";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@elcokiin/ui/card";
 import { Pagination } from "@elcokiin/ui/pagination";
@@ -11,9 +11,9 @@ import { useMutation } from "convex/react";
 import { EyeIcon, EyeOffIcon, SearchIcon } from "lucide-react";
 import { toast } from "sonner";
 
-import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useErrorHandler } from "@/hooks/use-error-handler";
 import { useUrlSyncedPagination } from "@/hooks/use-url-synced-pagination";
+import { useSearchUrlSync } from "@/hooks/use-search-url-sync";
 
 type PublishedDocumentListProps = {
   urlPage: number;
@@ -97,28 +97,11 @@ export function PublishedDocumentList({
     api.documents.mutations.setPublishedVisibility,
   );
   const ITEMS_PER_PAGE = 10;
-  const [localSearch, setLocalSearch] = useState(search);
   const [togglingId, setTogglingId] = useState<string | null>(null);
-  const debouncedSearch = useDebouncedValue(localSearch, 300);
-
-  useEffect(() => {
-    if (search !== localSearch) {
-      setLocalSearch(search);
-    }
-  }, [search]);
-
-  useEffect(() => {
-    if (debouncedSearch !== search) {
-      navigate({
-        to: "/admin/published",
-        search: (old) => ({
-          ...old,
-          search: debouncedSearch,
-          page: 1,
-        }),
-      });
-    }
-  }, [debouncedSearch, search, navigate]);
+  const { localSearch, setLocalSearch, debouncedSearch } = useSearchUrlSync({
+    urlSearch: search,
+    baseRoute: "/admin/published",
+  });
 
   const pagination = useUrlSyncedPagination(
     api.documents.queries.listPublishedForAdmin,

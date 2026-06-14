@@ -12,9 +12,9 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useDebouncedCallback } from "use-debounce";
 
 import { useErrorHandler } from "@/hooks/use-error-handler";
+import { useDebouncedSave } from "@/hooks/use-debounced-save";
 
 type CoverConfigTab = "image" | "prompt" | "description";
 
@@ -39,7 +39,6 @@ export function CoverSection({ documentId }: CoverSectionProps) {
 
   const updateCoverImage = useMutation(api.documents.mutations.updateCoverImage);
   const updateMetadata = useMutation(api.documents.mutations.updateMetadata);
-  const deleteFile = useMutation(api.storage.deleteFile);
   const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
 
   useEffect(() => {
@@ -53,44 +52,28 @@ export function CoverSection({ documentId }: CoverSectionProps) {
     return trimmed.length > 0 ? trimmed : undefined;
   };
 
-  const saveMetadataDebounced = useDebouncedCallback(
-    async (field: "coverImagePrompt" | "description", value: string) => {
-      try {
-        const normalized = normalizeOptionalText(value);
-        if (field === "coverImagePrompt") {
-          await updateMetadata({
-            documentId,
-            coverImagePrompt: normalized,
-          });
-          return;
-        }
-        await updateMetadata({
-          documentId,
-          description: normalized,
-        });
-      } catch (error) {
-        handleError(error, {
-          context: `CoverSection.saveMetadata.${field}`,
-        });
-      }
-    },
-    700,
-  );
-
-  useEffect(() => {
-    return () => {
-      saveMetadataDebounced.flush();
-    };
-  }, [saveMetadataDebounced]);
+  const saveMetadata = useDebouncedSave(async () => {
+    try {
+      await updateMetadata({
+        documentId,
+        coverImagePrompt: normalizeOptionalText(coverImagePrompt),
+        description: normalizeOptionalText(description),
+      });
+    } catch (error) {
+      handleError(error, {
+        context: "CoverSection.saveMetadata",
+      });
+    }
+  }, 700);
 
   const handlePromptChange = (value: string) => {
     setCoverImagePrompt(value);
-    saveMetadataDebounced("coverImagePrompt", value);
+    saveMetadata();
   };
 
   const handleDescriptionChange = (value: string) => {
     setDescription(value);
-    saveMetadataDebounced("description", value);
+    saveMetadata();
   };
 
   const handleImageUpload = async (
@@ -106,10 +89,6 @@ export function CoverSection({ documentId }: CoverSectionProps) {
 
     setIsUploading(true);
     try {
-      if (document?.coverImageId) {
-        await deleteFile({ storageId: document.coverImageId });
-      }
-
       const postUrl = await generateUploadUrl();
       const result = await fetch(postUrl, {
         method: "POST",
@@ -143,18 +122,11 @@ export function CoverSection({ documentId }: CoverSectionProps) {
 
   const handleRemoveCoverImage = async () => {
     if (!document?.coverImageId) return;
-
     try {
-      await deleteFile({ storageId: document.coverImageId });
-      await updateCoverImage({
-        documentId,
-        coverImageId: undefined,
-      });
+      await updateCoverImage({ documentId, coverImageId: undefined });
       toast.success("Cover image removed");
     } catch (error) {
-      handleError(error, {
-        context: "CoverSection.handleRemoveCoverImage",
-      });
+      handleError(error, { context: "CoverSection.handleRemoveCoverImage" });
     }
   };
 

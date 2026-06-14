@@ -1,6 +1,5 @@
 import type { AdminDocumentListItem } from "@elcokiin/backend/lib/types/documents";
 
-import { useState, useEffect } from "react";
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@elcokiin/ui/card";
 import { Pagination } from "@elcokiin/ui/pagination";
@@ -10,7 +9,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { HourglassIcon, SearchIcon } from "lucide-react";
 
 import { useUrlSyncedPagination } from "@/hooks/use-url-synced-pagination";
-import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { useSearchUrlSync } from "@/hooks/use-search-url-sync";
 
 type DashboardDocumentListProps = {
   urlPage: number;
@@ -83,32 +82,10 @@ export function DashboardDocumentList({
   const navigate = useNavigate();
   const ITEMS_PER_PAGE = 5;
 
-  // Local state for input (immediate updates for responsive typing)
-  const [localSearch, setLocalSearch] = useState(search);
-
-  // Debounced value for URL updates (avoid triggering navigation on every keystroke)
-  const debouncedSearch = useDebouncedValue(localSearch, 300);
-
-  // Sync local state with URL when URL changes externally (e.g., back/forward navigation)
-  useEffect(() => {
-    if (search !== localSearch) {
-      setLocalSearch(search);
-    }
-  }, [search]);
-
-  // Update URL when debounced search value changes
-  useEffect(() => {
-    if (debouncedSearch !== search) {
-      navigate({
-        to: "/admin",
-        search: (old) => ({
-          ...old,
-          search: debouncedSearch,
-          page: 1,
-        }),
-      });
-    }
-  }, [debouncedSearch, search, navigate]);
+  const { localSearch, setLocalSearch } = useSearchUrlSync({
+    urlSearch: search,
+    baseRoute: "/admin",
+  });
 
   const pagination = useUrlSyncedPagination(
     api.documents.queries.listForAdmin,

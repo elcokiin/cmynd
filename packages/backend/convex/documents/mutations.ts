@@ -201,6 +201,10 @@ export const updateCoverImage = mutation({
       throwConvexError(ErrorCode.DOCUMENT_PENDING_REVIEW);
     }
 
+    if (document.coverImageId) {
+      await ctx.storage.delete(document.coverImageId);
+    }
+
     await ctx.db.patch(args.documentId, {
       coverImageId: args.coverImageId,
       updatedAt: Date.now(),

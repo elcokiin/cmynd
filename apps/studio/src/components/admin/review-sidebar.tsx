@@ -18,7 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@elcokiin/ui/card";
 import { Label } from "@elcokiin/ui/label";
 import { cn } from "@elcokiin/ui/lib/utils";
 
-import { useErrorHandler } from "@/hooks/use-error-handler";
+import { useAsyncAction } from "@/hooks/use-async-action";
 
 type ReviewSidebarProps = {
   slug: string | null | undefined;
@@ -31,11 +31,7 @@ export function ReviewSidebar({
 }: ReviewSidebarProps): React.ReactNode {
   const navigate = useNavigate();
   const [observations, setObservations] = useState("");
-  const [isApproving, setIsApproving] = useState(false);
-  const [isRejecting, setIsRejecting] = useState(false);
-  const [isMovingToPending, setIsMovingToPending] = useState(false);
-  const [isUpdatingVisibility, setIsUpdatingVisibility] = useState(false);
-  const { handleError } = useErrorHandler();
+  const { execute, isLoading, isProcessing } = useAsyncAction();
 
   // Fetch document to get ID for mutations
   const document = useQuery(
@@ -57,11 +53,6 @@ export function ReviewSidebar({
     api.documents.mutations.setPublishedVisibility,
   );
 
-  const isProcessing =
-    isApproving ||
-    isRejecting ||
-    isMovingToPending ||
-    isUpdatingVisibility;
   const canReject = observations.trim().length > 0;
   const nextVisible = !document?.isVisible;
 
@@ -78,68 +69,44 @@ export function ReviewSidebar({
 
   async function handleApprove(): Promise<void> {
     if (!document) return;
-
-    setIsApproving(true);
-    try {
+    await execute("approve", async () => {
       await approveMutation({ documentId: document._id });
       toast.success("Document approved and published");
       setObservations("");
       actionCompleted();
-    } catch (error) {
-      handleError(error, { context: "ReviewSidebar.handleApprove" });
-    } finally {
-      setIsApproving(false);
-    }
+    }, "ReviewSidebar.handleApprove");
   }
 
   async function handleReject(): Promise<void> {
     if (!document || !canReject) return;
-
-    setIsRejecting(true);
-    try {
+    await execute("reject", async () => {
       await rejectMutation({
         documentId: document._id,
         reason: observations.trim(),
       });
       toast.success("Document rejected with feedback");
       actionCompleted();
-    } catch (error) {
-      handleError(error, { context: "ReviewSidebar.handleReject" });
-    } finally {
-      setIsRejecting(false);
-    }
+    }, "ReviewSidebar.handleReject");
   }
 
   async function handleMoveToPending(): Promise<void> {
     if (!document) return;
-
-    setIsMovingToPending(true);
-    try {
+    await execute("moveToPending", async () => {
       await moveBackToPendingMutation({ documentId: document._id });
       toast.success("Document moved back to pending");
       actionCompleted();
-    } catch (error) {
-      handleError(error, { context: "ReviewSidebar.handleMoveToPending" });
-    } finally {
-      setIsMovingToPending(false);
-    }
+    }, "ReviewSidebar.handleMoveToPending");
   }
 
   async function handleToggleVisibility(): Promise<void> {
     if (!document || document.status !== "published") return;
-
-    setIsUpdatingVisibility(true);
-    try {
+    await execute("toggleVisibility", async () => {
       await setPublishedVisibilityMutation({
         documentId: document._id,
         isVisible: nextVisible,
       });
       toast.success(nextVisible ? "Document is now visible" : "Document is now hidden");
-    } catch (error) {
-      handleError(error, { context: "ReviewSidebar.handleToggleVisibility" });
-    } finally {
-      setIsUpdatingVisibility(false);
-    }
+    }, "ReviewSidebar.handleToggleVisibility");
   }
 
   if (!slug) {
@@ -224,7 +191,7 @@ export function ReviewSidebar({
                 className="w-full"
                 variant={document.isVisible ? "outline" : "default"}
               >
-                {isUpdatingVisibility ? (
+                {isLoading("toggleVisibility") ? (
                   <LoaderIcon className="h-4 w-4 mr-2 animate-spin" />
                 ) : document.isVisible ? (
                   <EyeOffIcon className="h-4 w-4 mr-2" />
@@ -239,7 +206,7 @@ export function ReviewSidebar({
                 className="w-full"
                 variant="outline"
               >
-                {isMovingToPending ? (
+                {isLoading("moveToPending") ? (
                   <LoaderIcon className="h-4 w-4 mr-2 animate-spin" />
                 ) : (
                   <RefreshCcwIcon className="h-4 w-4 mr-2" />
@@ -280,7 +247,7 @@ export function ReviewSidebar({
                   className="flex-1"
                   variant="default"
                 >
-                  {isApproving ? (
+                  {isLoading("approve") ? (
                     <LoaderIcon className="h-4 w-4 mr-2 animate-spin" />
                   ) : (
                     <CheckIcon className="h-4 w-4 mr-2" />
@@ -293,7 +260,7 @@ export function ReviewSidebar({
                   className="flex-1"
                   variant="destructive"
                 >
-                  {isRejecting ? (
+                  {isLoading("reject") ? (
                     <LoaderIcon className="h-4 w-4 mr-2 animate-spin" />
                   ) : (
                     <XIcon className="h-4 w-4 mr-2" />
