@@ -22,11 +22,12 @@ import {
   UserIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useDebouncedCallback } from "use-debounce";
 
+import { useDebouncedSave } from "@/hooks/use-debounced-save";
 import { useErrorHandler } from "@/hooks/use-error-handler";
 
 import { AuthorSelectDialog } from "./author-select-dialog";
+import { InputWithIcon, TextareaWithIcon } from "@/components/ui/input-with-icon";
 
 type ReprintSectionProps = {
   documentId: Id<"documents">;
@@ -89,7 +90,7 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
     return trimmed.length > 0 ? trimmed : undefined;
   };
 
-  const saveReprintDebounced = useDebouncedCallback(async () => {
+  const save = useDebouncedSave(async () => {
     try {
       await updateReprint({
         documentId,
@@ -109,12 +110,6 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
       });
     }
   }, 700);
-
-  useEffect(() => {
-    return () => {
-      saveReprintDebounced.flush();
-    };
-  }, [saveReprintDebounced]);
 
   return (
     <div className="space-y-6">
@@ -169,16 +164,13 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
           {isReprint ? (
             <div className="relative">
               <UserIcon
-                className={cn(
-                  "absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground",
-                )}
+                className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"
               />
               <div
                 className={cn(
                   "w-full pl-8 pr-3 py-2 text-sm rounded-md border cursor-pointer",
                   "bg-background placeholder:text-muted-foreground",
                   "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                  !isReprint && "opacity-50 cursor-not-allowed",
                 )}
                 onClick={() => setShowAuthorDialog(true)}
               >
@@ -186,29 +178,17 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
               </div>
             </div>
           ) : (
-            <div className="relative">
-              <UserIcon
-                className={cn(
-                  "absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground/30",
-                )}
-              />
-              <input
-                id="originalAuthor"
-                value={originalAuthor}
-                onChange={(e) => {
-                  setOriginalAuthor(e.target.value);
-                  saveReprintDebounced();
-                }}
-                disabled={!isReprint}
-                placeholder="e.g. Gabriel García Márquez"
-                className={cn(
-                  "w-full pl-8 pr-3 py-2 text-sm rounded-md border",
-                  "bg-background placeholder:text-muted-foreground",
-                  "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                  !isReprint && "opacity-50 cursor-not-allowed",
-                )}
-              />
-            </div>
+            <InputWithIcon
+              icon={<UserIcon className="h-4 w-4" />}
+              disabled
+              id="originalAuthor"
+              value={originalAuthor}
+              onChange={(e) => {
+                setOriginalAuthor(e.target.value);
+                save();
+              }}
+              placeholder="e.g. Gabriel García Márquez"
+            />
           )}
         </div>
 
@@ -219,32 +199,17 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
           >
             Original Title
           </Label>
-          <div className="relative">
-            <BookOpenIcon
-              className={cn(
-                "absolute left-2.5 top-2.5 h-4 w-4",
-                isReprint
-                  ? "text-muted-foreground"
-                  : "text-muted-foreground/30",
-              )}
-            />
-            <input
-              id="originalTitle"
-              value={originalTitle}
-              onChange={(e) => {
-                setOriginalTitle(e.target.value);
-                saveReprintDebounced();
-              }}
-              disabled={!isReprint}
-              placeholder="e.g. Cien años de soledad"
-              className={cn(
-                "w-full pl-8 pr-3 py-2 text-sm rounded-md border",
-                "bg-background placeholder:text-muted-foreground",
-                "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                !isReprint && "opacity-50 cursor-not-allowed",
-              )}
-            />
-          </div>
+          <InputWithIcon
+            icon={<BookOpenIcon className="h-4 w-4" />}
+            disabled={!isReprint}
+            id="originalTitle"
+            value={originalTitle}
+            onChange={(e) => {
+              setOriginalTitle(e.target.value);
+              save();
+            }}
+            placeholder="e.g. Cien años de soledad"
+          />
         </div>
 
         <div className="space-y-2">
@@ -254,35 +219,20 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
           >
             Original Year
           </Label>
-          <div className="relative">
-            <CalendarIcon
-              className={cn(
-                "absolute left-2.5 top-2.5 h-4 w-4",
-                isReprint
-                  ? "text-muted-foreground"
-                  : "text-muted-foreground/30",
-              )}
-            />
-            <input
-              id="originalDate"
-              type="number"
-              min={0}
-              max={2100}
-              value={originalDate}
-              onChange={(e) => {
-                setOriginalDate(e.target.value);
-                saveReprintDebounced();
-              }}
-              disabled={!isReprint}
-              placeholder="e.g. 1967"
-              className={cn(
-                "w-full pl-8 pr-3 py-2 text-sm rounded-md border",
-                "bg-background placeholder:text-muted-foreground",
-                "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                !isReprint && "opacity-50 cursor-not-allowed",
-              )}
-            />
-          </div>
+          <InputWithIcon
+            icon={<CalendarIcon className="h-4 w-4" />}
+            disabled={!isReprint}
+            id="originalDate"
+            type="number"
+            min={0}
+            max={2100}
+            value={originalDate}
+            onChange={(e) => {
+              setOriginalDate(e.target.value);
+              save();
+            }}
+            placeholder="e.g. 1967"
+          />
         </div>
 
         <div className="space-y-2 sm:col-span-2">
@@ -292,65 +242,35 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
           >
             Source URL
           </Label>
-          <div className="relative">
-            <GlobeIcon
-              className={cn(
-                "absolute left-2.5 top-2.5 h-4 w-4",
-                isReprint
-                  ? "text-muted-foreground"
-                  : "text-muted-foreground/30",
-              )}
-            />
-            <input
-              id="sourceUrl"
-              type="url"
-              value={sourceUrl}
-              onChange={(e) => {
-                setSourceUrl(e.target.value);
-                saveReprintDebounced();
-              }}
-              disabled={!isReprint}
-              placeholder="e.g. https://example.com/original-work"
-              className={cn(
-                "w-full pl-8 pr-3 py-2 text-sm rounded-md border",
-                "bg-background placeholder:text-muted-foreground",
-                "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                !isReprint && "opacity-50 cursor-not-allowed",
-              )}
-            />
-          </div>
+          <InputWithIcon
+            icon={<GlobeIcon className="h-4 w-4" />}
+            disabled={!isReprint}
+            id="sourceUrl"
+            type="url"
+            value={sourceUrl}
+            onChange={(e) => {
+              setSourceUrl(e.target.value);
+              save();
+            }}
+            placeholder="e.g. https://example.com/original-work"
+          />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="license" className="text-sm font-medium">
             License
           </Label>
-          <div className="relative">
-            <BadgeIcon
-              className={cn(
-                "absolute left-2.5 top-2.5 h-4 w-4",
-                isReprint
-                  ? "text-muted-foreground"
-                  : "text-muted-foreground/30",
-              )}
-            />
-            <input
-              id="license"
-              value={license}
-              onChange={(e) => {
-                setLicense(e.target.value);
-                saveReprintDebounced();
-              }}
-              disabled={!isReprint}
-              placeholder="e.g. Public Domain"
-              className={cn(
-                "w-full pl-8 pr-3 py-2 text-sm rounded-md border",
-                "bg-background placeholder:text-muted-foreground",
-                "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                !isReprint && "opacity-50 cursor-not-allowed",
-              )}
-            />
-          </div>
+          <InputWithIcon
+            icon={<BadgeIcon className="h-4 w-4" />}
+            disabled={!isReprint}
+            id="license"
+            value={license}
+            onChange={(e) => {
+              setLicense(e.target.value);
+              save();
+            }}
+            placeholder="e.g. Public Domain"
+          />
         </div>
 
         <div className="space-y-2">
@@ -360,32 +280,17 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
           >
             Translator
           </Label>
-          <div className="relative">
-            <LanguagesIcon
-              className={cn(
-                "absolute left-2.5 top-2.5 h-4 w-4",
-                isReprint
-                  ? "text-muted-foreground"
-                  : "text-muted-foreground/30",
-              )}
-            />
-            <input
-              id="translator"
-              value={translator}
-              onChange={(e) => {
-                setTranslator(e.target.value);
-                saveReprintDebounced();
-              }}
-              disabled={!isReprint}
-              placeholder="e.g. Gregory Rabassa"
-              className={cn(
-                "w-full pl-8 pr-3 py-2 text-sm rounded-md border",
-                "bg-background placeholder:text-muted-foreground",
-                "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                !isReprint && "opacity-50 cursor-not-allowed",
-              )}
-            />
-          </div>
+          <InputWithIcon
+            icon={<LanguagesIcon className="h-4 w-4" />}
+            disabled={!isReprint}
+            id="translator"
+            value={translator}
+            onChange={(e) => {
+              setTranslator(e.target.value);
+              save();
+            }}
+            placeholder="e.g. Gregory Rabassa"
+          />
         </div>
 
         <div className="space-y-2 sm:col-span-2">
@@ -395,32 +300,17 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
           >
             Notes
           </Label>
-          <div className="relative">
-            <FileTextIcon
-              className={cn(
-                "absolute left-2.5 top-2.5 h-4 w-4",
-                isReprint
-                  ? "text-muted-foreground"
-                  : "text-muted-foreground/30",
-              )}
-            />
-            <textarea
-              id="reprintNotes"
-              value={reprintNotes}
-              onChange={(e) => {
-                setReprintNotes(e.target.value);
-                saveReprintDebounced();
-              }}
-              disabled={!isReprint}
-              placeholder="Additional context, acknowledgments, or notes about this reprint..."
-              className={cn(
-                "w-full pl-8 pr-3 py-2 text-sm rounded-md border resize-y min-h-[80px]",
-                "bg-background placeholder:text-muted-foreground",
-                "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                !isReprint && "opacity-50 cursor-not-allowed",
-              )}
-            />
-          </div>
+          <TextareaWithIcon
+            icon={<FileTextIcon className="h-4 w-4" />}
+            disabled={!isReprint}
+            id="reprintNotes"
+            value={reprintNotes}
+            onChange={(e) => {
+              setReprintNotes(e.target.value);
+              save();
+            }}
+            placeholder="Additional context, acknowledgments, or notes about this reprint..."
+          />
         </div>
       </div>
 
