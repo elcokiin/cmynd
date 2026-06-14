@@ -11,7 +11,7 @@ export function EmptyState(): React.ReactNode {
       <h2 className="text-xl font-semibold mb-2">No documents yet</h2>
       <p className="text-muted-foreground mb-6 max-w-md">
         Create your first document to get started. You can write original
-        content, curate from other sources, or collect inspiration.
+        content, reprint from other authors, or collect inspiration.
       </p>
       <CreateDocumentButton />
     </div>

@@ -10,7 +10,7 @@ export const slugHistoryEntryValidator = v.object({
 // Primitives
 export const documentTypeValidator = v.union(
   v.literal("own"),
-  v.literal("curated"),
+  v.literal("reprint"),
   v.literal("inspiration"),
 );
 
@@ -25,11 +25,14 @@ export const documentContentFormatValidator = v.union(
   v.literal("markdown_imported"),
 );
 
-export const curationDataValidator = v.object({
-  sourceUrl: v.string(),
-  sourceTitle: v.string(),
-  sourceAuthor: v.optional(v.string()),
-  spin: v.string(),
+export const reprintDataValidator = v.object({
+  originalAuthor: v.string(),
+  originalTitle: v.optional(v.string()),
+  originalDate: v.optional(v.number()),
+  sourceUrl: v.optional(v.string()),
+  license: v.optional(v.string()),
+  translator: v.optional(v.string()),
+  notes: v.optional(v.string()),
 });
 
 export const referenceValidator = v.object({
@@ -51,7 +54,7 @@ export const documentValidator = {
   status: documentStatusValidator,
   authorId: v.id("authors"),
   coverImageId: v.optional(v.id("_storage")),
-  curation: v.optional(curationDataValidator),
+  reprint: v.optional(reprintDataValidator),
   references: v.optional(v.array(referenceValidator)),
   createdAt: v.number(),
   updatedAt: v.number(),

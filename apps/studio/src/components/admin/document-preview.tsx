@@ -86,38 +86,64 @@ export function DocumentPreview({
           <h1 className="text-2xl font-bold">{document.title || "Untitled"}</h1>
         </div>
 
-        {/* Curation Info */}
-        {document.type === "curated" && document.curation && (
+        {/* Reprint Info */}
+        {document.type === "reprint" && document.reprint && (
           <Card className="mb-6">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Source Information</CardTitle>
+              <CardTitle className="text-sm">Reprint Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <p>
-                <span className="text-muted-foreground">Title: </span>
-                {document.curation.sourceTitle}
+                <span className="text-muted-foreground">Original Author: </span>
+                {document.reprint.originalAuthor}
               </p>
-              {document.curation.sourceAuthor && (
+              {document.reprint.originalTitle && (
                 <p>
-                  <span className="text-muted-foreground">Author: </span>
-                  {document.curation.sourceAuthor}
+                  <span className="text-muted-foreground">Original Title: </span>
+                  {document.reprint.originalTitle}
                 </p>
               )}
-              <p>
-                <span className="text-muted-foreground">URL: </span>
-                <a
-                  href={document.curation.sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  {document.curation.sourceUrl}
-                </a>
-              </p>
-              <p>
-                <span className="text-muted-foreground">Spin: </span>
-                {document.curation.spin}
-              </p>
+              {document.reprint.originalDate && (
+                <p>
+                  <span className="text-muted-foreground">Original Date: </span>
+                  {new Intl.DateTimeFormat("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  }).format(new Date(document.reprint.originalDate))}
+                </p>
+              )}
+              {document.reprint.license && (
+                <p>
+                  <span className="text-muted-foreground">License: </span>
+                  {document.reprint.license}
+                </p>
+              )}
+              {document.reprint.translator && (
+                <p>
+                  <span className="text-muted-foreground">Translator: </span>
+                  {document.reprint.translator}
+                </p>
+              )}
+              {document.reprint.sourceUrl && (
+                <p>
+                  <span className="text-muted-foreground">Source: </span>
+                  <a
+                    href={document.reprint.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    {document.reprint.sourceUrl}
+                  </a>
+                </p>
+              )}
+              {document.reprint.notes && (
+                <p>
+                  <span className="text-muted-foreground">Notes: </span>
+                  {document.reprint.notes}
+                </p>
+              )}
             </CardContent>
           </Card>
         )}

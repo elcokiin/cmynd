@@ -35,7 +35,7 @@ type DocumentSettingsDialogProps = {
   onOpenChange: (open: boolean) => void;
 };
 
-type NavigationSection = "cover" | "curate" | "references" | "export";
+type NavigationSection = "cover" | "reprint" | "references" | "export";
 
 type CoverConfigTab = "image" | "prompt" | "description";
 
@@ -182,7 +182,7 @@ export function DocumentSettingsDialog({
 
   const navItems = [
     { id: "cover" as const, label: "Cover", icon: ImageIcon },
-    { id: "curate" as const, label: "Curate", icon: BookOpenIcon },
+    { id: "reprint" as const, label: "Reprint", icon: BookOpenIcon },
     { id: "references" as const, label: "References", icon: LinkIcon },
     ...(onExportMarkdown
       ? [{ id: "export" as const, label: "Export", icon: DownloadIcon }]
@@ -368,12 +368,12 @@ export function DocumentSettingsDialog({
               </div>
             )}
 
-            {activeSection === "curate" && (
+            {activeSection === "reprint" && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-medium mb-1">Curate</h3>
+                  <h3 className="text-lg font-medium mb-1">Reprint</h3>
                   <p className="text-sm text-muted-foreground">
-                    Configure curation settings for your document.
+                    Configure reprint settings for your document.
                   </p>
                 </div>
                 <div className="flex items-center justify-center h-48 rounded-lg border border-dashed bg-muted/30">

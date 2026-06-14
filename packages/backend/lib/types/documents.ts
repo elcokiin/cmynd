@@ -4,10 +4,10 @@ import type { PublicAuthor } from "./authors";
 /**
  * Type of document content.
  * - own: Original content created from scratch
- * - curated: Content curated from another source with personal commentary
+ * - reprint: Content from another author, republished with attribution
  * - inspiration: Collection of references and inspiration
  */
-export type DocumentType = "own" | "curated" | "inspiration";
+export type DocumentType = "own" | "reprint" | "inspiration";
 
 /**
  * Storage/input format metadata for document content.
@@ -25,14 +25,17 @@ export type DocumentContentFormat = "rich_json" | "markdown_imported";
 export type DocumentStatus = "building" | "pending" | "published";
 
 /**
- * Metadata for curated documents.
- * Contains information about the original source and the curator's commentary.
+ * Metadata for reprinted documents.
+ * Contains information about the original author and the source.
  */
-export type CurationData = {
-  sourceUrl: string;
-  sourceTitle: string;
-  sourceAuthor?: string;
-  spin: string;
+export type ReprintData = {
+  originalAuthor: string;
+  originalTitle?: string;
+  originalDate?: number;
+  sourceUrl?: string;
+  license?: string;
+  translator?: string;
+  notes?: string;
 };
 
 /**
@@ -134,7 +137,7 @@ export type PublishedDocument = {
   coverImagePrompt?: string;
   type: DocumentType;
   coverImageId?: Id<"_storage">;
-  curation?: CurationData;
+  reprint?: ReprintData;
   references?: Reference[];
   publishedAt: number;
   author: PublicAuthor;

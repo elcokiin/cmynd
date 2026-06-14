@@ -334,10 +334,10 @@ export const publish = mutation({
       );
     }
 
-    if (document.type === "curated" && !document.curation) {
+    if (document.type === "reprint" && !document.reprint) {
       throwConvexError(
         ErrorCode.DOCUMENT_VALIDATION,
-        "Curated documents must have curation data",
+        "Reprint documents must have reprint data",
       );
     }
 

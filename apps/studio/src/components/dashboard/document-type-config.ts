@@ -12,9 +12,9 @@ export const documentTypeConfig: Record<
     description: "Create your own content from scratch",
     icon: PenIcon,
   },
-  curated: {
-    label: "Curated",
-    description: "Curate content from another source with your spin",
+  reprint: {
+    label: "Reprint",
+    description: "Republish content from another author with attribution",
     icon: BookOpenIcon,
   },
   inspiration: {

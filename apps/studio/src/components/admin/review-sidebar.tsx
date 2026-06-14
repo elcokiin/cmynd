@@ -193,14 +193,14 @@ export function ReviewSidebar({
             </div>
           )}
 
-          {/* Curation/Description */}
-          {document.curation && (
+          {/* Reprint */}
+          {document.reprint && (
             <div className="space-y-1">
               <Label className="text-xs text-muted-foreground">
-                Curation Spin / Prompt
+                Reprint Notes
               </Label>
               <p className="text-sm text-foreground bg-muted p-2 rounded-md">
-                {document.curation.spin}
+                {document.reprint.notes || "No notes provided"}
               </p>
             </div>
           )}
