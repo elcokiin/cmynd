@@ -5,7 +5,7 @@ import type { PublicAuthor } from "./authors";
  * Type of document content.
  * - own: Original content created from scratch
  * - reprint: Content from another author, republished with attribution
- * - inspiration: Collection of references and inspiration
+ * - inspiration: Collection of links and sources that inspired you
  */
 export type DocumentType = "own" | "reprint" | "inspiration";
 
@@ -39,10 +39,10 @@ export type ReprintData = {
 };
 
 /**
- * Reference to external content.
- * Used in inspiration documents to track sources.
+ * A single source of inspiration.
+ * Links to external content that inspired the document.
  */
-export type Reference = {
+export type Inspiration = {
   url: string;
   title: string;
   author?: string;
@@ -138,7 +138,7 @@ export type PublishedDocument = {
   type: DocumentType;
   coverImageId?: Id<"_storage">;
   reprint?: ReprintData;
-  references?: Reference[];
+  inspirations?: Inspiration[];
   publishedAt: number;
   author: PublicAuthor;
 };

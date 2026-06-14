@@ -35,7 +35,7 @@ export const reprintDataValidator = v.object({
   notes: v.optional(v.string()),
 });
 
-export const referenceValidator = v.object({
+export const inspirationValidator = v.object({
   url: v.string(),
   title: v.string(),
   author: v.optional(v.string()),
@@ -55,7 +55,7 @@ export const documentValidator = {
   authorId: v.id("authors"),
   coverImageId: v.optional(v.id("_storage")),
   reprint: v.optional(reprintDataValidator),
-  references: v.optional(v.array(referenceValidator)),
+  inspirations: v.optional(v.array(inspirationValidator)),
   createdAt: v.number(),
   updatedAt: v.number(),
   publishedAt: v.optional(v.number()),

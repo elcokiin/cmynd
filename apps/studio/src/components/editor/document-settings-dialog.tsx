@@ -48,7 +48,7 @@ type DocumentSettingsDialogProps = {
   onOpenChange: (open: boolean) => void;
 };
 
-type NavigationSection = "cover" | "reprint" | "references" | "export";
+type NavigationSection = "cover" | "reprint" | "inspirations" | "export";
 
 type CoverConfigTab = "image" | "prompt" | "description";
 
@@ -253,7 +253,7 @@ export function DocumentSettingsDialog({
   const navItems = [
     { id: "cover" as const, label: "Cover", icon: ImageIcon },
     { id: "reprint" as const, label: "Reprint", icon: BookOpenIcon },
-    { id: "references" as const, label: "References", icon: LinkIcon },
+    { id: "inspirations" as const, label: "Inspirations", icon: LinkIcon },
     ...(onExportMarkdown
       ? [{ id: "export" as const, label: "Export", icon: DownloadIcon }]
       : []),
@@ -633,12 +633,12 @@ export function DocumentSettingsDialog({
               </div>
             )}
 
-            {activeSection === "references" && (
+            {activeSection === "inspirations" && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-medium mb-1">References</h3>
+                  <h3 className="text-lg font-medium mb-1">Inspirations</h3>
                   <p className="text-sm text-muted-foreground">
-                    Add references and sources for your document.
+                    Add links and sources that inspired you.
                   </p>
                 </div>
                 <div className="flex items-center justify-center h-48 rounded-lg border border-dashed bg-muted/30">

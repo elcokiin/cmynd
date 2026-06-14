@@ -19,7 +19,7 @@ export const documentTypeConfig: Record<
   },
   inspiration: {
     label: "Inspiration",
-    description: "Collect inspiration with references",
+    description: "Collect links and sources that inspired you",
     icon: LightbulbIcon,
   },
 };

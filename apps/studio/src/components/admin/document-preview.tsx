@@ -157,15 +157,15 @@ export function DocumentPreview({
           />
         </div>
 
-        {/* References */}
-        {document.references && document.references.length > 0 && (
+        {/* Inspirations */}
+        {document.inspirations && document.inspirations.length > 0 && (
           <Card className="mt-6">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">References</CardTitle>
+              <CardTitle className="text-sm">Inspirations</CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
-                {document.references.map((ref, index) => (
+                {document.inspirations.map((ref, index) => (
                   <li key={index} className="flex items-start gap-2 text-sm">
                     <LinkIcon className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
                     <div>
