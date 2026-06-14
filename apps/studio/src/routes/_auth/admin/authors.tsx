@@ -8,8 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@elcokiin/ui/card";
 import { Button } from "@elcokiin/ui/button";
 import { Input } from "@elcokiin/ui/input";
 import { Badge } from "@elcokiin/ui/badge";
-import { Switch } from "@elcokiin/ui/switch";
-import { Label } from "@elcokiin/ui/label";
 
 import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
 import { useErrorHandler } from "@/hooks/use-error-handler";
@@ -22,10 +20,10 @@ export const Route = createFileRoute("/_auth/admin/authors")({
 export function AdminAuthorsPage() {
   const { handleError } = useErrorHandler();
   const [search, setSearch] = useState("");
-  const [showVerified, setShowVerified] = useState(false);
-  const [showUnverified, setShowUnverified] = useState(true);
+  const [filter, setFilter] = useState<"all" | "verified" | "unverified">("unverified");
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
-  const verifiedFilter = showVerified ? true : showUnverified ? false : undefined;
+  const verifiedFilter = filter === "all" ? undefined : filter === "verified";
 
   const authorsQuery = useQuery(api.authors.queries.listForAdmin, {
     paginationOpts: { numItems: 10, cursor: null },
@@ -36,12 +34,21 @@ export function AdminAuthorsPage() {
   const isLoading = authorsQuery === undefined;
 
   const approveMutation = useMutation(api.authors.mutations.approve);
+  const unverifyMutation = useMutation(api.authors.mutations.unverify);
 
   const handleApproveAuthor = async (authorId: Id<"authors">) => {
     try {
       await approveMutation({ authorId });
     } catch (error) {
       handleError(error, { context: "AdminAuthorsPage.handleApproveAuthor" });
+    }
+  };
+
+  const handleUnverifyAuthor = async (authorId: Id<"authors">) => {
+    try {
+      await unverifyMutation({ authorId });
+    } catch (error) {
+      handleError(error, { context: "AdminAuthorsPage.handleUnverifyAuthor" });
     }
   };
 
@@ -79,25 +86,18 @@ export function AdminAuthorsPage() {
                   onChange={(e) => setSearch(e.target.value)}
                 />
               </div>
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="unverified-toggle"
-                  checked={showUnverified}
-                  onCheckedChange={setShowUnverified}
-                />
-                <Label htmlFor="unverified-toggle" className="text-sm">
-                  Unverified
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="verified-toggle"
-                  checked={showVerified}
-                  onCheckedChange={setShowVerified}
-                />
-                <Label htmlFor="verified-toggle" className="text-sm">
-                  Verified
-                </Label>
+              <div className="flex items-center gap-1 border rounded-lg p-0.5">
+                {(["all", "unverified", "verified"] as const).map((f) => (
+                  <Button
+                    key={f}
+                    size="sm"
+                    variant={filter === f ? "default" : "ghost"}
+                    onClick={() => setFilter(f)}
+                    className="text-xs capitalize"
+                  >
+                    {f === "all" ? "All" : f}
+                  </Button>
+                ))}
               </div>
             </div>
           </div>
@@ -149,7 +149,17 @@ export function AdminAuthorsPage() {
                     <p className="text-sm text-muted-foreground">
                       Created {new Date(author.createdAt).toLocaleDateString()}
                     </p>
-                    {!author.isVerified && (
+                    {author.isVerified ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleUnverifyAuthor(author._id)}
+                        className="mt-2"
+                      >
+                        <UserIcon className="h-4 w-4 mr-1" />
+                        Unverify
+                      </Button>
+                    ) : (
                       <Button
                         size="sm"
                         onClick={() => handleApproveAuthor(author._id)}

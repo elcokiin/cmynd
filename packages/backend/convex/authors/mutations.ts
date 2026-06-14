@@ -139,3 +139,26 @@ export const approve = mutation({
     });
   },
 });
+
+/**
+ * Admin unverifies an author.
+ */
+export const unverify = mutation({
+  args: {
+    authorId: v.id("authors"),
+  },
+  handler: async (ctx, args): Promise<void> => {
+    await Auth.requireAdmin(ctx);
+
+    const author = await getAuthorById(ctx, args.authorId);
+
+    if (!author.isVerified) {
+      throwConvexError(ErrorCode.AUTHOR_ALREADY_UNVERIFIED);
+    }
+
+    await ctx.db.patch(args.authorId, {
+      isVerified: false,
+      updatedAt: Date.now(),
+    });
+  },
+});

@@ -87,7 +87,7 @@ function AdminLayout() {
       ) : null}
 
       {/* Desktop Layout */}
-      <div className="flex-1 flex overflow-auto">
+      <div className="flex-1 flex">
         {/* Sidebar Navigation */}
         <div className="hidden md:flex w-56 border-r bg-muted/30 p-4 flex-col gap-1">
           {tabs.map((tab) => {

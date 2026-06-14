@@ -1,7 +1,6 @@
 import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
 
 import { api } from "@elcokiin/backend/convex/_generated/api";
-import { Button } from "@elcokiin/ui/button";
 import { Label } from "@elcokiin/ui/label";
 import { Switch } from "@elcokiin/ui/switch";
 import {
@@ -9,7 +8,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@elcokiin/ui/tooltip";
-import { cn } from "@elcokiin/ui/lib/utils";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery } from "convex/react";
 import {
@@ -19,7 +17,6 @@ import {
   FileTextIcon,
   GlobeIcon,
   LanguagesIcon,
-  SearchIcon,
   UserIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -27,7 +24,7 @@ import { useEffect, useState } from "react";
 import { useDebouncedSave } from "@/hooks/use-debounced-save";
 import { useErrorHandler } from "@/hooks/use-error-handler";
 
-import { AuthorSelectDialog } from "@/components/authors/author-select-dialog";
+import { AuthorSearchCommand } from "@/components/authors/author-search-command";
 import { InputWithIcon, TextareaWithIcon } from "@/components/ui/input-with-icon";
 
 type ReprintFormValues = {
@@ -62,7 +59,6 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
   const isInspiration = document?.type === "inspiration";
 
   const [localIsReprint, setLocalIsReprint] = useState(false);
-  const [showAuthorDialog, setShowAuthorDialog] = useState(false);
 
   const form = useForm({
     defaultValues: {
@@ -166,40 +162,21 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
         <form.Field name="originalAuthor">
           {(field) => (
             <div className="space-y-2 sm:col-span-2">
-              <div className="flex items-center justify-between">
-                <Label
-                  htmlFor={field.name}
-                  className="text-sm font-medium"
-                >
-                  Original Author{" "}
-                  <span className="text-destructive">*</span>
-                </Label>
-                {isReprint && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-6 text-xs"
-                    onClick={() => setShowAuthorDialog(true)}
-                  >
-                    <SearchIcon className="h-3 w-3 mr-1" />
-                    Search Existing
-                  </Button>
-                )}
-              </div>
+              <Label
+                htmlFor={field.name}
+                className="text-sm font-medium"
+              >
+                Original Author{" "}
+                <span className="text-destructive">*</span>
+              </Label>
               {isReprint ? (
-                <div className="relative">
-                  <UserIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <div
-                    className={cn(
-                      "w-full pl-8 pr-3 py-2 text-sm rounded-md border cursor-pointer",
-                      "bg-background placeholder:text-muted-foreground",
-                      "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                    )}
-                    onClick={() => setShowAuthorDialog(true)}
-                  >
-                    {field.state.value || "Select an author..."}
-                  </div>
-                </div>
+                <AuthorSearchCommand
+                  onSelect={(name, id) => {
+                    field.handleChange(name);
+                    form.setFieldValue("originalAuthorId", id ?? "");
+                    save();
+                  }}
+                />
               ) : (
                 <InputWithIcon
                   icon={<UserIcon className="h-4 w-4" />}
@@ -363,15 +340,6 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
         </form.Field>
       </div>
 
-      <AuthorSelectDialog
-        open={showAuthorDialog}
-        onSelect={(name, id) => {
-          form.setFieldValue("originalAuthor", name);
-          form.setFieldValue("originalAuthorId", id ?? "");
-          save();
-        }}
-        onClose={() => setShowAuthorDialog(false)}
-      />
     </div>
   );
 }

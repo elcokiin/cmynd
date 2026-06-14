@@ -45,6 +45,7 @@ export const ERROR_DEFAULTS: Record<ErrorCode, string> = {
   [ErrorCodes.AUTHOR_OWNERSHIP]: "You don't own this author profile",
   [ErrorCodes.AUTHOR_INVALID_AVATAR_URL]: "Invalid avatar URL format",
   [ErrorCodes.AUTHOR_ALREADY_VERIFIED]: "Author is already verified",
+  [ErrorCodes.AUTHOR_ALREADY_UNVERIFIED]: "Author is already unverified",
   [ErrorCodes.AUTHOR_UNVERIFIED]: "Original author must be verified before publishing",
 
   // Unknown Errors (9xxx)
