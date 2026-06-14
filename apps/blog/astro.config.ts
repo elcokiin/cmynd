@@ -24,7 +24,7 @@ export default defineConfig({
     },
     optimizeDeps: {
       include: ["gsap", "split-type"],
-      exclude: ["astro", "@elcokiin/ui", "@elcokiin/backend"],
+      exclude: ["astro", "@elcokiin/backend"],
     },
   },
 

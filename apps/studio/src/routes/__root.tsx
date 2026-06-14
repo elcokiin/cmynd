@@ -3,7 +3,6 @@ import type { QueryClient } from "@tanstack/react-query";
 
 import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
 import { Toaster } from "@elcokiin/ui/sonner";
-import { ThemeProvider } from "@elcokiin/ui/theme-provider";
 import {
   HeadContent,
   Outlet,
@@ -13,11 +12,11 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { createServerFn } from "@tanstack/react-start";
-import { useThemeShortcut } from "@/hooks/use-theme-shortcut";
 
 import { authClient } from "@/lib/auth-client";
 import { getToken } from "@/lib/auth-server";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { Providers } from "@/components/providers";
 
 import appCss from "../index.css?url";
 
@@ -75,11 +74,6 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
   },
 });
 
-function ThemeSetter() {
-  useThemeShortcut();
-  return null;
-}
-
 function RootDocument() {
   const context = useRouteContext({ from: Route.id });
   return (
@@ -93,8 +87,7 @@ function RootDocument() {
           authClient={authClient}
           initialToken={context.token}
         >
-          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-            <ThemeSetter />
+          <Providers>
             <ErrorBoundary>
               <div className="grid h-svh grid-rows-[auto_1fr]">
                 <Outlet />
@@ -102,7 +95,7 @@ function RootDocument() {
             </ErrorBoundary>
             <Toaster richColors />
             <TanStackRouterDevtools position="bottom-right" />
-          </ThemeProvider>
+          </Providers>
         </ConvexBetterAuthProvider>
         <Scripts />
       </body>

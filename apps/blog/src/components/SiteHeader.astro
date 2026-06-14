@@ -5,7 +5,8 @@ import logo from '../assets/logo.png';
 
 <header 
   id="site-header" 
-  class="z-10 fixed top-0 flex items-center justify-between p-2 w-full sm:p-4 md:px-20 text-white bg-primary-blue border-b border-transparent transition-all duration-255"
+  class="z-10 fixed top-0 flex items-center justify-between p-2 w-full sm:p-4 md:px-20 border-b border-transparent transition-all duration-255"
+  style="background: var(--header-bg); color: var(--header-text);"
 >
   <div class="flex items-center w-32 justify-between sm:w-40">
     <a href="/" data-astro-prefetch>
@@ -13,7 +14,7 @@ import logo from '../assets/logo.png';
         <Image src={logo} alt="elcokiin logo" class="object-cover rounded-full w-full h-full" />
       </figure>
     </a>
-    <a href="/" class="font-bold sm:text-2xl" data-astro-prefetch>
+    <a href="/" class="font-bold sm:text-2xl" data-astro-prefetch style="color: var(--header-text);">
       Inicio
     </a>
   </div>
@@ -24,8 +25,8 @@ import logo from '../assets/logo.png';
       target="_blank"
       rel="noopener noreferrer"
       id="header-author-name" 
-      class="animated-underline font-bold text-xl text-white opacity-0 pointer-events-none transition-opacity duration-300 hidden sm:block"
-      style="--underline-height: 2px; --underline-bottom: -2px;"
+      class="animated-underline font-bold text-xl opacity-0 pointer-events-none transition-opacity duration-300 hidden sm:block"
+      style="color: var(--header-text); --underline-height: 2px; --underline-bottom: -2px;"
     >
       Diego Tenjo
     </a>
@@ -33,7 +34,7 @@ import logo from '../assets/logo.png';
       {/* TODO: Add ToogleTheme and ToogleLanguage components when available */}
     </div>
     {/* Mobile Menu Button */}
-    <button class="w-8 h-8 sm:hidden flex items-center justify-center text-white" aria-label="Menu" id="mobile-menu-btn">
+    <button class="w-8 h-8 sm:hidden flex items-center justify-center" aria-label="Menu" id="mobile-menu-btn" style="color: var(--header-text);">
       <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 512 512" height="26" width="26" xmlns="http://www.w3.org/2000/svg">
         <path d="M32 96v64h448V96H32zm0 128v64h448v-64H32zm0 128v64h448v-64H32z"></path>
       </svg>
@@ -52,22 +53,20 @@ import logo from '../assets/logo.png';
       const threshold = window.innerHeight * 0.4;
       
       if (scrolled > threshold) {
-        header.classList.add('backdrop-blur-md', 'bg-primary-blue/80', 'border-gray-700');
-        header.classList.remove('bg-primary-blue', 'border-transparent');
+        header.classList.add('backdrop-blur-md', 'border-gray-700');
+        header.style.background = `color-mix(in srgb, var(--header-bg) 80%, transparent)`;
+        header.classList.remove('border-transparent');
       } else {
-        header.classList.remove('backdrop-blur-md', 'bg-primary-blue/80');
-        header.classList.add('bg-primary-blue', 'border-transparent');
+        header.classList.remove('backdrop-blur-md');
+        header.style.background = 'var(--header-bg)';
+        header.classList.add('border-transparent');
       }
     };
 
     window.addEventListener('scroll', handleScroll);
-    // Initial check
     handleScroll();
   }
 
-  // Setup on initial load
   setupHeaderScroll();
-  
-  // Setup on Astro view transitions (if used)
   document.addEventListener('astro:page-load', setupHeaderScroll);
 </script>
