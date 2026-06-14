@@ -5,7 +5,10 @@ import { getAuthorById } from "./helpers";
 import { toPublicAuthor, toAdminAuthor } from "./projections";
 import type { PublicAuthor, AdminAuthor } from "../../lib/types/authors";
 import * as Auth from "../_lib/auth";
-import { paginatedAuthorsValidator, paginatedAdminAuthorsValidator } from "../../lib/validators/authors";
+import {
+  paginatedAuthorsValidator,
+  paginatedAdminAuthorsValidator,
+} from "../../lib/validators/authors";
 
 /**
  * Get a single author by ID.
@@ -93,7 +96,7 @@ export const getForAdmin = query({
  * List original author candidates.
  * Returns authors suitable as original authors for reprints:
  * - Verified authors, OR
- * - Unverified authors created by the current user
+ * - Unverified authors created by other users (not the current user)
  */
 export const listOriginalAuthors = query({
   args: {
@@ -114,7 +117,10 @@ export const listOriginalAuthors = query({
       .filter((q) =>
         q.or(
           q.eq(q.field("isVerified"), true),
-          q.eq(q.field("createdBy"), identity.subject),
+          q.and(
+            q.eq(q.field("userId"), undefined),
+            q.eq(q.field("createdBy"), identity.subject),
+          ),
         ),
       )
       .order("desc")
@@ -126,3 +132,4 @@ export const listOriginalAuthors = query({
     };
   },
 });
+
