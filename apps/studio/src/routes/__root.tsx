@@ -75,8 +75,12 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
   },
 });
 
-function RootDocument() {
+function ThemeSetter() {
   useThemeShortcut();
+  return null;
+}
+
+function RootDocument() {
   const context = useRouteContext({ from: Route.id });
   return (
     <html lang="en" suppressHydrationWarning>
@@ -90,6 +94,7 @@ function RootDocument() {
           initialToken={context.token}
         >
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+            <ThemeSetter />
             <ErrorBoundary>
               <div className="grid h-svh grid-rows-[auto_1fr]">
                 <Outlet />
