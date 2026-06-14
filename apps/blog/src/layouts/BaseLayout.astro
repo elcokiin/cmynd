@@ -1,5 +1,6 @@
 ---
 import { SITE } from "../lib/config";
+import { ThemeShortcut } from "../components/react/ThemeShortcut";
 
 type Props = {
   title: string;
@@ -56,8 +57,18 @@ const jsonLd = {
     <meta name="twitter:image" content={imageUrl} />
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;600;700&family=Lora:wght@400;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    <script is:inline>
+      (function() {
+        var theme = localStorage.getItem('theme');
+        if (theme === 'light') {
+          document.documentElement.setAttribute('data-theme', 'light');
+          document.documentElement.classList.remove('dark');
+        }
+      })();
+    </script>
   </head>
   <body>
     <slot />
+    <ThemeShortcut client:only="react" />
   </body>
 </html>

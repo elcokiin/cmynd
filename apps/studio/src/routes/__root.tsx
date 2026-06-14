@@ -13,6 +13,7 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { createServerFn } from "@tanstack/react-start";
+import { useThemeShortcut } from "@/hooks/use-theme-shortcut";
 
 import { authClient } from "@/lib/auth-client";
 import { getToken } from "@/lib/auth-server";
@@ -75,6 +76,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 });
 
 function RootDocument() {
+  useThemeShortcut();
   const context = useRouteContext({ from: Route.id });
   return (
     <html lang="en" suppressHydrationWarning>
