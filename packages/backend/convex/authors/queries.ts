@@ -94,7 +94,7 @@ export const getForAdmin = query({
 });
 
 /**
- * List original author candidates (admin only).
+ * List original author candidates.
  * Returns authors suitable as original authors for reprints:
  * - Authors marked as reprinted, OR
  * - Verified authors not linked to a user account
@@ -106,9 +106,9 @@ export const listOriginalAuthors = query({
       cursor: v.union(v.string(), v.null()),
     }),
   },
-  returns: paginatedAdminAuthorsValidator,
+  returns: paginatedAuthorsValidator,
   handler: async (ctx, args) => {
-    await Auth.requireAdmin(ctx);
+    await Auth.requireAuth(ctx);
 
     const result = await ctx.db
       .query("authors")
@@ -126,7 +126,7 @@ export const listOriginalAuthors = query({
 
     return {
       ...result,
-      page: result.page.map(toAdminAuthor),
+      page: result.page.map(toPublicAuthor),
     };
   },
 });
