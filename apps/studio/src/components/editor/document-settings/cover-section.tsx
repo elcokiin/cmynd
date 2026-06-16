@@ -15,6 +15,7 @@ import { toast } from "sonner";
 
 import { useErrorHandler } from "@/hooks/use-error-handler";
 import { useDebouncedSave } from "@/hooks/use-debounced-save";
+import { normalizeOptionalText } from "@/lib/text";
 
 type CoverConfigTab = "image" | "prompt" | "description";
 
@@ -49,11 +50,6 @@ export function CoverSection({ documentId }: CoverSectionProps) {
     setCoverImagePrompt(document.coverImagePrompt ?? "");
     setDescription(document.description ?? "");
   }, [document]);
-
-  const normalizeOptionalText = (value: string): string | undefined => {
-    const trimmed = value.trim();
-    return trimmed.length > 0 ? trimmed : undefined;
-  };
 
   const saveMetadata = useDebouncedSave(async () => {
     try {

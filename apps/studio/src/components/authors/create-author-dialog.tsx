@@ -20,6 +20,7 @@ import { UserIcon, ImageIcon, FileTextIcon, CheckIcon, ClockIcon, LoaderIcon } f
 
 import { InputWithIcon, TextareaWithIcon } from "@/components/ui/input-with-icon";
 import { useErrorHandler } from "@/hooks/use-error-handler";
+import { normalizeOptionalText } from "@/lib/text";
 
 const createAuthorSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -54,8 +55,8 @@ export function CreateAuthorDialog({ open, onOpenChange, onSuccess }: CreateAuth
         const name = value.name.trim();
         const authorId = await createAuthor({
           name,
-          bio: value.bio?.trim() || undefined,
-          avatarUrl: value.avatarUrl?.trim() || undefined,
+          bio: normalizeOptionalText(value.bio ?? ""),
+          avatarUrl: normalizeOptionalText(value.avatarUrl ?? ""),
         });
         onOpenChange(false);
         onSuccess?.(name, authorId);

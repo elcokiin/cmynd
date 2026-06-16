@@ -23,6 +23,7 @@ import {
 	TextareaWithIcon,
 } from "@/components/ui/input-with-icon";
 import { useErrorHandler } from "@/hooks/use-error-handler";
+import { normalizeOptionalText } from "@/lib/text";
 
 type ReprintFormValues = {
 	type: "own" | "reprint";
