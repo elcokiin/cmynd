@@ -66,7 +66,15 @@ export function AuthorSearchCommand({ onSelect }: AuthorSearchCommandProps) {
                       onSelect(author.name, author._id);
                     }}
                   >
-                    <UserIcon className="h-4 w-4 mr-2" />
+                    {author.avatarUrl ? (
+                      <img
+                        src={author.avatarUrl}
+                        alt=""
+                        className="h-5 w-5 rounded-full mr-2 object-cover"
+                      />
+                    ) : (
+                      <UserIcon className="h-4 w-4 mr-2 shrink-0" />
+                    )}
                     <span>{author.name}</span>
                     {!author.isVerified && (
                       <span className="ml-auto text-xs text-yellow-600">

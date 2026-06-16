@@ -8,7 +8,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@elcokiin/ui/tooltip";
-import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery } from "convex/react";
 import {
   BadgeIcon,
@@ -21,8 +20,8 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { useDebouncedSave } from "@/hooks/use-debounced-save";
 import { useErrorHandler } from "@/hooks/use-error-handler";
+import { useServerForm } from "@/hooks/use-server-form";
 
 import { AuthorSearchCommand } from "@/components/authors/author-search-command";
 import { InputWithIcon, TextareaWithIcon } from "@/components/ui/input-with-icon";
@@ -60,7 +59,11 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
 
   const [localIsReprint, setLocalIsReprint] = useState(false);
 
-  const form = useForm({
+  useEffect(() => {
+    setLocalIsReprint(document?.type === "reprint");
+  }, [document?.type]);
+
+  const { form } = useServerForm({
     defaultValues: {
       originalAuthor: "",
       originalAuthorId: "",
@@ -71,13 +74,28 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
       translator: "",
       reprintNotes: "",
     } as ReprintFormValues,
-    onSubmit: async ({ value }) => {
+    queryData: document,
+    mapDataToForm: (doc) => {
+      return {
+        originalAuthor: doc.reprint?.originalAuthor ?? "",
+        originalAuthorId: doc.reprint?.originalAuthorId ?? "",
+        originalTitle: doc.reprint?.originalTitle ?? "",
+        originalDate: doc.reprint?.originalDate
+          ? String(doc.reprint.originalDate)
+          : "",
+        sourceUrl: doc.reprint?.sourceUrl ?? "",
+        license: doc.reprint?.license ?? "",
+        translator: doc.reprint?.translator ?? "",
+        reprintNotes: doc.reprint?.notes ?? "",
+      };
+    },
+    onSubmit: async (value) => {
       try {
         await updateReprint({
           documentId,
           reprint: {
             originalAuthor: value.originalAuthor.trim() || "(unknown)",
-            originalAuthorId: value.originalAuthorId || undefined,
+            originalAuthorId: value.originalAuthorId ? (value.originalAuthorId as Id<"authors">) : undefined,
             originalTitle: normalizeOptionalText(value.originalTitle),
             originalDate: value.originalDate ? Number(value.originalDate) : undefined,
             sourceUrl: normalizeOptionalText(value.sourceUrl),
@@ -87,29 +105,10 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
           },
         });
       } catch (error) {
-        handleError(error, {
-          context: "ReprintSection.saveReprint",
-        });
+        handleError(error, { context: "ReprintSection.saveReprint" });
       }
     },
   });
-
-  useEffect(() => {
-    if (!document) return;
-    setLocalIsReprint(document.type === "reprint");
-    form.reset({
-      originalAuthor: document.reprint?.originalAuthor ?? "",
-      originalAuthorId: document.reprint?.originalAuthorId ?? "",
-      originalTitle: document.reprint?.originalTitle ?? "",
-      originalDate: document.reprint?.originalDate
-        ? String(document.reprint.originalDate)
-        : "",
-      sourceUrl: document.reprint?.sourceUrl ?? "",
-      license: document.reprint?.license ?? "",
-      translator: document.reprint?.translator ?? "",
-      reprintNotes: document.reprint?.notes ?? "",
-    });
-  }, [document]);
 
   const handleToggleReprint = async (checked: boolean) => {
     setLocalIsReprint(checked);
@@ -120,15 +119,9 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
       });
     } catch (error) {
       setLocalIsReprint(!checked);
-      handleError(error, {
-        context: "ReprintSection.handleToggleReprint",
-      });
+      handleError(error, { context: "ReprintSection.handleToggleReprint" });
     }
   };
-
-  const save = useDebouncedSave(async () => {
-    await form.handleSubmit();
-  }, 700);
 
   return (
     <div className="space-y-6">
@@ -174,7 +167,6 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
                   onSelect={(name, id) => {
                     field.handleChange(name);
                     form.setFieldValue("originalAuthorId", id ?? "");
-                    save();
                   }}
                 />
               ) : (
@@ -185,7 +177,6 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
                   value={field.state.value}
                   onChange={(e) => {
                     field.handleChange(e.target.value);
-                    save();
                   }}
                   placeholder="e.g. Gabriel García Márquez"
                 />
@@ -210,7 +201,6 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
                 value={field.state.value}
                 onChange={(e) => {
                   field.handleChange(e.target.value);
-                  save();
                 }}
                 placeholder="e.g. Cien años de soledad"
               />
@@ -237,7 +227,6 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
                 value={field.state.value}
                 onChange={(e) => {
                   field.handleChange(e.target.value);
-                  save();
                 }}
                 placeholder="e.g. 1967"
               />
@@ -262,7 +251,6 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
                 value={field.state.value}
                 onChange={(e) => {
                   field.handleChange(e.target.value);
-                  save();
                 }}
                 placeholder="e.g. https://example.com/original-work"
               />
@@ -283,7 +271,6 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
                 value={field.state.value}
                 onChange={(e) => {
                   field.handleChange(e.target.value);
-                  save();
                 }}
                 placeholder="e.g. Public Domain"
               />
@@ -307,7 +294,6 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
                 value={field.state.value}
                 onChange={(e) => {
                   field.handleChange(e.target.value);
-                  save();
                 }}
                 placeholder="e.g. Gregory Rabassa"
               />
@@ -331,7 +317,6 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
                 value={field.state.value}
                 onChange={(e) => {
                   field.handleChange(e.target.value);
-                  save();
                 }}
                 placeholder="Additional context, acknowledgments, or notes about this reprint..."
               />

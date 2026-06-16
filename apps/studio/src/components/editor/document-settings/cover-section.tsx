@@ -27,6 +27,7 @@ export function CoverSection({ documentId }: CoverSectionProps) {
   const [coverImagePrompt, setCoverImagePrompt] = useState("");
   const [description, setDescription] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const initializedRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { handleError } = useErrorHandler();
@@ -43,6 +44,8 @@ export function CoverSection({ documentId }: CoverSectionProps) {
 
   useEffect(() => {
     if (!document) return;
+    if (initializedRef.current) return;
+    initializedRef.current = true;
     setCoverImagePrompt(document.coverImagePrompt ?? "");
     setDescription(document.description ?? "");
   }, [document]);
