@@ -71,12 +71,14 @@ export function useUrlSyncedPagination<
   const pagination = useManualPagination(query, args, pageSize);
 
   // Effect 1: URL → Pagination State
-  // Sync pagination to URL when urlPage changes (e.g., back/forward navigation)
+  // Sync pagination state when URL changes (e.g., back/forward navigation)
+  // Intentionally does NOT depend on pagination.currentPage to avoid fighting
+  // with Effect 2's state → URL sync and creating an infinite loop.
   useEffect(() => {
     if (pagination.currentPage !== urlPage) {
       pagination.goToPage(urlPage);
     }
-  }, [urlPage, pagination.currentPage, pagination.goToPage]);
+  }, [urlPage, pagination.goToPage]);
 
   // Effect 2: Pagination State → URL
   // When user changes page via pagination controls, update URL preserving existing params
