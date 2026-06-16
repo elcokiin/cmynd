@@ -2,6 +2,7 @@ import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
 
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { Button } from "@elcokiin/ui/button";
+import { Textarea } from "@elcokiin/ui/textarea";
 import { cn } from "@elcokiin/ui/lib/utils";
 import { useMutation, useQuery } from "convex/react";
 import {
@@ -225,15 +226,11 @@ export function CoverSection({ documentId }: CoverSectionProps) {
             inside the blog. Save the prompt used to generate this
             image.
           </p>
-          <textarea
+          <Textarea
             value={coverImagePrompt}
             onChange={(event) => handlePromptChange(event.target.value)}
             placeholder="e.g. cinematic street photo, golden hour, 50mm lens, high detail"
-            className={cn(
-              "w-full min-h-[220px] p-3 text-sm rounded-md border resize-y",
-              "bg-background placeholder:text-muted-foreground",
-              "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-            )}
+            className="min-h-[220px] resize-y"
           />
         </div>
       )}
@@ -243,15 +240,11 @@ export function CoverSection({ documentId }: CoverSectionProps) {
           <p className="text-sm text-muted-foreground">
             Add a short summary for this document. Optional.
           </p>
-          <textarea
+          <Textarea
             value={description}
             onChange={(event) => handleDescriptionChange(event.target.value)}
             placeholder="Write a concise summary of what this document covers..."
-            className={cn(
-              "w-full min-h-[220px] p-3 text-sm rounded-md border resize-y",
-              "bg-background placeholder:text-muted-foreground",
-              "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-            )}
+            className="min-h-[220px] resize-y"
           />
         </div>
       )}
