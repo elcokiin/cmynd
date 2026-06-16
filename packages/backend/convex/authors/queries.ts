@@ -58,18 +58,34 @@ export const listForAdmin = query({
       cursor: v.union(v.string(), v.null()),
     }),
     verified: v.optional(v.boolean()),
+    search: v.optional(v.string()),
   },
   returns: paginatedAdminAuthorsValidator,
   handler: async (ctx, args) => {
     await Auth.requireAdmin(ctx);
 
-    let query = ctx.db.query("authors").order("desc");
+    let result;
 
-    if (args.verified !== undefined) {
-      query = query.filter((q) => q.eq(q.field("isVerified"), args.verified));
+    if (args.search) {
+      result = await ctx.db
+        .query("authors")
+        .withSearchIndex("search_name", (q) => {
+          let base = q.search("name", args.search!);
+          if (args.verified !== undefined) {
+            base = base.eq("isVerified", args.verified);
+          }
+          return base;
+        })
+        .paginate(args.paginationOpts);
+    } else {
+      let query = ctx.db.query("authors").order("desc");
+
+      if (args.verified !== undefined) {
+        query = query.filter((q) => q.eq(q.field("isVerified"), args.verified));
+      }
+
+      result = await query.paginate(args.paginationOpts);
     }
-
-    const result = await query.paginate(args.paginationOpts);
 
     return {
       ...result,

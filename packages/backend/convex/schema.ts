@@ -4,7 +4,12 @@ import { authorValidator } from "../lib/validators/authors";
 import { documentValidator } from "../lib/validators/documents";
 
 export default defineSchema({
-  authors: defineTable(authorValidator).index("by_user_id", ["userId"]),
+  authors: defineTable(authorValidator)
+    .index("by_user_id", ["userId"])
+    .searchIndex("search_name", {
+      searchField: "name",
+      filterFields: ["isVerified"],
+    }),
 
   documents: defineTable(documentValidator)
     .index("by_author", ["authorId"])

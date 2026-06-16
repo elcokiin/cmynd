@@ -21,8 +21,8 @@ export function useManualPagination<
   Query extends FunctionReference<"query", "public", any, any>,
 >(query: Query, args: Record<string, any> = {}, pageSize: number = 20) {
   const [currentPage, setCurrentPage] = useState(1);
-  const [cursorMap, setCursorMap] = useState<Map<number, string | null>>(
-    new Map([[1, null]]),
+  const [cursorMap, setCursorMap] = useState<Map<string, string | null>>(
+    new Map(),
   );
 
   const argsKey = JSON.stringify(args);
@@ -31,10 +31,11 @@ export function useManualPagination<
   // Cursors are tied to specific query parameters and become invalid when they change.
   useEffect(() => {
     setCurrentPage(1);
-    setCursorMap(new Map([[1, null]]));
+    setCursorMap(new Map());
   }, [argsKey]);
 
-  const cursor = cursorMap.get(currentPage) ?? null;
+  const cursorKey = `${argsKey}:${currentPage}`;
+  const cursor = cursorMap.get(cursorKey) ?? null;
 
   const result = useQuery(query, {
     ...args,
@@ -46,14 +47,17 @@ export function useManualPagination<
 
   // Store cursor for next page when a new cursor is received
   useEffect(() => {
-    if (result?.continueCursor && !cursorMap.has(currentPage + 1)) {
-      setCursorMap((prev) => {
-        const next = new Map(prev);
-        next.set(currentPage + 1, result.continueCursor);
-        return next;
-      });
+    if (result?.continueCursor) {
+      const nextKey = `${argsKey}:${currentPage + 1}`;
+      if (!cursorMap.has(nextKey)) {
+        setCursorMap((prev) => {
+          const next = new Map(prev);
+          next.set(nextKey, result.continueCursor);
+          return next;
+        });
+      }
     }
-  }, [result?.continueCursor, currentPage, cursorMap]);
+  }, [result?.continueCursor, currentPage, argsKey, cursorMap]);
 
   const isLoading = result === undefined;
   const hasNextPage = result?.isDone === false;

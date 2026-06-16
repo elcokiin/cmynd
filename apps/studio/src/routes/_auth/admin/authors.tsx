@@ -1,37 +1,57 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { UserIcon, CheckIcon, SearchIcon, PlusIcon } from "lucide-react";
-import { useQuery, useMutation } from "convex/react";
+import { useMutation } from "convex/react";
 import { api } from "@elcokiin/backend/convex/_generated/api";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@elcokiin/ui/card";
 import { Button } from "@elcokiin/ui/button";
 import { Input } from "@elcokiin/ui/input";
 import { Badge } from "@elcokiin/ui/badge";
+import { Pagination } from "@elcokiin/ui/pagination";
 
 import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
 import { useErrorHandler } from "@/hooks/use-error-handler";
 import { CreateAuthorDialog } from "@/components/authors/create-author-dialog";
+import { useUrlSyncedPagination } from "@/hooks/use-url-synced-pagination";
+import { useSearchUrlSync } from "@/hooks/use-search-url-sync";
+
+type AuthorsSearch = {
+  page?: number;
+  search?: string;
+};
 
 export const Route = createFileRoute("/_auth/admin/authors")({
   component: AdminAuthorsPage,
+  validateSearch: (search: Record<string, unknown>): AuthorsSearch => {
+    return {
+      page: Number(search.page) || 1,
+      search: (search.search as string) || "",
+    };
+  },
 });
 
 function AdminAuthorsPage() {
+  const { page: urlPage = 1, search: urlSearch = "" } = Route.useSearch();
   const { handleError } = useErrorHandler();
-  const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "verified" | "unverified">("unverified");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
-  const verifiedFilter = filter === "all" ? undefined : filter === "verified";
-
-  const authorsQuery = useQuery(api.authors.queries.listForAdmin, {
-    paginationOpts: { numItems: 10, cursor: null },
-    verified: verifiedFilter,
+  const { localSearch, setLocalSearch } = useSearchUrlSync({
+    urlSearch,
+    baseRoute: "/admin/authors",
   });
 
-  const authors = authorsQuery?.page || [];
-  const isLoading = authorsQuery === undefined;
+  const verifiedFilter = filter === "all" ? undefined : filter === "verified";
+
+  const pagination = useUrlSyncedPagination(
+    api.authors.queries.listForAdmin,
+    { verified: verifiedFilter, search: urlSearch || undefined },
+    { urlPage, pageSize: 10 },
+  );
+
+  const authors = pagination.items;
+  const isLoading = pagination.isLoading;
 
   const approveMutation = useMutation(api.authors.mutations.approve);
   const unverifyMutation = useMutation(api.authors.mutations.unverify);
@@ -51,12 +71,6 @@ function AdminAuthorsPage() {
       handleError(error, { context: "AdminAuthorsPage.handleUnverifyAuthor" });
     }
   };
-
-  const filteredAuthors = authors.filter((author) =>
-    search
-      ? author.name.toLowerCase().includes(search.toLowerCase())
-      : true
-  );
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -82,8 +96,8 @@ function AdminAuthorsPage() {
                   type="search"
                   placeholder="Search authors..."
                   className="w-[200px] pl-8"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  value={localSearch}
+                  onChange={(e) => setLocalSearch(e.target.value)}
                 />
               </div>
               <div className="flex items-center gap-1 border rounded-lg p-0.5">
@@ -107,14 +121,14 @@ function AdminAuthorsPage() {
             <div className="py-10 text-center">
               <p className="text-muted-foreground">Loading authors...</p>
             </div>
-          ) : !filteredAuthors || filteredAuthors.length === 0 ? (
+          ) : !authors || authors.length === 0 ? (
             <div className="py-10 text-center">
               <UserIcon className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
               <p className="text-muted-foreground">No authors found</p>
             </div>
           ) : (
             <div className="space-y-3">
-              {filteredAuthors.map((author) => (
+              {authors.map((author) => (
                 <div
                   key={author._id}
                   className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
@@ -173,6 +187,16 @@ function AdminAuthorsPage() {
                 </div>
               ))}
             </div>
+          )}
+
+          {pagination.totalPages > 1 && (
+            <Pagination
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              onPageChange={pagination.goToPage}
+              showFirstLast={false}
+              className="pt-2 border-t"
+            />
           )}
         </CardContent>
       </Card>
