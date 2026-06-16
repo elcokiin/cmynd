@@ -4,6 +4,8 @@ import { api } from "@elcokiin/backend/convex/_generated/api";
 import { useConvex, useMutation } from "convex/react";
 import { useCallback } from "react";
 
+import { compressImage } from "@/utils/compress-image";
+
 /**
  * Hook that provides a Convex-based image upload function.
  * Handles generating upload URLs, uploading files, and retrieving public URLs.
@@ -16,12 +18,21 @@ function useConvexImageUpload(): UploadFn {
 
   return useCallback(
     async (file: File): Promise<string> => {
+      const compressionResult = await compressImage(file);
+
+      if (!compressionResult.ok) {
+        if (compressionResult.reason === "too-large") {
+          throw new Error("Image too large. Maximum size is 10MB.");
+        }
+        throw new Error("Failed to process image. Try a different file.");
+      }
+
       const uploadUrl = await generateUploadUrl();
 
       const response = await fetch(uploadUrl, {
         method: "POST",
-        headers: { "Content-Type": file.type },
-        body: file,
+        headers: { "Content-Type": compressionResult.file.type },
+        body: compressionResult.file,
       });
 
       if (!response.ok) {

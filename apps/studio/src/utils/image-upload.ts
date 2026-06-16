@@ -3,6 +3,8 @@ import type { UploadFn } from "@elcokiin/backend/lib/types";
 
 import { getUserFriendlyMessage, parseError } from "@elcokiin/errors";
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
 /**
  * Upload an image and insert it into the editor.
  *
@@ -26,6 +28,13 @@ export async function uploadImage(
 
   if (!file.type.startsWith("image/")) {
     const error = new Error(`Invalid file type: ${file.type}. Expected an image.`);
+    onError?.(error);
+    console.error(error.message);
+    return;
+  }
+
+  if (file.size > MAX_FILE_SIZE) {
+    const error = new Error(`File too large: ${(file.size / 1024 / 1024).toFixed(1)}MB. Maximum size is 10MB.`);
     onError?.(error);
     console.error(error.message);
     return;

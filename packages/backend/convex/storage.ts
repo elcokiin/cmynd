@@ -5,6 +5,10 @@ import * as Auth from "./_lib/auth";
 /**
  * Generate an upload URL for file storage.
  * Use this to upload files directly to Convex storage.
+ *
+ * IMPORTANT: File size and type validation should be done client-side
+ * before posting to this URL. See apps/studio/src/utils/compress-image.ts.
+ * Convex storage does not support server-side size limits at upload time.
  */
 export const generateUploadUrl = mutation({
   args: {},

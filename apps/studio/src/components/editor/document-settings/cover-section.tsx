@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { useErrorHandler } from "@/hooks/use-error-handler";
 import { useDebouncedSave } from "@/hooks/use-debounced-save";
 import { normalizeOptionalText } from "@/lib/text";
+import { compressImage } from "@/utils/compress-image";
 
 type CoverConfigTab = "image" | "prompt" | "description";
 
@@ -82,25 +83,31 @@ export function CoverSection({ documentId }: CoverSectionProps) {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please upload an image file");
-      return;
-    }
-
     setIsUploading(true);
     try {
-      const postUrl = await generateUploadUrl();
-      const result = await fetch(postUrl, {
-        method: "POST",
-        headers: { "Content-Type": file.type },
-        body: file,
-      });
+      const compressionResult = await compressImage(file);
 
-      if (!result.ok) {
-        throw new Error(`Upload failed: ${result.statusText}`);
+      if (!compressionResult.ok) {
+        if (compressionResult.reason === "too-large") {
+          toast.error("Image too large. Maximum size is 10MB.");
+        } else {
+          toast.error("Failed to process image. Try a different file.");
+        }
+        return;
       }
 
-      const { storageId } = await result.json();
+      const postUrl = await generateUploadUrl();
+      const uploadResult = await fetch(postUrl, {
+        method: "POST",
+        headers: { "Content-Type": compressionResult.file.type },
+        body: compressionResult.file,
+      });
+
+      if (!uploadResult.ok) {
+        throw new Error(`Upload failed: ${uploadResult.statusText}`);
+      }
+
+      const { storageId } = await uploadResult.json();
 
       await updateCoverImage({
         documentId,
