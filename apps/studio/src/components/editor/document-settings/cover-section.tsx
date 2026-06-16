@@ -9,9 +9,11 @@ import {
   ImageIcon,
   SparklesIcon,
   TextIcon,
+  UploadIcon,
   XIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 
 import { useErrorHandler } from "@/hooks/use-error-handler";
@@ -31,7 +33,6 @@ export function CoverSection({ documentId }: CoverSectionProps) {
   const [description, setDescription] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const initializedRef = useRef(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { handleError } = useErrorHandler();
 
@@ -77,12 +78,7 @@ export function CoverSection({ documentId }: CoverSectionProps) {
     saveMetadata();
   };
 
-  const handleImageUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
+  const handleImageUpload = async (file: File) => {
     setIsUploading(true);
     try {
       const compressionResult = await compressImage(file);
@@ -121,11 +117,22 @@ export function CoverSection({ documentId }: CoverSectionProps) {
       });
     } finally {
       setIsUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
     }
   };
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop: (acceptedFiles) => {
+      const file = acceptedFiles[0];
+      if (file) handleImageUpload(file);
+    },
+    accept: { "image/*": [] },
+    maxFiles: 1,
+    disabled: isUploading,
+    noClick: false,
+    noKeyboard: false,
+  });
+
+  const dropzoneRootProps = getRootProps() as React.HTMLAttributes<HTMLDivElement>;
 
   const handleRemoveCoverImage = async () => {
     if (!document?.coverImageId) return;
@@ -195,34 +202,52 @@ export function CoverSection({ documentId }: CoverSectionProps) {
             </div>
           ) : (
             <div
-              className="flex aspect-video w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed bg-muted/50 hover:bg-muted/70 transition-colors"
-              onClick={() => fileInputRef.current?.click()}
+              {...dropzoneRootProps}
+              className={cn(
+                "relative flex aspect-video w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed transition-all duration-200",
+                isDragActive
+                  ? "border-primary bg-primary/5 scale-[1.02]"
+                  : "border-muted-foreground/25 bg-muted/50 hover:border-muted-foreground/40 hover:bg-muted/70",
+                isUploading && "pointer-events-none opacity-60",
+              )}
             >
-              <div className="rounded-full bg-background p-3 shadow-sm">
+              <input {...getInputProps()} />
+              <div
+                className={cn(
+                  "rounded-full p-3 shadow-sm transition-all duration-200",
+                  isDragActive
+                    ? "bg-primary/10 scale-110"
+                    : "bg-background",
+                )}
+              >
                 {isUploading ? (
                   <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                 ) : (
-                  <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                  <UploadIcon
+                    className={cn(
+                      "h-6 w-6 transition-colors duration-200",
+                      isDragActive
+                        ? "text-primary"
+                        : "text-muted-foreground",
+                    )}
+                  />
                 )}
               </div>
               <div className="text-sm font-medium text-muted-foreground">
                 {isUploading
                   ? "Uploading..."
-                  : "Click to upload cover image"}
+                  : isDragActive
+                    ? "Drop your image here"
+                    : "Drag & drop or click to upload"}
               </div>
               <div className="text-xs text-muted-foreground/70">
                 Recommended: 1200 x 630 pixels
               </div>
+              {isDragActive && (
+                <div className="absolute inset-0 rounded-lg ring-2 ring-primary ring-offset-2 ring-offset-background" />
+              )}
             </div>
           )}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleImageUpload}
-            disabled={isUploading}
-          />
         </div>
       )}
 
