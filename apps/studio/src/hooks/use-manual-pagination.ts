@@ -25,6 +25,15 @@ export function useManualPagination<
     new Map([[1, null]]),
   );
 
+  const argsKey = JSON.stringify(args);
+
+  // Reset pagination when query arguments change (e.g., status or search filter)
+  // Cursors are tied to specific query parameters and become invalid when they change.
+  useEffect(() => {
+    setCurrentPage(1);
+    setCursorMap(new Map([[1, null]]));
+  }, [argsKey]);
+
   const cursor = cursorMap.get(currentPage) ?? null;
 
   const result = useQuery(query, {
