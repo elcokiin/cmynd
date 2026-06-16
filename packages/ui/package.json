@@ -29,6 +29,7 @@
     "./badge": "./src/components/badge.tsx",
     "./resizable": "./src/components/resizable.tsx",
     "./scroll-area": "./src/components/scroll-area.tsx",
+    "./select": "./src/components/select.tsx",
     "./sheet": "./src/components/sheet.tsx",
     "./atmosphere": "./src/components/atmosphere.tsx",
     "./switch": "./src/components/switch.tsx",

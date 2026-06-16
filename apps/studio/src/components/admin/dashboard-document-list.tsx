@@ -5,6 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@elcokiin/ui/card";
 import { Pagination } from "@elcokiin/ui/pagination";
 import { Input } from "@elcokiin/ui/input";
 import { Badge } from "@elcokiin/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectList,
+  SelectTrigger,
+  SelectValue,
+} from "@elcokiin/ui/select";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { HourglassIcon, SearchIcon } from "lucide-react";
 
@@ -103,12 +111,12 @@ export function DashboardDocumentList({
     setLocalSearch(e.target.value);
   };
 
-  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleStatusChange = (value: string | null) => {
     navigate({
       to: "/admin",
       search: (old) => ({
         ...old,
-        status: e.target.value as "pending" | "published" | "all",
+        status: (value ?? "all") as "pending" | "published" | "all",
         page: 1,
       }),
     });
@@ -133,15 +141,18 @@ export function DashboardDocumentList({
                 onChange={handleSearchChange}
               />
             </div>
-            <select
-              className="h-9 w-[150px] rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-              value={status}
-              onChange={handleStatusChange}
-            >
-              <option value="pending">Pending</option>
-              <option value="published">Published</option>
-              <option value="all">All</option>
-            </select>
+            <Select value={status} onValueChange={handleStatusChange}>
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectList>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="published">Published</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
+                </SelectList>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </CardHeader>
