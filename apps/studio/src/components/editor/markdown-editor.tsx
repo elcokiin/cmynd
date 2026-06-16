@@ -159,57 +159,53 @@ export function MarkdownEditor({
 
   return (
     <div className={cn("relative flex flex-col h-full", className)}>
-      {onDebouncedUpdate && (
-        <div className="absolute top-2 right-2 z-10">
-          <span
-            className={cn(
-              "text-xs px-2 py-1 rounded-md",
-              saveStatus === "saved" && "text-muted-foreground",
-              saveStatus === "saving" && "text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20",
-              saveStatus === "unsaved" && "text-orange-600 bg-orange-50 dark:bg-orange-900/20",
-              saveStatus === "error" && "text-red-600 bg-red-50 dark:bg-red-900/20",
-            )}
-          >
-            {saveStatus === "saved" && "Saved"}
-            {saveStatus === "saving" && "Saving..."}
-            {saveStatus === "unsaved" && "Unsaved changes"}
-            {saveStatus === "error" && "Error saving"}
-          </span>
-        </div>
-      )}
-
-      {editable && (
-        <div className="flex items-center justify-between border rounded-t-md bg-muted/30">
-          <div className="flex-1 min-w-0">
+      <div className="flex items-center justify-between border-t border-l border-r rounded-t-md bg-muted/30">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          {onDebouncedUpdate && (
+            <span
+              className={cn(
+                "text-xs px-2 py-0.5 rounded ml-2 shrink-0",
+                saveStatus === "saved" && "text-muted-foreground",
+                saveStatus === "saving" && "text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20",
+                saveStatus === "unsaved" && "text-orange-600 bg-orange-50 dark:bg-orange-900/20",
+                saveStatus === "error" && "text-red-600 bg-red-50 dark:bg-red-900/20",
+              )}
+            >
+              {saveStatus === "saved" && "Saved"}
+              {saveStatus === "saving" && "Saving..."}
+              {saveStatus === "unsaved" && "Unsaved changes"}
+              {saveStatus === "error" && "Error saving"}
+            </span>
+          )}
+          {editable && (
             <MarkdownToolbar
               onInsertWrapping={insertWrapping}
               onInsertLinePrefix={insertLinePrefix}
             />
-          </div>
-          <div className="flex items-center gap-0.5 pr-2">
-            {viewModeOptions.map((option) => (
-              <Button
-                key={option.value}
-                type="button"
-                variant={viewMode === option.value ? "secondary" : "ghost"}
-                size="sm"
-                onClick={() => setViewMode(option.value)}
-                title={option.label}
-                className="h-7 px-2 text-xs"
-              >
-                <option.icon className="h-3.5 w-3.5 mr-1" />
-                {option.label}
-              </Button>
-            ))}
-          </div>
+          )}
         </div>
-      )}
+        <div className="flex items-center gap-0.5 pr-2">
+          {viewModeOptions.map((option) => (
+            <Button
+              key={option.value}
+              type="button"
+              variant={viewMode === option.value ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() => setViewMode(option.value)}
+              title={option.label}
+              className="h-7 px-2 text-xs"
+            >
+              <option.icon className="h-3.5 w-3.5 mr-1" />
+              {option.label}
+            </Button>
+          ))}
+        </div>
+      </div>
 
       <div
         className={cn(
           "flex flex-1 overflow-hidden",
           "border-l border-r border-b rounded-b-md",
-          !editable && "border-t rounded-t-md",
         )}
       >
         {showSource && (
