@@ -48,7 +48,7 @@ export function EditorWorkspace({
             onChange={onMarkdownChange}
             onDebouncedUpdate={onMarkdownDebouncedUpdate}
             editable={editable}
-            className="min-h-full p-8"
+            className="min-h-full"
           />
         )}
       </div>
