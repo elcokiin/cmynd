@@ -1,6 +1,6 @@
 import type { FunctionReference } from "convex/server";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate } from "@tanstack/react-router";
 
 import { useManualPagination } from "./use-manual-pagination";
@@ -69,16 +69,19 @@ export function useUrlSyncedPagination<
   const navigate = useNavigate();
 
   const pagination = useManualPagination(query, args, pageSize);
+  const goToPageRef = useRef(pagination.goToPage);
+  goToPageRef.current = pagination.goToPage;
 
   // Effect 1: URL → Pagination State
   // Sync pagination state when URL changes (e.g., back/forward navigation)
-  // Intentionally does NOT depend on pagination.currentPage to avoid fighting
-  // with Effect 2's state → URL sync and creating an infinite loop.
+  // Intentionally does NOT depend on pagination.currentPage or pagination.goToPage
+  // to avoid fighting with Effect 2's state → URL sync and creating an infinite loop.
+  // Uses a ref for goToPage to avoid stale closures without re-triggering on function changes.
   useEffect(() => {
     if (pagination.currentPage !== urlPage) {
-      pagination.goToPage(urlPage);
+      goToPageRef.current(urlPage);
     }
-  }, [urlPage, pagination.goToPage]);
+  }, [urlPage]);
 
   // Effect 2: Pagination State → URL
   // When user changes page via pagination controls, update URL preserving existing params
