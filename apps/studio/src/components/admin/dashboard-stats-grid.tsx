@@ -9,6 +9,7 @@ import {
   FileCheckIcon,
   FileTextIcon,
   HourglassIcon,
+  UsersIcon,
 } from "lucide-react";
 
 import { cn } from "@elcokiin/ui/lib/utils";
@@ -19,7 +20,7 @@ type StatCardProps = {
   description: string;
   icon: LucideIcon;
   valueClassName?: string;
-  to?: "/admin/published";
+  to?: "/admin/published" | "/admin/authors";
 };
 
 function StatCard({
@@ -61,8 +62,8 @@ function StatCard({
 
 function DashboardStatsGridSkeleton(): React.ReactNode {
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      {Array.from({ length: 4 }).map((_, index) => (
+    <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
+      {Array.from({ length: 5 }).map((_, index) => (
         <Card key={index}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <div className="h-4 w-24 bg-muted animate-pulse rounded" />
@@ -80,13 +81,14 @@ function DashboardStatsGridSkeleton(): React.ReactNode {
 
 export function DashboardStatsGrid(): React.ReactNode {
   const stats = useQuery(api.documents.queries.getAdminStats);
+  const authorCount = useQuery(api.authors.queries.getAuthorCount);
 
-  if (stats === undefined) {
+  if (stats === undefined || authorCount === undefined) {
     return <DashboardStatsGridSkeleton />;
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
       <StatCard
         title="Total Documents"
         value={stats.totalDocuments}
@@ -116,6 +118,14 @@ export function DashboardStatsGrid(): React.ReactNode {
         icon={FileCheckIcon}
         valueClassName="text-green-600"
         to="/admin/published"
+      />
+
+      <StatCard
+        title="Authors"
+        value={authorCount}
+        description="Registered authors"
+        icon={UsersIcon}
+        to="/admin/authors"
       />
     </div>
   );

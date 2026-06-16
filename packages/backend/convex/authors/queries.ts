@@ -93,6 +93,19 @@ export const getForAdmin = query({
 });
 
 /**
+ * Get total author count (admin only).
+ */
+export const getAuthorCount = query({
+  args: {},
+  handler: async (ctx): Promise<number> => {
+    await Auth.requireAdmin(ctx);
+
+    const authors = await ctx.db.query("authors").collect();
+    return authors.length;
+  },
+});
+
+/**
  * List original author candidates.
  * Returns authors suitable as original authors for reprints:
  * - Verified authors, OR
