@@ -23,7 +23,6 @@ import {
 	TextareaWithIcon,
 } from "@/components/ui/input-with-icon";
 import { useErrorHandler } from "@/hooks/use-error-handler";
-import { normalizeOptionalText } from "@/lib/text";
 
 type ReprintFormValues = {
 	type: "own" | "reprint";
@@ -170,47 +169,73 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
 									Original Author{" "}
 									<span className="text-destructive">*</span>
 								</Label>
-								{isReprint ? (
-									<form.Field name="originalAuthor">
-										{(field) => (
-											<AuthorSearchCommand
-												initialAuthorId={
-													state.values
-														.originalAuthorId
-												}
-												onSelect={(
-													name,
-													id: Id<"authors">,
-												) => {
-													field.handleChange(name);
-													form.setFieldValue(
-														"originalAuthorId",
-														id,
-													);
-												}}
-											/>
-										)}
-									</form.Field>
-								) : (
-									<form.Field name="originalAuthor">
-										{(field) => (
-											<InputWithIcon
-												icon={
-													<UserIcon className="h-4 w-4" />
-												}
-												disabled
-												id={field.name}
-												value={field.state.value}
-												onChange={(e) =>
-													field.handleChange(
-														e.target.value,
-													)
-												}
-												placeholder="e.g. Gabriel García Márquez"
-											/>
-										)}
-									</form.Field>
-								)}
+								<form.Field
+									name="originalAuthor"
+									validators={{
+										onChange: ({ value }) => {
+											if (
+												form.state.values.type !==
+												"reprint"
+											)
+												return undefined;
+											if (
+												!value ||
+												value.trim().length === 0
+											) {
+												return "Original author is required for reprints";
+											}
+											return undefined;
+										},
+									}}
+								>
+									{(field) => (
+										<>
+											{isReprint ? (
+												<AuthorSearchCommand
+													initialAuthorId={
+														state.values
+															.originalAuthorId
+													}
+													onSelect={(
+														name,
+														id: Id<"authors">,
+													) => {
+														field.handleChange(
+															name,
+														);
+														form.setFieldValue(
+															"originalAuthorId",
+															id,
+														);
+													}}
+												/>
+											) : (
+												<InputWithIcon
+													icon={
+														<UserIcon className="h-4 w-4" />
+													}
+													disabled
+													id={field.name}
+													value={field.state.value}
+													onChange={(e) =>
+														field.handleChange(
+															e.target.value,
+														)
+													}
+													placeholder="e.g. Gabriel García Márquez"
+												/>
+											)}
+											{field.state.meta.errors
+												.length > 0 && (
+												<p className="text-xs text-destructive">
+													{field.state.meta.errors.join(
+														", ",
+													)}
+												</p>
+											)}
+										</>
+									)}
+								</form.Field>
 							</div>
 
 							<div className="space-y-2">
@@ -220,22 +245,45 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
 								>
 									Original Title
 								</Label>
-								<form.Field name="originalTitle">
+								<form.Field
+									name="originalTitle"
+									validators={{
+										onChange: ({ value }) => {
+											if (
+												value &&
+												value.length > 200
+											) {
+												return "Title is too long (max 200 characters)";
+											}
+											return undefined;
+										},
+									}}
+								>
 									{(field) => (
-										<InputWithIcon
-											icon={
-												<BookOpenIcon className="h-4 w-4" />
-											}
-											disabled={!isReprint}
-											id={field.name}
-											value={field.state.value}
-											onChange={(e) =>
-												field.handleChange(
-													e.target.value,
-												)
-											}
-											placeholder="e.g. Cien años de soledad"
-										/>
+										<>
+											<InputWithIcon
+												icon={
+													<BookOpenIcon className="h-4 w-4" />
+												}
+												disabled={!isReprint}
+												id={field.name}
+												value={field.state.value}
+												onChange={(e) =>
+													field.handleChange(
+														e.target.value,
+													)
+												}
+												placeholder="e.g. Cien años de soledad"
+											/>
+											{field.state.meta.errors
+												.length > 0 && (
+												<p className="text-xs text-destructive">
+													{field.state.meta.errors.join(
+														", ",
+													)}
+												</p>
+											)}
+										</>
 									)}
 								</form.Field>
 							</div>
@@ -247,25 +295,56 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
 								>
 									Original Year
 								</Label>
-								<form.Field name="originalDate">
+								<form.Field
+									name="originalDate"
+									validators={{
+										onChange: ({ value }) => {
+											if (!value) return undefined;
+											if (
+												!/^\d{4}$/.test(value)
+											) {
+												return "Must be a 4-digit year (e.g. 1967)";
+											}
+											const year = parseInt(
+												value,
+												10,
+											);
+											if (
+												year < 1000 ||
+												year > 2100
+											) {
+												return "Year must be between 1000 and 2100";
+											}
+											return undefined;
+										},
+									}}
+								>
 									{(field) => (
-										<InputWithIcon
-											icon={
-												<CalendarIcon className="h-4 w-4" />
-											}
-											disabled={!isReprint}
-											id={field.name}
-											type="number"
-											min={0}
-											max={2100}
-											value={field.state.value}
-											onChange={(e) =>
-												field.handleChange(
-													e.target.value,
-												)
-											}
-											placeholder="e.g. 1967"
-										/>
+										<>
+											<InputWithIcon
+												icon={
+													<CalendarIcon className="h-4 w-4" />
+												}
+												disabled={!isReprint}
+												id={field.name}
+												type="number"
+												value={field.state.value}
+												onChange={(e) =>
+													field.handleChange(
+														e.target.value,
+													)
+												}
+												placeholder="e.g. 1967"
+											/>
+											{field.state.meta.errors
+												.length > 0 && (
+												<p className="text-xs text-destructive">
+													{field.state.meta.errors.join(
+														", ",
+													)}
+												</p>
+											)}
+										</>
 									)}
 								</form.Field>
 							</div>
@@ -277,23 +356,46 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
 								>
 									Source URL
 								</Label>
-								<form.Field name="sourceUrl">
+								<form.Field
+									name="sourceUrl"
+									validators={{
+										onChange: ({ value }) => {
+											if (!value) return undefined;
+											try {
+												new URL(value);
+												return undefined;
+											} catch {
+												return "Must be a valid URL (e.g. https://example.com)";
+											}
+										},
+									}}
+								>
 									{(field) => (
-										<InputWithIcon
-											icon={
-												<GlobeIcon className="h-4 w-4" />
-											}
-											disabled={!isReprint}
-											id={field.name}
-											type="url"
-											value={field.state.value}
-											onChange={(e) =>
-												field.handleChange(
-													e.target.value,
-												)
-											}
-											placeholder="e.g. https://example.com/original-work"
-										/>
+										<>
+											<InputWithIcon
+												icon={
+													<GlobeIcon className="h-4 w-4" />
+												}
+												disabled={!isReprint}
+												id={field.name}
+												type="url"
+												value={field.state.value}
+												onChange={(e) =>
+													field.handleChange(
+														e.target.value,
+													)
+												}
+												placeholder="e.g. https://example.com/original-work"
+											/>
+											{field.state.meta.errors
+												.length > 0 && (
+												<p className="text-xs text-destructive">
+													{field.state.meta.errors.join(
+														", ",
+													)}
+												</p>
+											)}
+										</>
 									)}
 								</form.Field>
 							</div>
@@ -305,22 +407,45 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
 								>
 									License
 								</Label>
-								<form.Field name="license">
+								<form.Field
+									name="license"
+									validators={{
+										onChange: ({ value }) => {
+											if (
+												value &&
+												value.length > 100
+											) {
+												return "License is too long (max 100 characters)";
+											}
+											return undefined;
+										},
+									}}
+								>
 									{(field) => (
-										<InputWithIcon
-											icon={
-												<BadgeIcon className="h-4 w-4" />
-											}
-											disabled={!isReprint}
-											id={field.name}
-											value={field.state.value}
-											onChange={(e) =>
-												field.handleChange(
-													e.target.value,
-												)
-											}
-											placeholder="e.g. Public Domain"
-										/>
+										<>
+											<InputWithIcon
+												icon={
+													<BadgeIcon className="h-4 w-4" />
+												}
+												disabled={!isReprint}
+												id={field.name}
+												value={field.state.value}
+												onChange={(e) =>
+													field.handleChange(
+														e.target.value,
+													)
+												}
+												placeholder="e.g. Public Domain"
+											/>
+											{field.state.meta.errors
+												.length > 0 && (
+												<p className="text-xs text-destructive">
+													{field.state.meta.errors.join(
+														", ",
+													)}
+												</p>
+											)}
+										</>
 									)}
 								</form.Field>
 							</div>
@@ -332,22 +457,45 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
 								>
 									Translator
 								</Label>
-								<form.Field name="translator">
+								<form.Field
+									name="translator"
+									validators={{
+										onChange: ({ value }) => {
+											if (
+												value &&
+												value.length > 100
+											) {
+												return "Translator name is too long (max 100 characters)";
+											}
+											return undefined;
+										},
+									}}
+								>
 									{(field) => (
-										<InputWithIcon
-											icon={
-												<LanguagesIcon className="h-4 w-4" />
-											}
-											disabled={!isReprint}
-											id={field.name}
-											value={field.state.value}
-											onChange={(e) =>
-												field.handleChange(
-													e.target.value,
-												)
-											}
-											placeholder="e.g. Gregory Rabassa"
-										/>
+										<>
+											<InputWithIcon
+												icon={
+													<LanguagesIcon className="h-4 w-4" />
+												}
+												disabled={!isReprint}
+												id={field.name}
+												value={field.state.value}
+												onChange={(e) =>
+													field.handleChange(
+														e.target.value,
+													)
+												}
+												placeholder="e.g. Gregory Rabassa"
+											/>
+											{field.state.meta.errors
+												.length > 0 && (
+												<p className="text-xs text-destructive">
+													{field.state.meta.errors.join(
+														", ",
+													)}
+												</p>
+											)}
+										</>
 									)}
 								</form.Field>
 							</div>
@@ -359,22 +507,45 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
 								>
 									Notes
 								</Label>
-								<form.Field name="notes">
+								<form.Field
+									name="notes"
+									validators={{
+										onChange: ({ value }) => {
+											if (
+												value &&
+												value.length > 2000
+											) {
+												return "Notes are too long (max 2000 characters)";
+											}
+											return undefined;
+										},
+									}}
+								>
 									{(field) => (
-										<TextareaWithIcon
-											icon={
-												<FileTextIcon className="h-4 w-4" />
-											}
-											disabled={!isReprint}
-											id={field.name}
-											value={field.state.value}
-											onChange={(e) =>
-												field.handleChange(
-													e.target.value,
-												)
-											}
-											placeholder="Additional context, acknowledgments, or notes about this reprint..."
-										/>
+										<>
+											<TextareaWithIcon
+												icon={
+													<FileTextIcon className="h-4 w-4" />
+												}
+												disabled={!isReprint}
+												id={field.name}
+												value={field.state.value}
+												onChange={(e) =>
+													field.handleChange(
+														e.target.value,
+													)
+												}
+												placeholder="Additional context, acknowledgments, or notes about this reprint..."
+											/>
+											{field.state.meta.errors
+												.length > 0 && (
+												<p className="text-xs text-destructive">
+													{field.state.meta.errors.join(
+														", ",
+													)}
+												</p>
+											)}
+										</>
 									)}
 								</form.Field>
 							</div>
