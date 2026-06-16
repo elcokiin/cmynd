@@ -7,10 +7,7 @@ import { CoverSection } from "./cover-section";
 import { ExportSection } from "./export-section";
 import { InspirationsSection } from "./inspirations-section";
 import { ReprintSection } from "./reprint-section";
-import {
-  SettingsSidebar,
-  type NavigationSection,
-} from "./settings-sidebar";
+import { SettingsSidebar, type NavigationSection } from "./settings-sidebar";
 
 type DocumentSettingsDialogProps = {
   documentId: Id<"documents">;
@@ -30,7 +27,7 @@ export function DocumentSettingsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[96vw] max-w-[96vw] sm:!max-w-4xl p-0 gap-0 h-[76vh]">
+      <DialogContent className="w-[96vw] max-w-[96vw] sm:max-w-4xl p-0 gap-0 h-[76vh]">
         <div className="flex h-full overflow-hidden">
           <SettingsSidebar
             activeSection={activeSection}

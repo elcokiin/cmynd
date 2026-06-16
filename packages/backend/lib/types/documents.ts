@@ -30,6 +30,7 @@ export type DocumentStatus = "building" | "pending" | "published";
  */
 export type ReprintData = {
   originalAuthor: string;
+  originalAuthorId?: Id<"authors">;
   originalTitle?: string;
   originalDate?: number;
   sourceUrl?: string;

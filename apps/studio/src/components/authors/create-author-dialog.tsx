@@ -1,3 +1,5 @@
+import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
+
 import { useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "@tanstack/react-form";
@@ -30,7 +32,7 @@ type CreateAuthorFormValues = z.infer<typeof createAuthorSchema>;
 interface CreateAuthorDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess?: (name: string) => void;
+  onSuccess?: (name: string, authorId: Id<"authors">) => void;
 }
 
 export function CreateAuthorDialog({ open, onOpenChange, onSuccess }: CreateAuthorDialogProps) {
@@ -50,13 +52,13 @@ export function CreateAuthorDialog({ open, onOpenChange, onSuccess }: CreateAuth
     onSubmit: async ({ value }) => {
       try {
         const name = value.name.trim();
-        await createAuthor({
+        const authorId = await createAuthor({
           name,
           bio: value.bio?.trim() || undefined,
           avatarUrl: value.avatarUrl?.trim() || undefined,
         });
         onOpenChange(false);
-        onSuccess?.(name);
+        onSuccess?.(name, authorId);
         form.reset();
       } catch (error) {
         handleError(error, { context: "CreateAuthorDialog.handleSubmit" });
