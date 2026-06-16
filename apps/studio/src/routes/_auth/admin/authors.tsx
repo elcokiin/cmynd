@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { UserIcon, CheckIcon, SearchIcon, PlusIcon } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "@elcokiin/backend/convex/_generated/api";
@@ -9,6 +9,14 @@ import { Button } from "@elcokiin/ui/button";
 import { Input } from "@elcokiin/ui/input";
 import { Badge } from "@elcokiin/ui/badge";
 import { Pagination } from "@elcokiin/ui/pagination";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectList,
+  SelectTrigger,
+  SelectValue,
+} from "@elcokiin/ui/select";
 
 import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
 import { useErrorHandler } from "@/hooks/use-error-handler";
@@ -19,6 +27,7 @@ import { useSearchUrlSync } from "@/hooks/use-search-url-sync";
 type AuthorsSearch = {
   page?: number;
   search?: string;
+  status?: "all" | "verified" | "unverified";
 };
 
 export const Route = createFileRoute("/_auth/admin/authors")({
@@ -27,14 +36,20 @@ export const Route = createFileRoute("/_auth/admin/authors")({
     return {
       page: Number(search.page) || 1,
       search: (search.search as string) || "",
+      status:
+        (search.status as "all" | "verified" | "unverified") || "unverified",
     };
   },
 });
 
 function AdminAuthorsPage() {
-  const { page: urlPage = 1, search: urlSearch = "" } = Route.useSearch();
+  const {
+    page: urlPage = 1,
+    search: urlSearch = "",
+    status: urlStatus = "unverified",
+  } = Route.useSearch();
+  const navigate = useNavigate();
   const { handleError } = useErrorHandler();
-  const [filter, setFilter] = useState<"all" | "verified" | "unverified">("unverified");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   const { localSearch, setLocalSearch } = useSearchUrlSync({
@@ -42,7 +57,8 @@ function AdminAuthorsPage() {
     baseRoute: "/admin/authors",
   });
 
-  const verifiedFilter = filter === "all" ? undefined : filter === "verified";
+  const verifiedFilter =
+    urlStatus === "all" ? undefined : urlStatus === "verified";
 
   const pagination = useUrlSyncedPagination(
     api.authors.queries.listForAdmin,
@@ -100,19 +116,30 @@ function AdminAuthorsPage() {
                   onChange={(e) => setLocalSearch(e.target.value)}
                 />
               </div>
-              <div className="flex items-center gap-1 border rounded-lg p-0.5">
-                {(["all", "unverified", "verified"] as const).map((f) => (
-                  <Button
-                    key={f}
-                    size="sm"
-                    variant={filter === f ? "default" : "ghost"}
-                    onClick={() => setFilter(f)}
-                    className="text-xs capitalize"
-                  >
-                    {f === "all" ? "All" : f}
-                  </Button>
-                ))}
-              </div>
+              <Select
+                value={urlStatus}
+                onValueChange={(value) =>
+                  navigate({
+                    to: "/admin/authors",
+                    search: (old) => ({
+                      ...old,
+                      status: value as "all" | "verified" | "unverified",
+                      page: 1,
+                    }),
+                  })
+                }
+              >
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectList>
+                    <SelectItem value="unverified">Unverified</SelectItem>
+                    <SelectItem value="verified">Verified</SelectItem>
+                    <SelectItem value="all">All</SelectItem>
+                  </SelectList>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </CardHeader>
@@ -149,12 +176,24 @@ function AdminAuthorsPage() {
                       <h4 className="font-medium">{author.name}</h4>
                       <div className="flex items-center gap-2 mt-1">
                         {author.isVerified ? (
-                          <Badge variant="default" className="text-xs bg-green-100 text-green-800">Verified</Badge>
+                          <Badge
+                            variant="default"
+                            className="text-xs bg-green-100 text-green-800"
+                          >
+                            Verified
+                          </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-xs text-yellow-600 border-yellow-600">Unverified</Badge>
+                          <Badge
+                            variant="outline"
+                            className="text-xs text-yellow-600 border-yellow-600"
+                          >
+                            Unverified
+                          </Badge>
                         )}
                         {author.userId && (
-                          <Badge variant="outline" className="text-xs">Has Account</Badge>
+                          <Badge variant="outline" className="text-xs">
+                            Has Account
+                          </Badge>
                         )}
                       </div>
                     </div>
@@ -201,7 +240,10 @@ function AdminAuthorsPage() {
         </CardContent>
       </Card>
 
-      <CreateAuthorDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen} />
+      <CreateAuthorDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+      />
     </div>
   );
 }
