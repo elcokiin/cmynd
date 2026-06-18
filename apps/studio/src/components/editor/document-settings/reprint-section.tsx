@@ -68,21 +68,34 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
 					if (values.type !== document?.type) {
 						await updateType({ documentId, type: values.type });
 					}
-					await updateReprint({
-						documentId,
-						reprint: {
-							originalAuthor: values.originalAuthor,
-							originalAuthorId: values.originalAuthorId,
-							originalTitle: values.originalTitle || undefined,
-							originalDate: values.originalDate
-								? parseInt(values.originalDate, 10) || undefined
-								: undefined,
-							sourceUrl: values.sourceUrl || undefined,
-							license: values.license || undefined,
-							translator: values.translator || undefined,
-							notes: values.notes || undefined,
-						},
-					});
+
+					const current = document?.reprint;
+					const payload = {
+						originalAuthor: values.originalAuthor,
+						originalAuthorId: values.originalAuthorId,
+						originalTitle: values.originalTitle || undefined,
+						originalDate: values.originalDate
+							? parseInt(values.originalDate, 10) || undefined
+							: undefined,
+						sourceUrl: values.sourceUrl || undefined,
+						license: values.license || undefined,
+						translator: values.translator || undefined,
+						notes: values.notes || undefined,
+					};
+
+					const hasChanges =
+						payload.originalAuthor !== (current?.originalAuthor ?? "") ||
+						payload.originalAuthorId !== current?.originalAuthorId ||
+						payload.originalTitle !== (current?.originalTitle ?? undefined) ||
+						payload.originalDate !== (current?.originalDate ?? undefined) ||
+						payload.sourceUrl !== (current?.sourceUrl ?? undefined) ||
+						payload.license !== (current?.license ?? undefined) ||
+						payload.translator !== (current?.translator ?? undefined) ||
+						payload.notes !== (current?.notes ?? undefined);
+
+					if (hasChanges) {
+						await updateReprint({ documentId, reprint: payload });
+					}
 				} catch (error) {
 					handleError(error, { context: "ReprintSection.autoSave" });
 				}
@@ -93,7 +106,6 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
 	useEffect(() => {
 		if (!document) return;
 		if (initializedRef.current) return;
-		initializedRef.current = true;
 
 		form.setFieldValue(
 			"type",
@@ -119,6 +131,7 @@ export function ReprintSection({ documentId }: ReprintSectionProps) {
 		form.setFieldValue("license", document.reprint?.license ?? "");
 		form.setFieldValue("translator", document.reprint?.translator ?? "");
 		form.setFieldValue("notes", document.reprint?.notes ?? "");
+		initializedRef.current = true;
 	}, [document, form]);
 
 	return (
