@@ -25,6 +25,7 @@ if (!post) {
 }
 
 const coverUrl = post.coverImageId ? await getPublicStorageUrl(post.coverImageId) : undefined;
+const hasCoverInfo = !!(post.coverImagePrompt || post.description);
 const htmlContent = renderRichContent(post.content);
 
 const title = `${post.title} · ${SITE.title}`;
@@ -107,12 +108,12 @@ const isReprint = r !== undefined;
                 </svg>
               </button>
               <div class="text-white p-6 transform translate-y-8 group-hover:translate-y-0 transition-transform duration-500 ease-out">
-                <h3 class="flex items-center text-2xl font-semibold mb-3">
+                {hasCoverInfo && <h3 class="flex items-center text-2xl font-semibold mb-3">
                   {post.coverImagePrompt ? 'Prompt' : 'Descripción'}
-                </h3>
-                <p class="text-base leading-relaxed text-gray-100/90 line-clamp-4 mb-3">
+                </h3>}
+                {hasCoverInfo && <p class="text-base leading-relaxed text-gray-100/90 line-clamp-4 mb-3">
                   {post.coverImagePrompt || post.description}
-                </p>
+                </p>}
                 <p class="text-sm text-gray-400 mb-3" data-image-dimensions></p>
                 <div class="h-0.5 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-700 delay-200" style="height: 2px; background: linear-gradient(to right, var(--dominant-color, #f87171) 0%, color-mix(in srgb, var(--dominant-color, #f87171) 50%, transparent) 60%, transparent 100%);"></div>
                 <div class="overlay-actions flex items-center justify-end gap-4 mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-300">
@@ -128,12 +129,12 @@ const isReprint = r !== undefined;
                       <polyline points="21 15 16 10 5 21" stroke-linecap="round" stroke-linejoin="round" stroke-width={2} />
                     </svg>
                   </button>
-                  <button class="action-btn" data-copy-prompt title={post.coverImagePrompt ? 'Copiar prompt' : 'Copiar descripción'} style="color: var(--dominant-color, #f87171)">
+                  {hasCoverInfo && <button class="action-btn" data-copy-prompt title={post.coverImagePrompt ? 'Copiar prompt' : 'Copiar descripción'} style="color: var(--dominant-color, #f87171)">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <rect x="9" y="9" width="13" height="13" rx="2" ry="2" stroke-linecap="round" stroke-linejoin="round" stroke-width={2} />
                       <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke-linecap="round" stroke-linejoin="round" stroke-width={2} />
                     </svg>
-                  </button>
+                  </button>}
                 </div>
               </div>
             </div>
