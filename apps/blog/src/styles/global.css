@@ -337,3 +337,114 @@ html[data-theme="light"] .nav a {
   transform: scaleX(1);
   transform-origin: bottom left;
 }
+
+.reprint-section {
+  margin: 1.5rem 0;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--card) 90%, transparent);
+}
+
+.reprint-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.reprint-field {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--text);
+}
+
+.reprint-original-title {
+  font-size: 0.85rem;
+}
+
+.reprint-original-title a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--primary-aquamarine);
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.reprint-original-title a:hover {
+  opacity: 0.8;
+}
+
+.external-link-icon {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.reprint-author-year {
+  color: var(--cool-gray);
+}
+
+.reprint-publisher {
+  font-size: 0.85rem;
+  color: var(--post-meta-color);
+}
+
+.reprint-reading-time {
+  font-size: 0.85rem;
+  color: var(--post-meta-color);
+}
+
+.reprint-label {
+  color: var(--cool-gray);
+}
+
+.reprint-notes {
+  margin-top: 0.25rem;
+  border: none;
+}
+
+.reprint-notes-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--primary-aquamarine);
+  list-style: none;
+  user-select: none;
+  transition: opacity 0.2s ease;
+}
+
+.reprint-notes-summary:hover {
+  opacity: 0.8;
+}
+
+.reprint-notes-summary::-webkit-details-marker {
+  display: none;
+}
+
+.chevron-icon {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+details[open] .chevron-icon {
+  transform: rotate(180deg);
+}
+
+.reprint-notes-content {
+  margin-top: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-left: 2px solid var(--primary-aquamarine);
+  font-size: 0.88rem;
+  color: var(--cool-gray);
+  line-height: 1.5;
+}
+
+html[data-theme="light"] .reprint-original-title a {
+  color: #2563eb;
+}
+
+html[data-theme="light"] .reprint-notes-summary {
+  color: #2563eb;
+}

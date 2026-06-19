@@ -30,16 +30,65 @@ const htmlContent = renderRichContent(post.content);
 const title = `${post.title} · ${SITE.title}`;
 const description = `${post.author.name} · ${formatPublishedDate(post.publishedAt)}`;
 const canonicalPath = `/posts/${post.slug}/`;
+
+const r = post.type === "reprint" ? post.reprint : undefined;
+const isReprint = r !== undefined;
 ---
 
 <BaseLayout title={title} description={description} canonicalPath={canonicalPath}>
   <SiteHeader />
   <main class="post-main container">
     <article class="post-article">
-      <p class="post-card-meta">{post.author.name} · {formatPublishedDate(post.publishedAt)}</p>
+      {!isReprint && <p class="post-card-meta">{post.author.name} · {formatPublishedDate(post.publishedAt)}</p>}
       <h1>{post.title}</h1>
 
       {coverUrl && <img class="post-cover" src={coverUrl} alt={post.title} loading="eager" />}
+
+      {
+        isReprint && (
+          <div class="reprint-section">
+            <div class="reprint-inner">
+              {r!.originalTitle && (
+                <p class="reprint-field reprint-original-title">
+                  {r!.sourceUrl ? (
+                    <a href={r!.sourceUrl} target="_blank" rel="noopener noreferrer">
+                      {r!.originalTitle}
+                      <svg class="external-link-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    </a>
+                  ) : (
+                    <span>{r!.originalTitle}</span>
+                  )}
+                </p>
+              )}
+              <p class="reprint-field reprint-author-year">
+                {r!.originalAuthor}{r!.originalDate ? ` · ${r!.originalDate}` : ''}
+              </p>
+              <p class="reprint-field reprint-publisher">
+                {post.author.name} · {formatPublishedDate(post.publishedAt)}
+              </p>
+              {post.estimatedReadTime && (
+                <p class="reprint-field reprint-reading-time">
+                  {post.estimatedReadTime} min de lectura
+                </p>
+              )}
+              {r!.translator && (
+                <p class="reprint-field reprint-translator">
+                  <span class="reprint-label">Traductor:</span> {r!.translator}
+                </p>
+              )}
+              {r!.notes && (
+                <details class="reprint-notes">
+                  <summary class="reprint-notes-summary">
+                    ¿Por qué se publicó en blog.elcokiin?
+                    <svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                  </summary>
+                  <div class="reprint-notes-content">{r!.notes}</div>
+                </details>
+              )}
+            </div>
+          </div>
+        )
+      }
 
       <div class="">
         <section class="p-1 md:p-4">

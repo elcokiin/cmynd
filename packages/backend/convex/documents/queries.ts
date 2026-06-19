@@ -92,6 +92,7 @@ export const getPublished = query({
       reprint: document.reprint,
       inspirations: document.inspirations,
       publishedAt: document.publishedAt,
+      estimatedReadTime: document.estimatedReadTime,
       author: toPublicAuthor(author),
     };
   },
@@ -138,6 +139,7 @@ export const getPublishedBySlug = query({
       reprint: document.reprint,
       inspirations: document.inspirations,
       publishedAt: document.publishedAt,
+      estimatedReadTime: document.estimatedReadTime,
       author: toPublicAuthor(author),
     };
   },

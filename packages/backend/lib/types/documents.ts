@@ -141,6 +141,7 @@ export type PublishedDocument = {
   reprint?: ReprintData;
   inspirations?: Inspiration[];
   publishedAt: number;
+  estimatedReadTime?: number;
   author: PublicAuthor;
 };
 
