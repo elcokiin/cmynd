@@ -51,6 +51,7 @@
   --heading-gradient-to: #f87171;
   --content-bg: linear-gradient(135deg, rgba(30,58,138,0.1), rgba(107,33,168,0.1));
   --post-meta-color: #94a3b8;
+  --destructive: #ef4444;
 
 }
 
@@ -272,8 +273,6 @@ html[data-theme="light"] .nav a {
 .post-cover {
   width: 100%;
   border-radius: 14px;
-  max-height: 420px;
-  object-fit: cover;
 }
 
 .post-prose img {
@@ -610,7 +609,7 @@ html[data-theme="light"] .reprint-card__notes-content {
   margin: 0 0 2rem;
   padding-bottom: 0.75rem;
   font-family: "Playfair Display", serif;
-  font-size: 1rem;
+  font-size: 1.125rem;
   color: var(--text);
   border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
   line-height: 1.6;

@@ -241,7 +241,7 @@ export function CoverSection({ documentId }: CoverSectionProps) {
                     : "Drag & drop or click to upload"}
               </div>
               <div className="text-xs text-muted-foreground/70">
-                Recommended: 1200 x 630 pixels
+                Recommended: 735 × 490 px
               </div>
               {isDragActive && (
                 <div className="absolute inset-0 rounded-lg ring-2 ring-primary ring-offset-2 ring-offset-background" />
