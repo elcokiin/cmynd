@@ -41,9 +41,6 @@ const isReprint = r !== undefined;
     <article class="post-article">
       {!isReprint && <p class="post-card-meta">{post.author.name} · {formatPublishedDate(post.publishedAt)}</p>}
       <h1>{post.title}</h1>
-
-      {coverUrl && <img class="post-cover" src={coverUrl} alt={post.title} loading="eager" />}
-
       {
         isReprint && (
           <div class="reprint-section">
@@ -61,10 +58,10 @@ const isReprint = r !== undefined;
                 </p>
               )}
               <p class="reprint-field reprint-author-year">
-                {r!.originalAuthor}{r!.originalDate ? ` · ${r!.originalDate}` : ''}
+            {r!.originalAuthor ?  `Autor: ${r!.originalAuthor}` : ''}{r!.originalDate ? ` · ${r!.originalDate}` : ''}
               </p>
               <p class="reprint-field reprint-publisher">
-                {post.author.name} · {formatPublishedDate(post.publishedAt)}
+                {post.author.name ?  `Publicado por: ${post.author.name}` : ''} · {formatPublishedDate(post.publishedAt)}
               </p>
               {post.estimatedReadTime && (
                 <p class="reprint-field reprint-reading-time">
@@ -90,7 +87,11 @@ const isReprint = r !== undefined;
         )
       }
 
-      <div class="">
+
+
+      {coverUrl && <img class="post-cover" src={coverUrl} alt={post.title} loading="eager" />}
+
+            <div class="">
         <section class="p-1 md:p-4">
           <div class="prose prose-lg max-w-none prose-headings:bg-gradient-to-r prose-headings:from-[var(--heading-gradient-from)] prose-headings:to-[var(--heading-gradient-to)] prose-headings:bg-clip-text prose-headings:text-transparent">
               <div class="relative p-8 md:p-12 bg-[var(--content-bg)] rounded-2xl backdrop-blur-sm shadow-inner">
