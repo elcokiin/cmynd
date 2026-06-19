@@ -134,6 +134,8 @@ export const getPublishedBySlug = query({
       title: document.title,
       slug: document.slug,
       content: document.content,
+      description: document.description,
+      coverImagePrompt: document.coverImagePrompt,
       type: document.type,
       coverImageId: document.coverImageId,
       reprint: document.reprint,
