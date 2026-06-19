@@ -14,9 +14,10 @@ const cardProps = {
   title: post.title,
   description: post.description || "",
   image: post.coverUrl || "",
-  author: post.author,
+  authorName: post.author.name,
+  authorAvatarUrl: post.author.avatarUrl,
   date: formatPublishedDate(post.publishedAt),
-  minDuration: "5",
+  ...(post.estimatedReadTime && { minDuration: String(post.estimatedReadTime) }),
   type,
 };
 ---

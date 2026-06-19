@@ -1,29 +1,43 @@
 import { useState, useEffect } from "react";
 
-import type { PublicAuthor } from "@elcokiin/backend/lib/types/authors";
 import Author from "./Author";
 
 type CardProps = {
   title: string;
   description: string;
   image: string;
-  author: PublicAuthor | null;
+  authorName: string;
+  authorAvatarUrl?: string;
   date: string;
-  minDuration: string;
+  minDuration?: string;
   type: "featured" | "grid-medium" | "grid-large";
 };
 
 function getTitleColor(isHovering: boolean, isDark: boolean) {
   if (isHovering) return "text-[var(--text-hover)]";
-  return isDark ? "text-[var(--text-title-dark)]" : "text-[var(--text-title-light)]";
+  return isDark
+    ? "text-[var(--text-title-dark)]"
+    : "text-[var(--text-title-light)]";
 }
 
 function getDescColor(isHovering: boolean, isDark: boolean) {
   if (isHovering) return "text-[var(--desc-hover-color)]";
-  return isDark ? "text-[var(--text-desc-dark)]" : "text-[var(--text-desc-light)]";
+  return isDark
+    ? "text-[var(--text-desc-dark)]"
+    : "text-[var(--text-desc-light)]";
 }
 
-function Image({ image, title, height, isHovering }: { image: string; title: string; height: string; isHovering: boolean }) {
+function Image({
+  image,
+  title,
+  height,
+  isHovering,
+}: {
+  image: string;
+  title: string;
+  height: string;
+  isHovering: boolean;
+}) {
   return (
     <div className={`w-full ${height} shrink-0`}>
       <img
@@ -38,7 +52,11 @@ function Image({ image, title, height, isHovering }: { image: string; title: str
   );
 }
 
-function HoverEffects({ mousePosition }: { mousePosition: { x: number; y: number } }) {
+function HoverEffects({
+  mousePosition,
+}: {
+  mousePosition: { x: number; y: number };
+}) {
   return (
     <>
       <div
@@ -63,13 +81,27 @@ function HoverEffects({ mousePosition }: { mousePosition: { x: number; y: number
       />
 
       <div className="absolute top-4 right-4 transition-all duration-300 z-20">
-        <div className="w-8 h-8 rounded-full flex items-center justify-center border"
+        <div
+          className="w-8 h-8 rounded-full flex items-center justify-center border"
           style={{
-            backgroundColor: "color-mix(in srgb, var(--accent) 20%, transparent)",
+            backgroundColor:
+              "color-mix(in srgb, var(--accent) 20%, transparent)",
             borderColor: "color-mix(in srgb, var(--accent) 40%, transparent)",
-          }}>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: "var(--accent)" }}>
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          }}
+        >
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            style={{ color: "var(--accent)" }}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 5l7 7-7 7"
+            />
           </svg>
         </div>
       </div>
@@ -89,7 +121,11 @@ const GRADIENTS = {
     `radial-gradient(circle at ${x}% ${y}%, rgba(136, 146, 176, 0.06) 0%, rgba(136, 146, 176, 0.02) 40%, transparent 70%)`,
 };
 
-function getGlassStyles(isDark: boolean, isHovering: boolean, mousePos: { x: number; y: number }) {
+function getGlassStyles(
+  isDark: boolean,
+  isHovering: boolean,
+  mousePos: { x: number; y: number },
+) {
   const base = { transition: "all 0.3s ease-out" };
 
   if (isDark) {
@@ -124,7 +160,8 @@ function getGlassStyles(isDark: boolean, isHovering: boolean, mousePos: { x: num
     : {
         background: "var(--glass-light-base)",
         border: "1px solid var(--glass-light-border)",
-        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.02)",
+        boxShadow:
+          "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.02)",
         backdropFilter: "blur(8px)",
         WebkitBackdropFilter: "blur(8px)",
         ...base,
@@ -135,29 +172,55 @@ type LayoutProps = {
   title: string;
   description: string;
   image: string;
-  author: PublicAuthor | null;
+  authorName: string;
+  authorAvatarUrl?: string;
   date: string;
-  minDuration: string;
+  minDuration?: string;
   isHovering: boolean;
   isDark: boolean;
   mousePosition: { x: number; y: number };
 };
 
-function FeaturedLayout({ title, description, image, author, date, minDuration, isHovering, isDark }: LayoutProps) {
+function FeaturedLayout({
+  title,
+  description,
+  image,
+  authorName,
+  authorAvatarUrl,
+  date,
+  minDuration,
+  isHovering,
+  isDark,
+}: LayoutProps) {
   return (
     <div className="flex flex-col lg:flex-row h-full relative z-10">
       <div className="w-full lg:w-1/2 h-80 lg:h-96">
-        <Image image={image} title={title} height="h-80 lg:h-96" isHovering={isHovering} />
+        <Image
+          image={image}
+          title={title}
+          height="h-80 lg:h-96"
+          isHovering={isHovering}
+        />
       </div>
 
       <div className="w-full lg:w-1/2 p-10 flex flex-col justify-center">
-        <h2 className={`font-bold text-3xl lg:text-4xl mb-2 transition-colors duration-300 ${getTitleColor(isHovering, isDark)}`}>
+        <h2
+          className={`font-bold text-3xl lg:text-4xl mb-2 transition-colors duration-300 ${getTitleColor(isHovering, isDark)}`}
+        >
           {title}
         </h2>
-        <p className={`text-lg lg:text-xl mb-8 line-clamp-4 transition-colors duration-300 ${getDescColor(isHovering, isDark)}`}>
+        <p
+          className={`text-lg lg:text-xl mb-8 line-clamp-4 transition-colors duration-300 ${getDescColor(isHovering, isDark)}`}
+        >
           {description}
         </p>
-        {author && <Author author={author} date={date} minDuration={minDuration} isDark={isDark} />}
+        <Author
+          name={authorName}
+          avatarUrl={authorAvatarUrl}
+          date={date}
+          minDuration={minDuration}
+          isDark={isDark}
+        />
       </div>
     </div>
   );
@@ -167,7 +230,8 @@ function GridLayout({
   title,
   description,
   image,
-  author,
+  authorName,
+  authorAvatarUrl,
   date,
   minDuration,
   isHovering,
@@ -177,7 +241,10 @@ function GridLayout({
   const heights = { large: "h-72", medium: "h-48" };
   const paddings = { large: "p-8", medium: "p-6" };
   const titleSizes = { large: "text-2xl", medium: "text-lg" };
-  const descSizes = { large: "text-base mb-6 line-clamp-3", medium: "text-sm mb-5 line-clamp-3" };
+  const descSizes = {
+    large: "text-base mb-6 line-clamp-3",
+    medium: "text-sm mb-5 line-clamp-3",
+  };
 
   const height = heights[variant ?? "medium"];
   const padding = paddings[variant ?? "medium"];
@@ -186,25 +253,49 @@ function GridLayout({
 
   return (
     <div className="relative z-10 h-full flex flex-col">
-      <Image image={image} title={title} height={height} isHovering={isHovering} />
+      <Image
+        image={image}
+        title={title}
+        height={height}
+        isHovering={isHovering}
+      />
 
-      <div className={`${padding} flex-grow flex flex-col justify-between`}>
+      <div className={`${padding} grow flex flex-col justify-between`}>
         <div>
-          <h2 className={`font-bold ${titleSize} mb-1 transition-colors duration-300 ${getTitleColor(isHovering, isDark)}`}>
+          <h2
+            className={`font-bold ${titleSize} mb-1 transition-colors duration-300 ${getTitleColor(isHovering, isDark)}`}
+          >
             {title}
           </h2>
-          <p className={`${descSize} transition-colors duration-300 ${getDescColor(isHovering, isDark)}`}>
+          <p
+            className={`${descSize} transition-colors duration-300 ${getDescColor(isHovering, isDark)}`}
+          >
             {description}
           </p>
         </div>
 
-        {author && <Author author={author} date={date} minDuration={minDuration} isDark={isDark} />}
+        <Author
+          name={authorName}
+          avatarUrl={authorAvatarUrl}
+          date={date}
+          minDuration={minDuration}
+          isDark={isDark}
+        />
       </div>
     </div>
   );
 }
 
-function Card({ title, description, image, author, date, minDuration, type }: CardProps) {
+function Card({
+  title,
+  description,
+  image,
+  authorName,
+  authorAvatarUrl,
+  date,
+  minDuration,
+  type,
+}: CardProps) {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
   const [isDark, setIsDark] = useState(true);
@@ -216,7 +307,10 @@ function Card({ title, description, image, author, date, minDuration, type }: Ca
     };
     checkTheme();
     const observer = new MutationObserver(checkTheme);
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
     return () => observer.disconnect();
   }, []);
 
@@ -228,7 +322,18 @@ function Card({ title, description, image, author, date, minDuration, type }: Ca
     });
   };
 
-  const layoutProps = { title, description, image, author, date, minDuration, isHovering, isDark, mousePosition };
+  const layoutProps = {
+    title,
+    description,
+    image,
+    authorName,
+    authorAvatarUrl,
+    date,
+    minDuration,
+    isHovering,
+    isDark,
+    mousePosition,
+  };
 
   const layouts = {
     featured: <FeaturedLayout {...layoutProps} />,
@@ -258,3 +363,4 @@ function Card({ title, description, image, author, date, minDuration, type }: Ca
 }
 
 export default Card;
+

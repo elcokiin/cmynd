@@ -39,8 +39,8 @@ const isReprint = r !== undefined;
   <SiteHeader />
   <main class="post-main container">
     <article class="post-article">
-      {!isReprint && <p class="post-card-meta">{post.author.name} · {formatPublishedDate(post.publishedAt)}</p>}
       <h1>{post.title}</h1>
+      {!isReprint && <p class="post-meta">{post.author.name} · {formatPublishedDate(post.publishedAt)}{post.estimatedReadTime ? ` · ${post.estimatedReadTime} min de lectura` : ''}</p>}
       {
         isReprint && (
           <div class="reprint-card">
@@ -89,23 +89,15 @@ const isReprint = r !== undefined;
         )
       }
 
-
-
       {coverUrl && <img class="post-cover" src={coverUrl} alt={post.title} loading="eager" />}
 
-            <div class="">
-        <section class="p-1 md:p-4">
+      <section class="post-content">
+        <div class="post-content__inner">
           <div class="prose prose-lg max-w-none prose-headings:bg-gradient-to-r prose-headings:from-[var(--heading-gradient-from)] prose-headings:to-[var(--heading-gradient-to)] prose-headings:bg-clip-text prose-headings:text-transparent">
-              <div class="relative p-8 md:p-12 bg-[var(--content-bg)] rounded-2xl backdrop-blur-sm shadow-inner">
-              <div class="absolute top-4 left-4 w-8 h-8 border-l-2 border-t-2 border-[var(--text)] opacity-30 rounded-tl-lg"></div>
-              <div class="absolute top-4 right-4 w-8 h-8 border-r-2 border-t-2 border-[var(--text)] opacity-30 rounded-tr-lg"></div>
-              <div class="absolute bottom-4 left-4 w-8 h-8 border-l-2 border-b-2 border-[var(--text)] opacity-30 rounded-bl-lg"></div>
-              <div class="absolute bottom-4 right-4 w-8 h-8 border-r-2 border-b-2 border-[var(--text)] opacity-30 rounded-br-lg"></div>
-              <div set:html={htmlContent}></div>
-            </div>
+            <div set:html={htmlContent}></div>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
     </article>
   </main>
   <SiteFooter />

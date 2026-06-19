@@ -164,9 +164,12 @@ export const listPublished = query({
       (doc) => doc.publishedAt && doc.isVisible !== false,
     );
 
-    // Batch fetch all unique authors in parallel (fixes N+1 query)
+    // Batch fetch all unique authors in parallel (document authors + reprint original authors)
+    const originalAuthorIds = publishedDocs
+      .filter((doc) => doc.type === "reprint" && doc.reprint?.originalAuthorId)
+      .map((doc) => doc.reprint!.originalAuthorId!);
     const uniqueAuthorIds = [
-      ...new Set(publishedDocs.map((doc) => doc.authorId)),
+      ...new Set([...publishedDocs.map((doc) => doc.authorId), ...originalAuthorIds]),
     ];
     const authors = await Promise.all(
       uniqueAuthorIds.map((id) => ctx.db.get(id)),
@@ -177,10 +180,14 @@ export const listPublished = query({
         .map((author) => [author._id, author]),
     );
 
-    // Map documents with their authors
+    // Map documents with their authors (for reprints, use the original author)
     const pageWithAuthors = publishedDocs
       .map((doc) => {
-        const author = authorMap.get(doc.authorId);
+        const authorId =
+          doc.type === "reprint" && doc.reprint?.originalAuthorId
+            ? doc.reprint.originalAuthorId
+            : doc.authorId;
+        const author = authorMap.get(authorId);
         if (!author) return null;
         return toPublishedDocumentListItem(doc, author);
       })

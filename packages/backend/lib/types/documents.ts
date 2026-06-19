@@ -158,5 +158,7 @@ export type PublishedDocumentListItem = {
   type: DocumentType;
   coverImageId?: Id<"_storage">;
   publishedAt: number;
+  estimatedReadTime?: number;
+  reprint?: ReprintData;
   author: PublicAuthor;
 };

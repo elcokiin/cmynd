@@ -101,6 +101,8 @@ export function toPublishedDocumentListItem(
     type: doc.type,
     coverImageId: doc.coverImageId,
     publishedAt: doc.publishedAt!,
+    estimatedReadTime: doc.estimatedReadTime,
+    reprint: doc.reprint,
     author: toPublicAuthor(author),
   };
 }

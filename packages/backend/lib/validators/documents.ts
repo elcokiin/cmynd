@@ -141,6 +141,8 @@ export const publishedDocumentListItemValidator = v.object({
   type: documentTypeValidator,
   coverImageId: v.optional(v.id("_storage")),
   publishedAt: v.number(),
+  estimatedReadTime: v.optional(v.number()),
+  reprint: v.optional(reprintDataValidator),
   author: publicAuthorValidator,
 });
 

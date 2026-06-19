@@ -603,3 +603,194 @@ details[open] .reprint-card__notes-content {
 html[data-theme="light"] .reprint-card__notes-content {
   border-left-color: var(--accent);
 }
+
+/* ===== POST META — Editorial Byline ===== */
+
+.post-meta {
+  margin: 0 0 2rem;
+  padding-bottom: 0.75rem;
+  font-family: "Playfair Display", serif;
+  font-size: 1rem;
+  color: var(--text);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+  line-height: 1.6;
+}
+
+/* ===== POST CONTENT — Article Reader ===== */
+
+.post-content {
+  margin: 2.5rem 0;
+}
+
+.post-content__inner {
+  position: relative;
+  padding: 2rem;
+  border-radius: 20px;
+  background: var(--content-bg);
+  backdrop-filter: blur(8px);
+}
+
+/* Corner brackets via box-shadow */
+.post-content__inner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  pointer-events: none;
+  box-shadow:
+    12px 12px 0 -9px color-mix(in srgb, var(--primary-aquamarine) 15%, transparent),
+    -12px -12px 0 -9px color-mix(in srgb, var(--primary-aquamarine) 15%, transparent);
+}
+
+html[data-theme="light"] .post-content__inner::after {
+  box-shadow:
+    12px 12px 0 -9px color-mix(in srgb, var(--accent) 15%, transparent),
+    -12px -12px 0 -9px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+/* Drop cap for first paragraph */
+.post-content .prose > p:first-of-type::first-letter {
+  float: left;
+  font-family: "Playfair Display", serif;
+  font-size: 3.8em;
+  font-weight: 700;
+  line-height: 0.85;
+  padding-right: 0.5rem;
+  padding-top: 0.1rem;
+  color: var(--primary-aquamarine);
+}
+
+html[data-theme="light"] .post-content .prose > p:first-of-type::first-letter {
+  color: var(--accent);
+}
+
+/* Better blockquotes */
+.post-content .prose blockquote {
+  position: relative;
+  padding: 1.5rem 1.5rem 1.5rem 2rem;
+  border-left: 3px solid var(--primary-aquamarine);
+  border-radius: 0 12px 12px 0;
+  background: color-mix(in srgb, var(--card) 70%, transparent);
+  font-style: italic;
+}
+
+.post-content .prose blockquote::before {
+  content: '\201C';
+  position: absolute;
+  top: -0.2rem;
+  left: 0.5rem;
+  font-family: "Playfair Display", serif;
+  font-size: 3rem;
+  line-height: 1;
+  color: var(--primary-aquamarine);
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+html[data-theme="light"] .post-content .prose blockquote {
+  border-left-color: var(--accent);
+}
+
+html[data-theme="light"] .post-content .prose blockquote::before {
+  color: var(--accent);
+}
+
+/* Better images within prose */
+.post-content .prose img {
+  border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  transition: box-shadow 0.3s ease;
+}
+
+.post-content .prose img:hover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+}
+
+/* Better code blocks */
+.post-content .prose pre {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.post-content .prose code {
+  font-size: 0.85em;
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.post-content .prose pre code {
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+/* Better horizontal rules */
+.post-content .prose hr {
+  margin: 2.5rem 0;
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+}
+
+/* Better links within prose */
+.post-content .prose a {
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--primary-aquamarine) 40%, transparent);
+  transition: border-color 0.2s ease;
+}
+
+.post-content .prose a:hover {
+  border-bottom-color: var(--primary-aquamarine);
+}
+
+html[data-theme="light"] .post-content .prose a {
+  border-bottom-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+html[data-theme="light"] .post-content .prose a:hover {
+  border-bottom-color: var(--accent);
+}
+
+/* Better tables */
+.post-content .prose table {
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.post-content .prose th {
+  background: color-mix(in srgb, var(--card) 60%, transparent);
+}
+
+.post-content .prose td,
+.post-content .prose th {
+  padding: 0.75rem 1rem;
+}
+
+/* Better list markers */
+.post-content .prose ul li::marker {
+  color: var(--primary-aquamarine);
+}
+
+html[data-theme="light"] .post-content .prose ul li::marker {
+  color: var(--accent);
+}
+
+/* Responsive padding */
+@media (min-width: 768px) {
+  .post-content__inner {
+    padding: 3rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .post-content__inner {
+    padding: 3.5rem;
+  }
+}
