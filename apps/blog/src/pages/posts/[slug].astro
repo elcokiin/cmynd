@@ -43,43 +43,45 @@ const isReprint = r !== undefined;
       <h1>{post.title}</h1>
       {
         isReprint && (
-          <div class="reprint-section">
-            <div class="reprint-inner">
+          <div class="reprint-card">
+            <span class="reprint-card__badge">Reimpresión</span>
+            <div class="reprint-card__body">
               {r!.originalTitle && (
-                <p class="reprint-field reprint-original-title">
+                <p class="reprint-card__title">
                   {r!.sourceUrl ? (
                     <a href={r!.sourceUrl} target="_blank" rel="noopener noreferrer">
-                      {r!.originalTitle}
-                      <svg class="external-link-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                      <span class="reprint-card__title-text">“{r!.originalTitle}”</span>
+                      <svg class="reprint-card__ext-link" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                     </a>
                   ) : (
-                    <span>{r!.originalTitle}</span>
+                    <span class="reprint-card__title-text">“{r!.originalTitle}”</span>
                   )}
                 </p>
               )}
-              <p class="reprint-field reprint-author-year">
-            {r!.originalAuthor ?  `Autor: ${r!.originalAuthor}` : ''}{r!.originalDate ? ` · ${r!.originalDate}` : ''}
-              </p>
-              <p class="reprint-field reprint-publisher">
-                {post.author.name ?  `Publicado por: ${post.author.name}` : ''} · {formatPublishedDate(post.publishedAt)}
-              </p>
-              {post.estimatedReadTime && (
-                <p class="reprint-field reprint-reading-time">
-                  {post.estimatedReadTime} min de lectura
+              {(r!.originalAuthor || r!.originalDate) && (
+                <p class="reprint-card__attribution">
+                  {r!.originalAuthor && <span class="reprint-card__attribution-author">{r!.originalAuthor}</span>}
+                  {r!.originalDate && <span class="reprint-card__attribution-date">{r!.originalDate}</span>}
                 </p>
               )}
+              <hr class="reprint-card__rule" aria-hidden="true" />
+              <div class="reprint-card__meta">
+                {post.author.name && <span class="reprint-card__field"><span class="reprint-card__label">Publicado por</span> {post.author.name}</span>}
+                <span class="reprint-card__field">{formatPublishedDate(post.publishedAt)}</span>
+                {post.estimatedReadTime && <span class="reprint-card__field">{post.estimatedReadTime} min de lectura</span>}
+              </div>
               {r!.translator && (
-                <p class="reprint-field reprint-translator">
-                  <span class="reprint-label">Traductor:</span> {r!.translator}
+                <p class="reprint-card__translator">
+                  <span class="reprint-card__label">Traductor:</span> {r!.translator}
                 </p>
               )}
               {r!.notes && (
-                <details class="reprint-notes">
-                  <summary class="reprint-notes-summary">
+                <details class="reprint-card__notes">
+                  <summary class="reprint-card__notes-summary">
                     ¿Por qué se publicó en blog.elcokiin?
-                    <svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    <svg class="reprint-card__chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                   </summary>
-                  <div class="reprint-notes-content">{r!.notes}</div>
+                  <div class="reprint-card__notes-content">{r!.notes}</div>
                 </details>
               )}
             </div>
