@@ -56,7 +56,7 @@
 }
 
 html[data-theme="light"] {
-  --surface: #f8fafc;
+  --surface: #ffffff;
   --text: #1e293b;
   --card: #ffffff;
   --border: #e2e8f0;
