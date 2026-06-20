@@ -7,6 +7,11 @@ export const slugHistoryEntryValidator = v.object({
   createdAt: v.number(),
 });
 
+export const coverImageValidator = v.object({
+  storageId: v.optional(v.id("_storage")),
+  prompt: v.optional(v.string()),
+});
+
 // Primitives
 export const documentTypeValidator = v.union(
   v.literal("own"),
@@ -50,11 +55,10 @@ export const documentValidator = {
   markdownSource: v.optional(v.string()),
   contentFormat: v.optional(documentContentFormatValidator),
   description: v.optional(v.string()),
-  coverImagePrompt: v.optional(v.string()),
+  coverImage: v.optional(coverImageValidator),
   type: documentTypeValidator,
   status: documentStatusValidator,
   authorId: v.id("authors"),
-  coverImageId: v.optional(v.id("_storage")),
   reprint: v.optional(reprintDataValidator),
   inspirations: v.optional(v.array(inspirationValidator)),
   createdAt: v.number(),
@@ -95,7 +99,7 @@ export const documentListItemValidator = v.object({
   slug: v.string(),
   type: documentTypeValidator,
   status: documentStatusValidator,
-  coverImageId: v.optional(v.id("_storage")),
+  coverImage: v.optional(coverImageValidator),
   createdAt: v.number(),
   updatedAt: v.number(),
   submittedAt: v.optional(v.number()),
@@ -139,7 +143,7 @@ export const publishedDocumentListItemValidator = v.object({
   slug: v.string(),
   description: v.optional(v.string()),
   type: documentTypeValidator,
-  coverImageId: v.optional(v.id("_storage")),
+  coverImage: v.optional(coverImageValidator),
   publishedAt: v.number(),
   estimatedReadTime: v.optional(v.number()),
   reprint: v.optional(reprintDataValidator),

@@ -1,6 +1,11 @@
 import type { Id } from "../../convex/_generated/dataModel";
 import type { PublicAuthor } from "./authors";
 
+export type CoverImageData = {
+  storageId?: Id<"_storage">;
+  prompt?: string;
+};
+
 /**
  * Type of document content.
  * - own: Original content created from scratch
@@ -73,10 +78,9 @@ export type DocumentListItem = {
   title: string;
   slug: string;
   description?: string;
-  coverImagePrompt?: string;
   type: DocumentType;
   status: DocumentStatus;
-  coverImageId?: Id<"_storage">;
+  coverImage?: CoverImageData;
   createdAt: number;
   updatedAt: number;
   submittedAt?: number;
@@ -93,9 +97,9 @@ export type AdminDocumentListItem = {
   title: string;
   slug: string;
   description?: string;
-  coverImagePrompt?: string;
   type: DocumentType;
   status: DocumentStatus;
+  coverImage?: CoverImageData;
   submittedAt?: number;
   createdAt: number;
   updatedAt: number;
@@ -135,9 +139,8 @@ export type PublishedDocument = {
   markdownSource?: string;
   contentFormat?: DocumentContentFormat;
   description?: string;
-  coverImagePrompt?: string;
   type: DocumentType;
-  coverImageId?: Id<"_storage">;
+  coverImage?: CoverImageData;
   reprint?: ReprintData;
   inspirations?: Inspiration[];
   publishedAt: number;
@@ -154,9 +157,8 @@ export type PublishedDocumentListItem = {
   title: string;
   slug: string;
   description?: string;
-  coverImagePrompt?: string;
   type: DocumentType;
-  coverImageId?: Id<"_storage">;
+  coverImage?: CoverImageData;
   publishedAt: number;
   estimatedReadTime?: number;
   reprint?: ReprintData;

@@ -39,7 +39,7 @@ export function CoverSection({ documentId }: CoverSectionProps) {
   const document = useQuery(api.documents.queries.getForEdit, { documentId });
   const coverImageUrl = useQuery(
     api.storage.getUrl,
-    document?.coverImageId ? { storageId: document.coverImageId } : "skip",
+    document?.coverImage?.storageId ? { storageId: document.coverImage.storageId } : "skip",
   );
 
   const updateCoverImage = useMutation(api.documents.mutations.updateCoverImage);
@@ -50,32 +50,47 @@ export function CoverSection({ documentId }: CoverSectionProps) {
     if (!document) return;
     if (initializedRef.current) return;
     initializedRef.current = true;
-    setCoverImagePrompt(document.coverImagePrompt ?? "");
+    setCoverImagePrompt(document.coverImage?.prompt ?? "");
     setDescription(document.description ?? "");
   }, [document]);
 
-  const saveMetadata = useDebouncedSave(async () => {
+  const saveCoverImage = useDebouncedSave(async () => {
+    try {
+      await updateCoverImage({
+        documentId,
+        coverImage: {
+          storageId: document?.coverImage?.storageId,
+          prompt: normalizeOptionalText(coverImagePrompt),
+        },
+      });
+    } catch (error) {
+      handleError(error, {
+        context: "CoverSection.saveCoverImage",
+      });
+    }
+  }, 700);
+
+  const saveDescription = useDebouncedSave(async () => {
     try {
       await updateMetadata({
         documentId,
-        coverImagePrompt: normalizeOptionalText(coverImagePrompt),
         description: normalizeOptionalText(description),
       });
     } catch (error) {
       handleError(error, {
-        context: "CoverSection.saveMetadata",
+        context: "CoverSection.saveDescription",
       });
     }
   }, 700);
 
   const handlePromptChange = (value: string) => {
     setCoverImagePrompt(value);
-    saveMetadata();
+    saveCoverImage();
   };
 
   const handleDescriptionChange = (value: string) => {
     setDescription(value);
-    saveMetadata();
+    saveDescription();
   };
 
   const handleImageUpload = async (file: File) => {
@@ -107,7 +122,10 @@ export function CoverSection({ documentId }: CoverSectionProps) {
 
       await updateCoverImage({
         documentId,
-        coverImageId: storageId as Id<"_storage">,
+        coverImage: {
+          storageId: storageId as Id<"_storage">,
+          prompt: normalizeOptionalText(coverImagePrompt) || undefined,
+        },
       });
 
       toast.success("Cover image updated");
@@ -135,9 +153,9 @@ export function CoverSection({ documentId }: CoverSectionProps) {
   const dropzoneRootProps = getRootProps() as React.HTMLAttributes<HTMLDivElement>;
 
   const handleRemoveCoverImage = async () => {
-    if (!document?.coverImageId) return;
+    if (!document?.coverImage?.storageId) return;
     try {
-      await updateCoverImage({ documentId, coverImageId: undefined });
+      await updateCoverImage({ documentId, coverImage: undefined });
       toast.success("Cover image removed");
     } catch (error) {
       handleError(error, { context: "CoverSection.handleRemoveCoverImage" });

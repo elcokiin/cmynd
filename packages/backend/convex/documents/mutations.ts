@@ -182,13 +182,19 @@ export const updateType = mutation({
 });
 
 /**
- * Update document cover image.
+ * Update document cover image and prompt (atomic).
  * Only allowed for documents in "building" status.
+ * Pass `coverImage: undefined` to remove the cover image entirely.
  */
 export const updateCoverImage = mutation({
   args: {
     documentId: v.id("documents"),
-    coverImageId: v.optional(v.id("_storage")),
+    coverImage: v.optional(
+      v.object({
+        storageId: v.optional(v.id("_storage")),
+        prompt: v.optional(v.string()),
+      }),
+    ),
   },
   handler: async (ctx, args) => {
     const document = await getByIdForAuthor(ctx, args.documentId);
@@ -201,12 +207,15 @@ export const updateCoverImage = mutation({
       throwConvexError(ErrorCode.DOCUMENT_PENDING_REVIEW);
     }
 
-    if (document.coverImageId) {
-      await ctx.storage.delete(document.coverImageId);
+    if (
+      document.coverImage?.storageId &&
+      args.coverImage?.storageId !== document.coverImage.storageId
+    ) {
+      await ctx.storage.delete(document.coverImage.storageId);
     }
 
     await ctx.db.patch(args.documentId, {
-      coverImageId: args.coverImageId,
+      coverImage: args.coverImage,
       updatedAt: Date.now(),
     });
   },
@@ -220,7 +229,6 @@ export const updateMetadata = mutation({
   args: {
     documentId: v.id("documents"),
     description: v.optional(v.string()),
-    coverImagePrompt: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const document = await getByIdForAuthor(ctx, args.documentId);
@@ -239,10 +247,6 @@ export const updateMetadata = mutation({
 
     if ("description" in args) {
       updates.description = args.description;
-    }
-
-    if ("coverImagePrompt" in args) {
-      updates.coverImagePrompt = args.coverImagePrompt;
     }
 
     await ctx.db.patch(args.documentId, updates);
@@ -438,7 +442,7 @@ export const submit = mutation({
       );
     }
 
-    if (!document.coverImageId) {
+    if (!document.coverImage?.storageId) {
       throwConvexError(ErrorCode.DOCUMENT_COVER_REQUIRED);
     }
 

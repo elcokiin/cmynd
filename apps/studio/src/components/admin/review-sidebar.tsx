@@ -41,7 +41,7 @@ export function ReviewSidebar({
 
   const coverImageUrl = useQuery(
     api.storage.getUrl,
-    document?.coverImageId ? { storageId: document.coverImageId } : "skip",
+    document?.coverImage?.storageId ? { storageId: document.coverImage.storageId } : "skip",
   );
 
   const approveMutation = useMutation(api.documents.mutations.approve);

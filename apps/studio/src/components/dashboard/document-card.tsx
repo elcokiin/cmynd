@@ -167,7 +167,7 @@ export const DocumentCard = memo(function DocumentCard({
   // Only fetch cover URL if document has a cover image
   const coverUrl = useQuery(
     api.storage.getUrl,
-    document.coverImageId ? { storageId: document.coverImageId } : "skip"
+    document.coverImage?.storageId ? { storageId: document.coverImage.storageId } : "skip"
   );
 
   // Show with-cover variant if we have a cover image URL
