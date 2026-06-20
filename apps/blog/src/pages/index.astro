@@ -4,7 +4,7 @@ import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import BlogGrid from "../components/BlogGrid.astro";
 import SiteHero from "../components/SiteHero.astro"
-import { listAllPublishedDocuments, getPublicStorageUrl } from "../lib/convex";
+import { loadPublishedPosts } from "../lib/load-post";
 import { SITE } from "../lib/config";
 
 import "@elcokiin/ui/styles";
@@ -13,15 +13,7 @@ import "../styles/global.css";
 const cacheControl = "public, max-age=120, s-maxage=600, stale-while-revalidate=3600";
 Astro.response.headers.set("Cache-Control", cacheControl);
 
-const published = await listAllPublishedDocuments();
-
-const posts = await Promise.all(
-  published.map(async post => ({
-    ...post,
-    coverUrl:
-      post.coverImageId ? (await getPublicStorageUrl(post.coverImageId)) ?? undefined : undefined,
-  })),
-);
+const posts = await loadPublishedPosts();
 ---
 
 <BaseLayout title={`${SITE.title}`} description={SITE.description} canonicalPath="/">
