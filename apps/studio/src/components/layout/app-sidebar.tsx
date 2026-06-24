@@ -1,6 +1,7 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { ThemeToggle } from "@elcokiin/ui/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
+import { useThemeTransition } from "@/hooks/use-theme-transition";
 import { HomeIcon, ShieldIcon } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "@elcokiin/backend/convex/_generated/api";
@@ -17,6 +18,11 @@ import {
 } from "@elcokiin/ui/sidebar";
 
 import LogoStudio from "@/assets/images/logo.png";
+
+function ThemeToggleWrapper() {
+  const { setTheme } = useThemeTransition();
+  return <ThemeToggle onSetTheme={setTheme} />;
+}
 
 export function AppSidebar() {
   const location = useLocation();
@@ -77,7 +83,7 @@ export function AppSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <ThemeToggle />
+            <ThemeToggleWrapper />
           </SidebarMenuItem>
           <SidebarMenuItem>
             <UserMenu />

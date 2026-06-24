@@ -1,8 +1,8 @@
 import { useHotkey } from "@tanstack/react-hotkeys";
-import { useTheme } from "next-themes";
+import { useThemeTransition } from "@/hooks/use-theme-transition";
 
 export function useThemeShortcut() {
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme } = useThemeTransition();
 
   useHotkey("D", () => {
     setTheme(theme === "dark" ? "light" : "dark");

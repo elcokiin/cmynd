@@ -12,8 +12,13 @@ import {
 import { MonitorIcon, MoonIcon, SunIcon } from "lucide-react";
 import { useTheme } from "next-themes";
 
-function ThemeToggle(): ReactNode {
+interface ThemeToggleProps {
+  onSetTheme?: (theme: string) => void;
+}
+
+function ThemeToggle({ onSetTheme }: ThemeToggleProps): ReactNode {
   const { theme, setTheme } = useTheme();
+  const handleSetTheme = onSetTheme ?? setTheme;
 
   return (
     <DropdownMenu>
@@ -26,17 +31,17 @@ function ThemeToggle(): ReactNode {
         <MoonIcon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")} className="gap-2">
+        <DropdownMenuItem onClick={() => handleSetTheme("light")} className="gap-2">
           <SunIcon className="h-4 w-4" />
           <span>Light</span>
           {theme === "light" && <span className="ml-auto">✓</span>}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")} className="gap-2">
+        <DropdownMenuItem onClick={() => handleSetTheme("dark")} className="gap-2">
           <MoonIcon className="h-4 w-4" />
           <span>Dark</span>
           {theme === "dark" && <span className="ml-auto">✓</span>}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")} className="gap-2">
+        <DropdownMenuItem onClick={() => handleSetTheme("system")} className="gap-2">
           <MonitorIcon className="h-4 w-4" />
           <span>System</span>
           {theme === "system" && <span className="ml-auto">✓</span>}
