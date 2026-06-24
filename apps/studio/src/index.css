@@ -2,12 +2,10 @@
 
 @source "./";
 
-/* Theme transition animation base styles */
 ::view-transition-old(root) {
   animation: none;
 }
 
 ::view-transition-new(root) {
   z-index: 100;
-  mix-blend-mode: normal;
 }

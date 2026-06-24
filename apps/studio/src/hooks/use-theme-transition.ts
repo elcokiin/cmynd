@@ -1,7 +1,10 @@
 import { useCallback, useEffect } from "react";
 import { useTheme } from "next-themes";
 
-const clickPosition = { x: 0, y: 0 };
+let clickX = 0;
+let clickY = 0;
+let isAnimating = false;
+let styleEl: HTMLStyleElement | null = null;
 
 export function useThemeTransition() {
   const { setTheme, ...rest } = useTheme();
@@ -16,26 +19,31 @@ export function useThemeTransition() {
         return;
       }
 
-      const x = clickPosition.x || window.innerWidth / 2;
-      const y = clickPosition.y || window.innerHeight / 2;
+      if (isAnimating) {
+        setTheme(theme);
+        return;
+      }
 
-      const style = document.createElement("style");
-      style.id = "theme-transition-style";
-      document.head.appendChild(style);
+      const x = clickX || window.innerWidth / 2;
+      const y = clickY || window.innerHeight / 2;
 
-      style.textContent = `
+      if (!styleEl) {
+        styleEl = document.createElement("style");
+        styleEl.id = "theme-transition-style";
+        document.head.appendChild(styleEl);
+      }
+
+      styleEl.textContent = `
         ::view-transition-new(root) {
-          animation: 0.6s cubic-bezier(0.4, 0, 0.2, 1) both custom-reveal;
+          animation: 0.25s ease-out both custom-reveal;
         }
         @keyframes custom-reveal {
-          from {
-            clip-path: circle(0% at ${x}px ${y}px);
-          }
-          to {
-            clip-path: circle(150% at ${x}px ${y}px);
-          }
+          from { clip-path: circle(0% at ${x}px ${y}px); }
+          to { clip-path: circle(150% at ${x}px ${y}px); }
         }
       `;
+
+      isAnimating = true;
 
       const transition = document.startViewTransition(() => {
         const noTransition = document.createElement("style");
@@ -52,10 +60,10 @@ export function useThemeTransition() {
 
       transition.finished
         .then(() => {
-          document.getElementById("theme-transition-style")?.remove();
+          isAnimating = false;
         })
         .catch(() => {
-          document.getElementById("theme-transition-style")?.remove();
+          isAnimating = false;
         });
     },
     [setTheme],
@@ -67,8 +75,8 @@ export function useThemeTransition() {
 export function useClickTracker() {
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      clickPosition.x = e.clientX;
-      clickPosition.y = e.clientY;
+      clickX = e.clientX;
+      clickY = e.clientY;
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
