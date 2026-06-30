@@ -20,8 +20,7 @@ export default defineConfig({
     noExternal: [
       "@convex-dev/better-auth",
       "next-themes",
-      "novel",
-      "react-tweet",
+
     ],
   },
 });

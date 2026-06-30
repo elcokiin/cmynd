@@ -148,7 +148,6 @@ export function useNewDocument() {
     title,
     handleTitleChange,
     documentIdRef,
-    contentRef,
     handleContentChange,
     saveContentChange,
   };

@@ -27,24 +27,22 @@
     "@tanstack/react-router-with-query": "^1.130.17",
     "@tanstack/react-start": "^1.141.1",
     "@tanstack/router-plugin": "^1.141.1",
-
     "@unpic/react": "^1.0.2",
     "better-auth": "catalog:",
     "browser-image-compression": "^2.0.2",
     "convex": "catalog:",
     "dotenv": "catalog:",
+    "lexical": "^0.46.0",
     "lucide-react": "^0.562.0",
-
     "next-themes": "^0.4.6",
     "nitro": "^3.0.1-alpha.1",
-
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-dropzone": "^15.0.0",
     "shadcn": "^3.6.2",
     "sonner": "^2.0.3",
+    "studio": "^0.13.5",
     "tailwindcss": "^4.1.3",
-
     "use-debounce": "^10.0.6",
     "vite-tsconfig-paths": "^5.1.4",
     "zod": "catalog:"
@@ -55,7 +53,6 @@
     "@tanstack/react-router-devtools": "^1.141.1",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.2.0",
-
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^5.0.4",

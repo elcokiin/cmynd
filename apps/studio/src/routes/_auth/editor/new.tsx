@@ -22,7 +22,6 @@ function NewDocumentRoute() {
     title,
     handleTitleChange,
     documentIdRef,
-    contentRef,
     handleContentChange,
     saveContentChange,
   } = useNewDocument();

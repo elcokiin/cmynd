@@ -11,21 +11,6 @@ export function ReviewSkeleton(): React.ReactNode {
       </header>
 
       <div className="flex-1 flex overflow-hidden">
-        {/* Document List Skeleton */}
-        {/* <div className="w-64 border-r p-4 space-y-3 hidden md:block"> */}
-        {/*   <Skeleton className="h-5 w-24 mb-4" /> */}
-        {/*   {Array.from({ length: 5 }).map((_, i) => ( */}
-        {/*     <div key={i} className="space-y-2 p-3 rounded-lg border"> */}
-        {/*       <Skeleton className="h-4 w-full" /> */}
-        {/*       <div className="flex items-center gap-2"> */}
-        {/*         <Skeleton className="h-3 w-16" /> */}
-        {/*         <Skeleton className="h-3 w-20" /> */}
-        {/*       </div> */}
-        {/*     </div> */}
-        {/*   ))} */}
-        {/* </div> */}
-        {/**/}
-        {/* Preview Skeleton */}
         <div className="flex-1 p-6 overflow-auto">
           <div className="max-w-3xl mx-auto space-y-4">
             <Skeleton className="h-8 w-2/3" />
@@ -40,7 +25,6 @@ export function ReviewSkeleton(): React.ReactNode {
           </div>
         </div>
 
-        {/* Sidebar Skeleton */}
         <div className="w-80 border-l p-4 space-y-4 hidden lg:block">
           <Skeleton className="h-5 w-28" />
           <Skeleton className="h-32 w-full" />
@@ -50,22 +34,6 @@ export function ReviewSkeleton(): React.ReactNode {
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-export function ReviewListSkeleton(): React.ReactNode {
-  return (
-    <div className="space-y-3">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="space-y-2 p-3 rounded-lg border">
-          <Skeleton className="h-4 w-full" />
-          <div className="flex items-center gap-2">
-            <Skeleton className="h-3 w-16" />
-            <Skeleton className="h-3 w-20" />
-          </div>
-        </div>
-      ))}
     </div>
   );
 }

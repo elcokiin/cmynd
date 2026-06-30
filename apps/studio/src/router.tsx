@@ -9,7 +9,6 @@ import {
 } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
 
-import { Loader } from "./components/loader";
 import "./index.css";
 import { routeTree } from "./routeTree.gen";
 
@@ -34,7 +33,7 @@ export function getRouter(): Router<typeof routeTree, "preserve"> {
   const router = createTanStackRouter({
     routeTree,
     defaultPreload: "intent",
-    defaultPendingComponent: () => <Loader />,
+    defaultPendingComponent: () => <div className="flex items-center justify-center h-screen"><div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>,
     defaultNotFoundComponent: () => <Navigate to="/" replace />,
     context: { queryClient, convexQueryClient },
     trailingSlash: "preserve",

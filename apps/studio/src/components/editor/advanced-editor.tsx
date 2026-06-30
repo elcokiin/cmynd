@@ -25,7 +25,7 @@ export function AdvancedEditor({
   editable = true,
   className,
   uploadFn = null,
-  onUploadError,
+  onUploadError: _onUploadError,
 }: AdvancedEditorProps) {
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved" | "error">(
     "saved",
