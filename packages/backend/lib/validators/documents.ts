@@ -25,11 +25,6 @@ export const documentStatusValidator = v.union(
   v.literal("published"),
 );
 
-export const documentContentFormatValidator = v.union(
-  v.literal("rich_json"),
-  v.literal("markdown_imported"),
-);
-
 export const reprintDataValidator = v.object({
   originalAuthor: v.string(),
   originalAuthorId: v.optional(v.id("authors")),
@@ -52,8 +47,6 @@ export const documentValidator = {
   title: v.string(),
   slug: v.string(),
   content: v.any(),
-  markdownSource: v.optional(v.string()),
-  contentFormat: v.optional(documentContentFormatValidator),
   description: v.optional(v.string()),
   coverImage: v.optional(coverImageValidator),
   type: documentTypeValidator,

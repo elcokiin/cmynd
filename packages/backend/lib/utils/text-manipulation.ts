@@ -1,6 +1,6 @@
 import type { JSONContent } from "./title";
 
-function extractTextFromNode(node: JSONContent): string {
+export function extractTextFromNode(node: JSONContent): string {
   let text = "";
 
   if (node.text) {

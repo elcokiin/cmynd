@@ -4,7 +4,6 @@ import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import {
   documentTypeValidator,
-  documentContentFormatValidator,
   reprintDataValidator,
 } from "../../lib/validators/documents";
 import { ErrorCode, throwConvexError } from "@elcokiin/errors";
@@ -18,7 +17,10 @@ import {
   hasContent,
   type JSONContent,
 } from "../../lib/utils/title";
-import { extractFirstWords } from "../../lib/utils/text-manipulation";
+import {
+  extractFirstWords,
+  extractTextFromNode,
+} from "../../lib/utils/text-manipulation";
 import {
   slugExists,
   addToSlugHistory,
@@ -41,8 +43,6 @@ export const create = mutation({
     title: v.string(),
     type: documentTypeValidator,
     content: v.optional(v.any()),
-    markdownSource: v.optional(v.string()),
-    contentFormat: v.optional(documentContentFormatValidator),
   },
   handler: async (ctx, args) => {
     // Validate title
@@ -67,8 +67,6 @@ export const create = mutation({
       isVisible: true,
       authorId,
       content: args.content ?? {},
-      markdownSource: args.markdownSource,
-      contentFormat: args.contentFormat,
       createdAt: now,
       updatedAt: now,
     });
@@ -291,7 +289,6 @@ export const updateContent = mutation({
   args: {
     documentId: v.id("documents"),
     content: v.any(),
-    markdownSource: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const document = await getByIdForAuthor(ctx, args.documentId);
@@ -306,7 +303,6 @@ export const updateContent = mutation({
 
     const updates: Record<string, unknown> = {
       content: args.content,
-      markdownSource: args.markdownSource,
       updatedAt: Date.now(),
     };
 
@@ -390,7 +386,9 @@ export const publish = mutation({
       }
     }
 
-    const text = document.markdownSource ?? "";
+    const text = document.content
+      ? extractTextFromNode(document.content as JSONContent)
+      : "";
     const estimatedReadTime = getReadingTimeMinutes(text);
 
     let description = document.description?.trim() || "";
@@ -495,7 +493,9 @@ export const approve = mutation({
       );
     }
 
-    const text = document.markdownSource ?? "";
+    const text = document.content
+      ? extractTextFromNode(document.content as JSONContent)
+      : "";
     const estimatedReadTime = getReadingTimeMinutes(text);
 
     let description = document.description?.trim() || "";
