@@ -152,6 +152,7 @@ export function DocumentPreview({
           <ClientOnlyEditor
             initialContent={document.content as SerializedEditorState}
             editable={false}
+            variant="minimal"
             className="min-h-[300px]"
           />
         </div>

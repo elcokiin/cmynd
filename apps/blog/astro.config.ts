@@ -21,20 +21,21 @@ export default defineConfig({
     // Tailwind Vite plugin types target Vite 7 and require this cast.
     plugins: [tailwindcss()],
     resolve: {
-      alias: {
-        src: fileURLToPath(new URL("../../packages/ui/src", import.meta.url)),
-      },
-      dedupe: ["react", "react-dom"],
+      alias: [{
+        find: /^src\//,
+        replacement: fileURLToPath(new URL("../../packages/ui/src/", import.meta.url)),
+      }],
     },
     optimizeDeps: {
-      include: ["react", "react-dom", "gsap", "split-type"],
+      include: ["gsap", "split-type"],
       exclude: ["astro", "@elcokiin/backend"],
     },
     ssr: {
       noExternal: ["@elcokiin/ui"],
+      target: "webworker",
     },
   },
 
-  integrations: [react(), sitemap()],
+  integrations: [react({ experimentalDisableStreaming: true }), sitemap()],
 });
 

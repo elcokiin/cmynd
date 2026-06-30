@@ -1,5 +1,6 @@
 import { createEditor, type Klass, type LexicalNode, type SerializedEditorState } from "lexical";
 import { $generateHtmlFromNodes } from "@lexical/html";
+import { parseHTML } from "linkedom";
 
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { ListNode, ListItemNode } from "@lexical/list";
@@ -40,6 +41,36 @@ const defaultNodes: Klass<LexicalNode>[] = [
   YouTubeNode,
 ];
 
+let domInstance: { document: Document; window: Window } | null = null;
+
+function withDom<T>(fn: () => T): T {
+  if (globalThis.window && globalThis.document) {
+    return fn();
+  }
+
+  if (!domInstance) {
+    domInstance = parseHTML("<!DOCTYPE html><html><body></body></html>");
+  }
+
+  const { document: doc, window: win } = domInstance;
+
+  const prevWindow = globalThis.window;
+  const prevDocument = globalThis.document;
+  const prevMutationObserver = globalThis.MutationObserver;
+
+  globalThis.window = win as any;
+  globalThis.document = doc as any;
+  globalThis.MutationObserver = (win as any).MutationObserver;
+
+  try {
+    return fn();
+  } finally {
+    globalThis.window = prevWindow;
+    globalThis.document = prevDocument;
+    globalThis.MutationObserver = prevMutationObserver;
+  }
+}
+
 export function renderToHtml(
   editorState: SerializedEditorState,
   nodes?: Klass<LexicalNode>[],
@@ -52,10 +83,11 @@ export function renderToHtml(
   const state = editor.parseEditorState(editorState);
   editor.setEditorState(state);
 
-  let html = "";
-  editor.getEditorState().read(() => {
-    html = $generateHtmlFromNodes(editor, null);
+  return withDom(() => {
+    let html = "";
+    editor.getEditorState().read(() => {
+      html = $generateHtmlFromNodes(editor, null);
+    });
+    return html;
   });
-
-  return html;
 }

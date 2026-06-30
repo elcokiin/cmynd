@@ -17,6 +17,7 @@ export type AdvancedEditorProps = {
   onSave?: (state: SerializedEditorState) => Promise<void>;
   debounceMs?: number;
   editable?: boolean;
+  variant?: "minimal" | "medium" | "full";
   className?: string;
   uploadFn?: UploadFn | null;
   onUploadError?: (error: Error) => void;
@@ -28,6 +29,7 @@ export function AdvancedEditor({
   onSave,
   debounceMs = 1000,
   editable = true,
+  variant = "full",
   className,
   uploadFn = null,
   onUploadError: _onUploadError,
@@ -102,6 +104,7 @@ export function AdvancedEditor({
         initialContent={initialContent}
         onChange={handleChange}
         editable={editable}
+        variant={variant}
         uploadFn={uploadFn}
       />
     </div>
