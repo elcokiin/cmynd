@@ -9,7 +9,6 @@ import {
   Select,
   SelectContent,
   SelectItem,
-  SelectList,
   SelectTrigger,
   SelectValue,
 } from "@elcokiin/ui/select";
@@ -146,11 +145,9 @@ export function DashboardDocumentList({
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectList>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="published">Published</SelectItem>
-                  <SelectItem value="all">All</SelectItem>
-                </SelectList>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="published">Published</SelectItem>
+                <SelectItem value="all">All</SelectItem>
               </SelectContent>
             </Select>
           </div>

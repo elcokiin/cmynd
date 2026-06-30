@@ -13,7 +13,6 @@ import {
   Select,
   SelectContent,
   SelectItem,
-  SelectList,
   SelectTrigger,
   SelectValue,
 } from "@elcokiin/ui/select";
@@ -133,11 +132,9 @@ function AdminAuthorsPage() {
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectList>
-                    <SelectItem value="unverified">Unverified</SelectItem>
-                    <SelectItem value="verified">Verified</SelectItem>
-                    <SelectItem value="all">All</SelectItem>
-                  </SelectList>
+                  <SelectItem value="unverified">Unverified</SelectItem>
+                  <SelectItem value="verified">Verified</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
                 </SelectContent>
               </Select>
             </div>
