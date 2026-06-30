@@ -56,7 +56,7 @@ function NewDocumentRoute() {
 
       <EditorWorkspace
         onChange={handleContentChange}
-        onDebouncedUpdate={saveContentChange}
+        onSave={saveContentChange}
         editable={true}
         uploadFn={uploadFn}
         onUploadError={handleUploadError}

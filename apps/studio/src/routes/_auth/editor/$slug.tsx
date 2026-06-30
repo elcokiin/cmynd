@@ -83,7 +83,7 @@ function EditorRoute() {
       <EditorWorkspace
         initialContent={document.content as SerializedEditorState}
         onChange={(state) => { editor.contentRef.current = state; }}
-        onDebouncedUpdate={isEditable ? saveContent : undefined}
+        onSave={isEditable ? saveContent : undefined}
         editable={isEditable}
         uploadFn={isEditable ? editor.uploadFn : null}
         onUploadError={editor.handleUploadError}
