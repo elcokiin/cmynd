@@ -1,5 +1,6 @@
 import { defineConfig } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
+import { fileURLToPath } from "node:url";
 
 import react from "@astrojs/react";
 import cloudflare from "@astrojs/cloudflare";
@@ -20,6 +21,9 @@ export default defineConfig({
     // Tailwind Vite plugin types target Vite 7 and require this cast.
     plugins: [tailwindcss()],
     resolve: {
+      alias: {
+        src: fileURLToPath(new URL("../../packages/ui/src", import.meta.url)),
+      },
       dedupe: ["react", "react-dom"],
     },
     optimizeDeps: {

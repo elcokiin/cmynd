@@ -1,5 +1,4 @@
 import { createEditor, type Klass, type LexicalNode, type SerializedEditorState } from "lexical";
-// @ts-expect-error @lexical/html provides $generateHtmlFromNodes but may lack types
 import { $generateHtmlFromNodes } from "@lexical/html";
 
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";

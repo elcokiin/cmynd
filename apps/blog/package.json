@@ -19,16 +19,6 @@
     "@elcokiin/ui": "workspace:*",
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.1.18",
-    "@tiptap/extension-color": "^2.10.4",
-    "@tiptap/extension-highlight": "^2.10.4",
-    "@tiptap/extension-image": "^2.10.4",
-    "@tiptap/extension-link": "^2.10.4",
-    "@tiptap/extension-task-item": "^2.10.4",
-    "@tiptap/extension-task-list": "^2.10.4",
-    "@tiptap/extension-text-style": "^2.10.4",
-    "@tiptap/extension-underline": "^2.10.4",
-    "@tiptap/html": "^2.10.4",
-    "@tiptap/starter-kit": "^2.10.4",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "astro": "^6.2.1",
@@ -37,13 +27,11 @@
     "gsap": "^3.15.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "sanitize-html": "^2.17.0",
     "tailwindcss": "^4.1.18",
     "wrangler": "^4.87.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
-    "@types/sanitize-html": "^2.16.0",
     "typescript": "catalog:"
   }
 }
