@@ -1,11 +1,3 @@
 @import "@elcokiin/ui/styles";
 
 @source "./";
-
-::view-transition-old(root) {
-  animation: none;
-}
-
-::view-transition-new(root) {
-  z-index: 100;
-}

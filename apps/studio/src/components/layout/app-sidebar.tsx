@@ -1,7 +1,7 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { ThemeToggle } from "@elcokiin/ui/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
-import { useThemeTransition } from "@/hooks/use-theme-transition";
+import { useTheme } from "next-themes";
 import { HomeIcon, ShieldIcon } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "@elcokiin/backend/convex/_generated/api";
@@ -20,7 +20,7 @@ import {
 import LogoStudio from "@/assets/images/logo.png";
 
 function ThemeToggleWrapper() {
-  const { setTheme } = useThemeTransition();
+  const { setTheme } = useTheme();
   return <ThemeToggle onSetTheme={setTheme} />;
 }
 
