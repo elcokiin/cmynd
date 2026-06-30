@@ -10,12 +10,10 @@ import { DocumentSettingsDialog } from "./document-settings-dialog";
 type ButtonSettingsProps = {
   documentId: Id<"documents"> | null;
   currentType?: DocumentType;
-  onExportMarkdown?: () => void;
 };
 
 export function ButtonSettings({
   documentId,
-  onExportMarkdown,
 }: ButtonSettingsProps): React.ReactNode {
   const [open, setOpen] = useState(false);
 
@@ -35,7 +33,6 @@ export function ButtonSettings({
       {documentId && (
         <DocumentSettingsDialog
           documentId={documentId}
-          onExportMarkdown={onExportMarkdown}
           open={open}
           onOpenChange={setOpen}
         />

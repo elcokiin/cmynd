@@ -9,7 +9,7 @@ const AdvancedEditor = lazy(async () => {
 
 type AdvancedEditorProps = ComponentProps<typeof AdvancedEditor>;
 
-export function ClientOnlyAdvancedEditor(props: AdvancedEditorProps) {
+export function ClientOnlyEditor(props: AdvancedEditorProps) {
   if (typeof window === "undefined") {
     return <div className="min-h-[300px] w-full" />;
   }

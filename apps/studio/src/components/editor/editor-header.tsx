@@ -16,7 +16,6 @@ import {
 import { ButtonSettings } from "./document-settings";
 import { EditableDocumentTitle } from "./editable-document-title";
 import { ButtonSubmit } from "./button-submit";
-import { EditorModeToggle } from "./editor-mode-toggle";
 
 type EditorHeaderProps = {
   documentId: Id<"documents">;
@@ -25,9 +24,6 @@ type EditorHeaderProps = {
   status: DocumentStatus;
   isEditable: boolean;
   rejectionReason?: string;
-  editorMode?: "visual" | "markdown";
-  onEditorModeChange?: (mode: "visual" | "markdown") => void;
-  onExportMarkdown?: () => void;
 };
 
 export function EditorHeader({
@@ -37,9 +33,6 @@ export function EditorHeader({
   status,
   isEditable,
   rejectionReason,
-  editorMode,
-  onEditorModeChange,
-  onExportMarkdown,
 }: EditorHeaderProps): React.ReactNode {
   return (
     <div className="flex items-center justify-between border-b px-4 py-2">
@@ -62,12 +55,6 @@ export function EditorHeader({
         </div>
       </div>
       <div className="flex items-center gap-2 min-w-0">
-        {onEditorModeChange && (
-          <EditorModeToggle
-            mode={editorMode ?? "visual"}
-            onModeChange={onEditorModeChange}
-          />
-        )}
         {status === "pending" && (
           <span className="text-xs text-muted-foreground bg-yellow-100 dark:bg-yellow-900/30 px-2 py-1 rounded">
             Pending Review
@@ -105,7 +92,6 @@ export function EditorHeader({
             <ButtonSettings
               documentId={documentId}
               currentType={type}
-              onExportMarkdown={onExportMarkdown}
             />
           </>
         )}

@@ -1,14 +1,12 @@
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
+import type { SerializedEditorState } from "lexical";
 import { useBlocker } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
 import { useCallback, useRef, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
-import type { JSONContent } from "novel";
 
-import { useEditor } from "@/hooks/use-editor";
 import { useErrorHandler } from "@/hooks/use-error-handler";
-import { jsonToMarkdown } from "@/lib/markdown-conversion";
 import { getRandomTitle, isRandomTitle } from "@/lib/random-titles";
 
 export function useNewDocument() {
@@ -16,6 +14,7 @@ export function useNewDocument() {
 
   const [title, setTitle] = useState("Untitled");
   const titleRef = useRef(title);
+  const contentRef = useRef<SerializedEditorState | undefined>(undefined);
   const documentIdRef = useRef<Id<"documents"> | null>(null);
   const creationPromiseRef = useRef<Promise<void> | null>(null);
 
@@ -24,24 +23,15 @@ export function useNewDocument() {
   const updateContent = useMutation(api.documents.mutations.updateContent);
   const removeDocument = useMutation(api.documents.mutations.remove);
 
-  const onSaveRef = useRef<((content: JSONContent, markdown: string) => void | Promise<void>) | null>(null);
-
-  const editor = useEditor({
-    onSave: useCallback(
-      (content: JSONContent, markdown: string) => onSaveRef.current?.(content, markdown),
-      [],
-    ),
-  });
-
   const hasContent = useCallback(
-    (jsonContent: JSONContent | undefined): boolean => {
-      if (!jsonContent) return false;
-      if (!jsonContent.content || jsonContent.content.length === 0) return false;
-
-      const hasText = jsonContent.content.some((node) => {
-        if (node.type === "paragraph" && node.content) {
-          return node.content.some(
-            (child) =>
+    (content: SerializedEditorState | undefined): boolean => {
+      if (!content) return false;
+      const root = content.root;
+      if (!root?.children || root.children.length === 0) return false;
+      return root.children.some((node: any) => {
+        if (node.type === "paragraph" && node.children) {
+          return node.children.some(
+            (child: any) =>
               child.type === "text" &&
               child.text &&
               child.text.trim().length > 0,
@@ -49,8 +39,6 @@ export function useNewDocument() {
         }
         return node.type !== "paragraph";
       });
-
-      return hasText;
     },
     [],
   );
@@ -59,7 +47,7 @@ export function useNewDocument() {
     shouldBlockFn: async () => {
       if (
         documentIdRef.current &&
-        !hasContent(editor.contentRef.current) &&
+        !hasContent(contentRef.current) &&
         isRandomTitle(titleRef.current)
       ) {
         try {
@@ -68,13 +56,12 @@ export function useNewDocument() {
           handleErrorSilent(error, "NewDocumentRoute.deleteEmptyDocument");
         }
       }
-
       return false;
     },
     enableBeforeUnload: true,
   });
 
-  const createNewDocument = useCallback(async (markdownOverride?: string) => {
+  const createNewDocument = useCallback(async () => {
     if (documentIdRef.current) return;
     if (creationPromiseRef.current) return creationPromiseRef.current;
 
@@ -89,15 +76,11 @@ export function useNewDocument() {
           titleRef.current = finalTitle;
         }
 
-        const isMarkdownMode = editor.editorMode === "markdown";
         const result = await createDocument({
           title: finalTitle,
           type: "own",
-          content: editor.contentRef.current,
-          markdownSource:
-            (markdownOverride ?? editor.markdownDraft) || jsonToMarkdown(editor.contentRef.current),
-          contentFormat: isMarkdownMode ? "markdown_imported" : "rich_json",
-        } as any);
+          content: contentRef.current,
+        });
 
         documentIdRef.current = result.documentId;
       } catch (error) {
@@ -107,13 +90,12 @@ export function useNewDocument() {
 
     await creationPromiseRef.current;
     creationPromiseRef.current = null;
-  }, [createDocument, editor.editorMode, handleError, editor.markdownDraft]);
+  }, [createDocument, handleError]);
 
   const saveTitleChange = useCallback(async () => {
     if (!documentIdRef.current) {
       await createNewDocument();
     }
-
     if (!documentIdRef.current) return;
 
     try {
@@ -126,29 +108,21 @@ export function useNewDocument() {
     }
   }, [createNewDocument, updateTitle, handleError]);
 
-  const saveContentChange = useCallback(
-    async (markdownOverride?: string) => {
-      if (!documentIdRef.current) {
-        await createNewDocument(markdownOverride);
-      }
+  const saveContentChange = useCallback(async () => {
+    if (!documentIdRef.current) {
+      await createNewDocument();
+    }
+    if (!documentIdRef.current) return;
 
-      if (!documentIdRef.current) return;
-
-      try {
-        await updateContent({
-          documentId: documentIdRef.current,
-          content: editor.contentRef.current,
-          markdownSource:
-            (markdownOverride ?? editor.markdownDraft) || jsonToMarkdown(editor.contentRef.current),
-        } as any);
-      } catch (error) {
-        handleError(error, { context: "Failed to save content" });
-      }
-    },
-    [createNewDocument, updateContent, handleError, editor.markdownDraft],
-  );
-
-  onSaveRef.current = (_, markdown) => saveContentChange(markdown);
+    try {
+      await updateContent({
+        documentId: documentIdRef.current,
+        content: contentRef.current,
+      });
+    } catch (error) {
+      handleError(error, { context: "Failed to save content" });
+    }
+  }, [createNewDocument, updateContent, handleError]);
 
   const debouncedSaveTitle = useDebouncedCallback(() => {
     saveTitleChange();
@@ -163,20 +137,19 @@ export function useNewDocument() {
     [debouncedSaveTitle],
   );
 
+  const handleContentChange = useCallback(
+    (content: SerializedEditorState) => {
+      contentRef.current = content;
+    },
+    [],
+  );
+
   return {
     title,
     handleTitleChange,
     documentIdRef,
-    content: editor.content,
-    editorMode: editor.editorMode,
-    setEditorMode: editor.setEditorMode,
-    markdownDraft: editor.markdownDraft,
-    setMarkdownDraft: editor.setMarkdownDraft,
-    handleVisualUpdate: editor.handleVisualUpdate,
-    handleVisualDebouncedUpdate: editor.handleVisualDebouncedUpdate,
-    handleMarkdownDebouncedUpdate: editor.handleMarkdownDebouncedUpdate,
-    uploadFn: editor.uploadFn,
-    handleUploadError: editor.handleUploadError,
-    handleExportMarkdown: editor.handleExportMarkdown,
+    contentRef,
+    handleContentChange,
+    saveContentChange,
   };
 }

@@ -1,31 +1,15 @@
-import type { JSONContent } from "novel";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef } from "react";
+import type { LexicalEditor } from "lexical";
+import type { SerializedEditorState } from "lexical";
 
 import { useConvexImageUpload } from "@/hooks/use-convex-image-upload";
-import { useEditorAutosave } from "@/hooks/use-editor-autosave";
-import { useEditorWorkspaceState } from "@/hooks/use-editor-workspace-state";
 import { useErrorHandler } from "@/hooks/use-error-handler";
-import { downloadMarkdown } from "@/lib/markdown-conversion";
 
-type UseEditorOptions = {
-  onSave?: (content: JSONContent, markdown: string) => void | Promise<void>;
-};
-
-export function useEditor(options?: UseEditorOptions) {
+export function useEditor() {
   const { handleErrorSilent } = useErrorHandler();
-  const [content, setContent] = useState<JSONContent | undefined>(undefined);
-  const contentRef = useRef<JSONContent | undefined>(undefined);
+  const editorRef = useRef<LexicalEditor | null>(null);
+  const contentRef = useRef<SerializedEditorState | undefined>(undefined);
   const uploadFn = useConvexImageUpload();
-
-  const {
-    editorMode,
-    setEditorMode,
-    markdownDraft,
-    setMarkdownDraft,
-    setMarkdownFromContent,
-    applyMarkdown,
-    getExportMarkdown,
-  } = useEditorWorkspaceState();
 
   const handleUploadError = useCallback(
     (error: Error) => {
@@ -34,45 +18,10 @@ export function useEditor(options?: UseEditorOptions) {
     [handleErrorSilent],
   );
 
-  const {
-    syncContent,
-    handleVisualUpdate,
-    handleVisualDebouncedUpdate,
-    handleMarkdownDebouncedUpdate,
-  } = useEditorAutosave({
-    setContent,
-    contentRef,
-    setMarkdownFromContent,
-    applyMarkdown,
-    onVisualDebouncedSave: options?.onSave,
-    onMarkdownDebouncedSave: options?.onSave,
-  });
-
-  const handleExportMarkdown = useCallback(
-    (filename?: string) => {
-      const markdown = getExportMarkdown(contentRef.current);
-      downloadMarkdown(filename || "document", markdown);
-    },
-    [getExportMarkdown],
-  );
-
   return {
-    content,
-    setContent,
+    editorRef,
     contentRef,
-    editorMode,
-    setEditorMode,
-    markdownDraft,
-    setMarkdownDraft,
-    setMarkdownFromContent,
-    applyMarkdown,
-    getExportMarkdown,
-    syncContent,
-    handleVisualUpdate,
-    handleVisualDebouncedUpdate,
-    handleMarkdownDebouncedUpdate,
     uploadFn,
     handleUploadError,
-    handleExportMarkdown,
   };
 }

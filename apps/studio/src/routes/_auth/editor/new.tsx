@@ -8,8 +8,8 @@ import { ArrowLeftIcon } from "lucide-react";
 import { ButtonSubmit } from "@/components/editor/button-submit";
 import { ButtonSettings } from "@/components/editor/document-settings";
 import { EditableDocumentTitle } from "@/components/editor/editable-document-title";
-import { EditorModeToggle } from "@/components/editor/editor-mode-toggle";
 import { EditorWorkspace } from "@/components/editor/editor-workspace";
+import { useEditor } from "@/hooks/use-editor";
 import { useNewDocument } from "@/hooks/use-new-document";
 
 export const Route = createFileRoute("/_auth/editor/new")({
@@ -21,19 +21,12 @@ function NewDocumentRoute() {
   const {
     title,
     handleTitleChange,
-    content,
-    editorMode,
-    setEditorMode,
-    markdownDraft,
-    setMarkdownDraft,
     documentIdRef,
-    handleVisualUpdate,
-    handleVisualDebouncedUpdate,
-    handleMarkdownDebouncedUpdate,
-    uploadFn,
-    handleUploadError,
-    handleExportMarkdown,
+    contentRef,
+    handleContentChange,
+    saveContentChange,
   } = useNewDocument();
+  const { uploadFn, handleUploadError } = useEditor();
 
   return (
     <div className="flex flex-col h-full">
@@ -53,13 +46,9 @@ function NewDocumentRoute() {
               onTitleChange={handleTitleChange}
               isEditable={true}
             />
-            <EditorModeToggle mode={editorMode} onModeChange={setEditorMode} />
           </div>
 
           <div className="flex items-center gap-2">
-            <Button type="button" variant="outline" size="sm" onClick={() => handleExportMarkdown(title)}>
-              Export .md
-            </Button>
             <ButtonSubmit documentId={documentIdRef.current} title={title} />
             <ButtonSettings documentId={documentIdRef.current} />
           </div>
@@ -67,13 +56,8 @@ function NewDocumentRoute() {
       </div>
 
       <EditorWorkspace
-        mode={editorMode}
-        content={content}
-        markdownValue={markdownDraft}
-        onMarkdownChange={setMarkdownDraft}
-        onVisualUpdate={handleVisualUpdate}
-        onVisualDebouncedUpdate={handleVisualDebouncedUpdate}
-        onMarkdownDebouncedUpdate={handleMarkdownDebouncedUpdate}
+        onChange={handleContentChange}
+        onDebouncedUpdate={saveContentChange}
         editable={true}
         uploadFn={uploadFn}
         onUploadError={handleUploadError}

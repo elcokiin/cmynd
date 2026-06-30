@@ -5,17 +5,15 @@ import {
 import { cn } from "@elcokiin/ui/lib/utils";
 import {
   BookOpenIcon,
-  DownloadIcon,
   ImageIcon,
   LinkIcon,
 } from "lucide-react";
 
-export type NavigationSection = "cover" | "reprint" | "inspirations" | "export";
+export type NavigationSection = "cover" | "reprint" | "inspirations";
 
 type SettingsSidebarProps = {
   activeSection: NavigationSection;
   onSectionChange: (section: NavigationSection) => void;
-  showExport: boolean;
 };
 
 const navItems: {
@@ -31,12 +29,7 @@ const navItems: {
 export function SettingsSidebar({
   activeSection,
   onSectionChange,
-  showExport,
 }: SettingsSidebarProps) {
-  const items = showExport
-    ? [...navItems, { id: "export" as const, label: "Export", icon: DownloadIcon }]
-    : navItems;
-
   return (
     <div className="w-56 border-r bg-muted/30 p-4 flex flex-col gap-1">
       <DialogHeader className="pb-4">
@@ -44,7 +37,7 @@ export function SettingsSidebar({
           Settings
         </DialogTitle>
       </DialogHeader>
-      {items.map((item) => {
+      {navItems.map((item) => {
         const Icon = item.icon;
         return (
           <button

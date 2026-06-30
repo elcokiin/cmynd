@@ -1,4 +1,4 @@
-import type { JSONContent } from "novel";
+import type { SerializedEditorState } from "lexical";
 
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { useQuery } from "convex/react";
@@ -6,7 +6,7 @@ import { useQuery } from "convex/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@elcokiin/ui/card";
 import { FileTextIcon, LinkIcon } from "lucide-react";
 
-import { ClientOnlyAdvancedEditor } from "@/components/editor/client-only-advanced-editor";
+import { ClientOnlyEditor } from "@/components/editor/client-only-editor";
 import { documentTypeConfig } from "@/components/dashboard/document-type-config";
 import { ReviewPreviewSkeleton } from "./review-skeleton";
 
@@ -44,7 +44,6 @@ export function DocumentPreview({
     );
   }
 
-  // Handle null document (document not found)
   if (document === null) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center p-6">
@@ -150,8 +149,8 @@ export function DocumentPreview({
 
         {/* Document Content */}
         <div className="border rounded-lg">
-          <ClientOnlyAdvancedEditor
-            initialContent={document.content as JSONContent}
+          <ClientOnlyEditor
+            initialContent={document.content as SerializedEditorState}
             editable={false}
             className="min-h-[300px]"
           />
