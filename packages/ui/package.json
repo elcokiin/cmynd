@@ -14,6 +14,8 @@
     "./command": "./src/components/command.tsx",
     "./dialog": "./src/components/dialog.tsx",
     "./dropdown-menu": "./src/components/dropdown-menu.tsx",
+    "./editor": "./src/components/editor/index.tsx",
+    "./editor/render": "./src/components/editor/render.ts",
     "./input": "./src/components/input.tsx",
     "./input-group": "./src/components/input-group.tsx",
     "./label": "./src/components/label.tsx",
