@@ -29,6 +29,7 @@ import { KeywordsExtension } from "src/components/editor/extensions/keywords-ext
 import { MarkdownShortcutsExtension } from "src/components/editor/extensions/markdown-shortcuts-extension";
 import { MaxLengthExtension } from "src/components/editor/extensions/max-length-extension";
 
+import { EditorToolbar } from "src/components/editor/editor-toolbar";
 import { FloatingTextFormatToolbarPlugin } from "src/components/editor/plugins/floating-text-format-plugin";
 import { FloatingLinkEditorPlugin } from "src/components/editor/plugins/floating-link-editor-plugin";
 import { ComponentPickerMenuPlugin } from "src/components/editor/plugins/component-picker-menu-plugin";
@@ -40,7 +41,7 @@ import {
 export type UploadFn = (file: File) => Promise<string>;
 
 export type EditorProps = {
-  variant?: "minimal" | "full";
+  variant?: "minimal" | "medium" | "full";
   initialContent?: SerializedEditorState;
   onChange?: (state: SerializedEditorState) => void;
   editable?: boolean;
@@ -76,14 +77,6 @@ function EditablePlugin({ editable }: { editable: boolean }) {
   return null;
 }
 
-const contentEditable = (
-  <ContentEditable
-    className="relative block h-full min-h-80 overflow-auto outline-none"
-    aria-placeholder="Start writing..."
-    placeholder={<span>Start writing...</span>}
-  />
-);
-
 export function Editor({
   variant = "full",
   initialContent,
@@ -95,6 +88,21 @@ export function Editor({
   const [capturedInitialContent] = useState(() => initialContent);
   const [isLinkEditMode, setIsLinkEditMode] = useState(false);
   const [anchorElem, setAnchorElem] = useState<HTMLDivElement | null>(null);
+
+  const contentEditable = (
+    <div className="flex flex-col">
+      {variant === "full" && (
+        <EditorToolbar setIsLinkEditMode={setIsLinkEditMode} />
+      )}
+      <div className="relative">
+        <ContentEditable
+          className="relative block h-full overflow-auto outline-none px-4 py-3"
+          aria-placeholder="Press / for commands..."
+          placeholder={<span className="text-muted-foreground/50">Press / for commands...</span>}
+        />
+      </div>
+    </div>
+  );
 
   const extension = useMemo(
     () =>
@@ -141,7 +149,7 @@ export function Editor({
       <LexicalExtensionComposer extension={extension}>
         <OnChangePlugin onChange={onChange} />
         <EditablePlugin editable={editable} />
-        {variant === "full" && (
+        {variant !== "minimal" && (
           <>
             <FloatingTextFormatToolbarPlugin
               anchorElem={anchorElem}

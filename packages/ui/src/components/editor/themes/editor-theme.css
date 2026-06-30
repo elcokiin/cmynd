@@ -90,6 +90,14 @@
   color: #d2a8ff;
 }
 
+[contenteditable] + [aria-hidden="true"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  padding: 0.75rem 1rem;
+}
+
 .Collapsible__container {
   background-color: var(--background);
   border: 1px solid var(--border);

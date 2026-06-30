@@ -28,7 +28,6 @@ import {
   ColorPickerInput,
   ColorPickerTrigger,
 } from "src/components/editor/editor-ui/color-picker";
-import { Button } from "src/components/button";
 
 export function FontBackgroundToolbarPlugin() {
   const { activeEditor } = useToolbarContext();
@@ -85,7 +84,7 @@ export function FontBackgroundToolbarPlugin() {
         }
       }}
     >
-      <ColorPickerTrigger render={<Button variant={"outline"} size={"icon-sm"} />}><PaintBucketIcon className="size-4" /></ColorPickerTrigger>
+      <ColorPickerTrigger variant="outline" size="icon-sm"><PaintBucketIcon className="size-4" /></ColorPickerTrigger>
       <ColorPickerContent>
         <ColorPickerArea />
         <div className="flex items-center gap-2">

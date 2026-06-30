@@ -58,8 +58,10 @@ const ELEMENT_FORMAT_OPTIONS: {
 
 export function ElementFormatToolbarPlugin({
   separator = true,
+  showIndent = true,
 }: {
   separator?: boolean;
+  showIndent?: boolean;
 }) {
   const { activeEditor } = useToolbarContext();
   const [elementFormat, setElementFormat] = useState<ElementFormatType>("left");
@@ -127,32 +129,33 @@ export function ElementFormatToolbarPlugin({
           </ToggleGroupItem>
         ))}
       </ToggleGroup>
-      {separator && <Separator orientation="vertical" className="h-7!" />}
-      {/* Indentation toggles */}
-      <ToggleGroup
-        type="single"
-        value={elementFormat}
-        defaultValue={elementFormat}
-        onValueChange={handleValueChange}
-      >
-        <ToggleGroupItem
-          value="outdent"
-          aria-label="Outdent"
-          variant={"outline"}
-          size="sm"
+      {showIndent && separator && <Separator orientation="vertical" className="h-7!" />}
+      {showIndent && (
+        <ToggleGroup
+          type="single"
+          value={elementFormat}
+          defaultValue={elementFormat}
+          onValueChange={handleValueChange}
         >
-          <IndentDecreaseIcon className="size-4" />
-        </ToggleGroupItem>
+          <ToggleGroupItem
+            value="outdent"
+            aria-label="Outdent"
+            variant={"outline"}
+            size="sm"
+          >
+            <IndentDecreaseIcon className="size-4" />
+          </ToggleGroupItem>
 
-        <ToggleGroupItem
-          value="indent"
-          variant={"outline"}
-          aria-label="Indent"
-          size="sm"
-        >
-          <IndentIncreaseIcon className="size-4" />
-        </ToggleGroupItem>
-      </ToggleGroup>
+          <ToggleGroupItem
+            value="indent"
+            variant={"outline"}
+            aria-label="Indent"
+            size="sm"
+          >
+            <IndentIncreaseIcon className="size-4" />
+          </ToggleGroupItem>
+        </ToggleGroup>
+      )}
     </>
   );
 }

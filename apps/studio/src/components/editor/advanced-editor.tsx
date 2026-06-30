@@ -1,6 +1,6 @@
 import type { SerializedEditorState } from "lexical";
 
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
 import { Editor, type UploadFn } from "@elcokiin/ui/editor";
@@ -36,10 +36,14 @@ export function AdvancedEditor({
     "saved",
   );
 
+  const lastSavedContent = useRef<string | null>(null);
+  const hasInitialized = useRef(false);
+
   const debouncedSave = useDebouncedCallback(async (state: SerializedEditorState) => {
     setSaveStatus("saving");
     try {
       await onSave?.(state);
+      lastSavedContent.current = JSON.stringify(state);
       setSaveStatus("saved");
     } catch (error) {
       console.error("[AdvancedEditor] Failed to save:", error);
@@ -50,7 +54,17 @@ export function AdvancedEditor({
   const handleChange = useCallback(
     (state: SerializedEditorState) => {
       onChange?.(state);
-      if (onSave) {
+      if (!onSave) return;
+
+      const serialized = JSON.stringify(state);
+
+      if (!hasInitialized.current) {
+        hasInitialized.current = true;
+        lastSavedContent.current = serialized;
+        return;
+      }
+
+      if (serialized !== lastSavedContent.current) {
         setSaveStatus("unsaved");
         debouncedSave(state);
       }
@@ -63,7 +77,7 @@ export function AdvancedEditor({
       {onSave && (
         <div className="absolute top-2 right-2 z-10">
           <Tooltip>
-            <TooltipTrigger asChild>
+            <TooltipTrigger>
               <span
                 className={cn(
                   "inline-block size-2.5 rounded-full transition-colors",

@@ -22,7 +22,7 @@ export function EditorWorkspace({
 }: EditorWorkspaceProps): React.ReactNode {
   return (
     <div className="flex-1 overflow-clip">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <ClientOnlyEditor
           initialContent={initialContent}
           onChange={onChange}

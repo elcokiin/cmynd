@@ -4,7 +4,7 @@ import { type VariantProps, cva } from "class-variance-authority";
 import { PipetteIcon } from "lucide-react";
 import { Slot as SlotPrimitive } from "@radix-ui/react-slot";
 
-import { Button } from "src/components/button";
+import { Button, buttonVariants } from "src/components/button";
 import { Slider } from "src/components/slider";
 import { Input } from "src/components/input";
 import {
@@ -990,18 +990,20 @@ function ColorPickerRootImpl(props: ColorPickerRootImplProps) {
   );
 }
 
-interface ColorPickerTriggerProps extends React.ComponentProps<
-  typeof PopoverTrigger
-> {}
+interface ColorPickerTriggerProps extends VariantProps<typeof buttonVariants> {
+  asChild?: boolean;
+  className?: string;
+  children?: React.ReactNode;
+}
 
 function ColorPickerTrigger(props: ColorPickerTriggerProps) {
-  const { asChild, ...triggerProps } = props;
+  const { asChild, variant, size, className, children } = props;
   const context = useColorPickerContext("ColorPickerTrigger");
 
   const TriggerPrimitive = asChild ? SlotPrimitive : Button;
 
   return (
-    <PopoverTrigger disabled={context.disabled} render={<TriggerPrimitive data-slot="color-picker-trigger" {...triggerProps} />}></PopoverTrigger>
+    <PopoverTrigger disabled={context.disabled} render={<TriggerPrimitive data-slot="color-picker-trigger" variant={variant} size={size} className={className}>{children}</TriggerPrimitive>}></PopoverTrigger>
   );
 }
 
