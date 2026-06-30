@@ -1,4 +1,4 @@
-import { type JSX, useEffect, useRef, useState } from "react";
+import { type JSX, useState } from "react";
 
 import {
   $isAutoLinkNode,
@@ -38,7 +38,7 @@ import {
 } from "src/components/editor/nodes/image-node";
 import { Button } from "src/components/button";
 import { DialogFooter } from "src/components/dialog";
-import { Field, FieldGroup, FieldLabel } from "src/components/field";
+import { Field, FieldLabel } from "src/components/field";
 import { Input } from "src/components/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "src/components/tabs";
 
@@ -55,25 +55,23 @@ export function InsertImageUriDialogBody({
   const [src, setSrc] = useState("");
   const [altText, setAltText] = useState("");
 
-  const isDisabled = src === "";
-
   return (
-    <FieldGroup>
+    <div className="flex flex-col gap-3 py-3">
       <Field>
-        <FieldLabel htmlFor="image-url">Image URL</FieldLabel>
+        <FieldLabel htmlFor="image-uri-src">Image URL</FieldLabel>
         <Input
-          id="image-url"
-          placeholder="i.e. https://source.unsplash.com/random"
+          id="image-uri-src"
+          placeholder="https://source.unsplash.com/random"
           onChange={(e) => setSrc(e.target.value)}
           value={src}
           data-test-id="image-modal-url-input"
         />
       </Field>
       <Field>
-        <FieldLabel htmlFor="alt-text">Alt Text</FieldLabel>
+        <FieldLabel htmlFor="image-uri-alt">Alt Text</FieldLabel>
         <Input
-          id="alt-text"
-          placeholder="Random unsplash image"
+          id="image-uri-alt"
+          placeholder="Descriptive alternative text"
           onChange={(e) => setAltText(e.target.value)}
           value={altText}
           data-test-id="image-modal-alt-text-input"
@@ -81,15 +79,14 @@ export function InsertImageUriDialogBody({
       </Field>
       <DialogFooter>
         <Button
-          type="submit"
-          disabled={isDisabled}
+          disabled={src === ""}
           onClick={() => onClick({ altText, src })}
           data-test-id="image-modal-confirm-btn"
         >
           Confirm
         </Button>
       </DialogFooter>
-    </FieldGroup>
+    </div>
   );
 }
 
@@ -101,27 +98,25 @@ export function InsertImageUploadedDialogBody({
   const [src, setSrc] = useState("");
   const [altText, setAltText] = useState("");
 
-  const isDisabled = src === "";
-
   const loadImage = (files: FileList | null) => {
     const reader = new FileReader();
     reader.onload = function () {
       if (typeof reader.result === "string") {
         setSrc(reader.result);
       }
-      return "";
     };
-    if (files !== null) {
-      reader.readAsDataURL(files[0]);
+    const file = files?.[0];
+    if (file) {
+      reader.readAsDataURL(file);
     }
   };
 
   return (
-    <FieldGroup>
+    <div className="flex flex-col gap-3 py-3">
       <Field>
-        <FieldLabel htmlFor="image-upload">Image Upload</FieldLabel>
+        <FieldLabel htmlFor="image-upload-file">Image</FieldLabel>
         <Input
-          id="image-upload"
+          id="image-upload-file"
           type="file"
           onChange={(e) => loadImage(e.target.files)}
           accept="image/*"
@@ -129,9 +124,9 @@ export function InsertImageUploadedDialogBody({
         />
       </Field>
       <Field>
-        <FieldLabel htmlFor="alt-text">Alt Text</FieldLabel>
+        <FieldLabel htmlFor="image-upload-alt">Alt Text</FieldLabel>
         <Input
-          id="alt-text"
+          id="image-upload-alt"
           placeholder="Descriptive alternative text"
           onChange={(e) => setAltText(e.target.value)}
           value={altText}
@@ -140,15 +135,14 @@ export function InsertImageUploadedDialogBody({
       </Field>
       <DialogFooter>
         <Button
-          type="submit"
-          disabled={isDisabled}
+          disabled={src === ""}
           onClick={() => onClick({ altText, src })}
           data-test-id="image-modal-file-upload-btn"
         >
           Confirm
         </Button>
       </DialogFooter>
-    </FieldGroup>
+    </div>
   );
 }
 
@@ -159,38 +153,81 @@ export function InsertImageDialog({
   activeEditor: LexicalEditor;
   onClose: () => void;
 }): JSX.Element {
-  const hasModifier = useRef(false);
+  const [src, setSrc] = useState("");
+  const [altText, setAltText] = useState("");
 
-  useEffect(() => {
-    hasModifier.current = false;
-    const handler = (e: KeyboardEvent) => {
-      hasModifier.current = e.altKey;
-    };
-    document.addEventListener("keydown", handler);
-    return () => {
-      document.removeEventListener("keydown", handler);
-    };
-  }, [activeEditor]);
+  const isDisabled = src === "";
 
-  const onClick = (payload: InsertImagePayload) => {
-    console.log("onClick", payload);
-    activeEditor.dispatchCommand(INSERT_IMAGE_COMMAND, payload);
+  const onClick = () => {
+    activeEditor.dispatchCommand(INSERT_IMAGE_COMMAND, { altText, src });
     onClose();
   };
 
+  const loadImage = (files: FileList | null) => {
+    const reader = new FileReader();
+    reader.onload = function () {
+      if (typeof reader.result === "string") {
+        setSrc(reader.result);
+      }
+    };
+    const file = files?.[0];
+    if (file) {
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
-    <Tabs defaultValue="url">
-      <TabsList className="w-full">
-        <TabsTrigger value="url">URL</TabsTrigger>
-        <TabsTrigger value="file">File</TabsTrigger>
-      </TabsList>
-      <TabsContent value="url">
-        <InsertImageUriDialogBody onClick={onClick} />
-      </TabsContent>
-      <TabsContent value="file">
-        <InsertImageUploadedDialogBody onClick={onClick} />
-      </TabsContent>
-    </Tabs>
+    <div className="flex flex-col gap-4">
+      <Tabs defaultValue="url">
+        <TabsList className="w-full">
+          <TabsTrigger value="url" className="flex-1">URL</TabsTrigger>
+          <TabsTrigger value="file" className="flex-1">File</TabsTrigger>
+        </TabsList>
+        <TabsContent value="url">
+          <Field>
+            <FieldLabel htmlFor="image-dialog-url">Image URL</FieldLabel>
+            <Input
+              id="image-dialog-url"
+              placeholder="https://source.unsplash.com/random"
+              onChange={(e) => setSrc(e.target.value)}
+              value={src}
+              data-test-id="image-modal-url-input"
+            />
+          </Field>
+        </TabsContent>
+        <TabsContent value="file">
+          <Field>
+            <FieldLabel htmlFor="image-dialog-file">Image</FieldLabel>
+            <Input
+              id="image-dialog-file"
+              type="file"
+              onChange={(e) => loadImage(e.target.files)}
+              accept="image/*"
+              data-test-id="image-modal-file-upload"
+            />
+          </Field>
+        </TabsContent>
+      </Tabs>
+      <Field>
+        <FieldLabel htmlFor="image-dialog-alt">Alt Text</FieldLabel>
+        <Input
+          id="image-dialog-alt"
+          placeholder="Descriptive alternative text"
+          onChange={(e) => setAltText(e.target.value)}
+          value={altText}
+          data-test-id="image-modal-alt-text-input"
+        />
+      </Field>
+      <DialogFooter>
+        <Button
+          disabled={isDisabled}
+          onClick={onClick}
+          data-test-id="image-modal-confirm-btn"
+        >
+          Confirm
+        </Button>
+      </DialogFooter>
+    </div>
   );
 }
 

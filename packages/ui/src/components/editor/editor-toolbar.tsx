@@ -30,7 +30,7 @@ export function EditorToolbar({
   setIsLinkEditMode: (isEditMode: boolean) => void;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-1 border-b px-2 py-1.5">
+    <div className="flex items-center gap-1 overflow-x-auto border-b px-2 py-1.5 [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-track]:bg-transparent">
       <ToolbarPlugin>
         {() => (
           <>

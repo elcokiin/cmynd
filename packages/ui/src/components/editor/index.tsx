@@ -19,6 +19,7 @@ import { CodeExtension } from "@lexical/code";
 import { TableExtension } from "@lexical/table";
 import { HashtagExtension } from "@lexical/hashtag";
 import { OverflowExtension } from "@lexical/overflow";
+import { HorizontalRuleExtension } from "@lexical/extension";
 
 import { AutoLinkExtension } from "src/components/editor/extensions/auto-link-extension";
 import { DateTimeExtension } from "src/components/editor/extensions/date-time-extension";
@@ -28,6 +29,17 @@ import { ImagesExtension } from "src/components/editor/extensions/images-extensi
 import { KeywordsExtension } from "src/components/editor/extensions/keywords-extension";
 import { MarkdownShortcutsExtension } from "src/components/editor/extensions/markdown-shortcuts-extension";
 import { MaxLengthExtension } from "src/components/editor/extensions/max-length-extension";
+
+import {
+  CHECK_LIST,
+  ELEMENT_TRANSFORMERS,
+  MULTILINE_ELEMENT_TRANSFORMERS,
+  TEXT_FORMAT_TRANSFORMERS,
+  TEXT_MATCH_TRANSFORMERS,
+} from "@lexical/markdown";
+import type { Transformer } from "@lexical/markdown";
+import { HR } from "src/components/editor/transformers/markdown-hr-transformer";
+import { IMAGE } from "src/components/editor/transformers/markdown-image-transformer";
 
 import { EditorToolbar } from "src/components/editor/editor-toolbar";
 import { FloatingTextFormatToolbarPlugin } from "src/components/editor/plugins/floating-text-format-plugin";
@@ -104,6 +116,19 @@ export function Editor({
     </div>
   );
 
+  const markdownTransformers: Array<Transformer> = useMemo(
+    () => [
+      HR,
+      IMAGE,
+      CHECK_LIST,
+      ...ELEMENT_TRANSFORMERS,
+      ...MULTILINE_ELEMENT_TRANSFORMERS,
+      ...TEXT_FORMAT_TRANSFORMERS,
+      ...TEXT_MATCH_TRANSFORMERS,
+    ],
+    [],
+  );
+
   const extension = useMemo(
     () =>
       defineExtension({
@@ -135,9 +160,12 @@ export function Editor({
           DateTimeExtension,
           DragDropPasteExtension,
           EmojisExtension,
+          HorizontalRuleExtension,
           ImagesExtension,
           KeywordsExtension,
-          MarkdownShortcutsExtension,
+          configExtension(MarkdownShortcutsExtension, {
+            transformers: markdownTransformers,
+          }),
           MaxLengthExtension,
         ],
       }),
