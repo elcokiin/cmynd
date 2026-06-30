@@ -17,5 +17,8 @@
     "ui": "src/components",
     "lib": "src/lib",
     "hooks": "src/hooks"
+  },
+  "registries": {
+    "@shadcn-editor": "https://raw.githubusercontent.com/htmujahid/shadcn-editor/refs/heads/main/public/r/{name}.json"
   }
 }

@@ -23,8 +23,11 @@ export default defineConfig({
       dedupe: ["react", "react-dom"],
     },
     optimizeDeps: {
-      include: ["gsap", "split-type"],
+      include: ["react", "react-dom", "gsap", "split-type"],
       exclude: ["astro", "@elcokiin/backend"],
+    },
+    ssr: {
+      noExternal: ["@elcokiin/ui"],
     },
   },
 
