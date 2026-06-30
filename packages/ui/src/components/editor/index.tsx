@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { LexicalExtensionComposer } from "@lexical/react/LexicalExtensionComposer";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
@@ -29,14 +29,20 @@ import { KeywordsExtension } from "src/components/editor/extensions/keywords-ext
 import { MarkdownShortcutsExtension } from "src/components/editor/extensions/markdown-shortcuts-extension";
 import { MaxLengthExtension } from "src/components/editor/extensions/max-length-extension";
 
-import { useDebounce } from "src/components/editor/editor-hooks/use-debounce";
+import { FloatingTextFormatToolbarPlugin } from "src/components/editor/plugins/floating-text-format-plugin";
+import { FloatingLinkEditorPlugin } from "src/components/editor/plugins/floating-link-editor-plugin";
+import { ComponentPickerMenuPlugin } from "src/components/editor/plugins/component-picker-menu-plugin";
+import {
+  getDefaultComponentPickerOptions,
+  getDynamicComponentPickerOptions,
+} from "src/components/editor/plugins/picker";
 
 export type UploadFn = (file: File) => Promise<string>;
 
 export type EditorProps = {
+  variant?: "minimal" | "full";
   initialContent?: SerializedEditorState;
   onChange?: (state: SerializedEditorState) => void;
-  onDebouncedUpdate?: (state: SerializedEditorState) => void;
   editable?: boolean;
   uploadFn?: UploadFn | null;
   children?: React.ReactNode;
@@ -71,41 +77,24 @@ function EditablePlugin({ editable }: { editable: boolean }) {
 }
 
 const contentEditable = (
-  <div className="relative">
-    <ContentEditable className="relative block h-full min-h-80 overflow-auto outline-none" />
-    <div className="pointer-events-none absolute left-0 top-0 select-none p-0 text-muted-foreground">
-      Start writing...
-    </div>
-  </div>
+  <ContentEditable
+    className="relative block h-full min-h-80 overflow-auto outline-none"
+    aria-placeholder="Start writing..."
+    placeholder={<span>Start writing...</span>}
+  />
 );
 
 export function Editor({
+  variant = "full",
   initialContent,
   onChange,
-  onDebouncedUpdate,
   editable = true,
   uploadFn: _uploadFn,
   children,
 }: EditorProps) {
   const [capturedInitialContent] = useState(() => initialContent);
-
-  const debouncedUpdate = useDebounce(
-    (state: SerializedEditorState) => {
-      onDebouncedUpdate?.(state);
-    },
-    2000,
-  );
-
-  const onChangeRef = useRef(onChange);
-  onChangeRef.current = onChange;
-
-  const handleChange = useCallback(
-    (state: SerializedEditorState) => {
-      onChangeRef.current?.(state);
-      debouncedUpdate(state);
-    },
-    [debouncedUpdate],
-  );
+  const [isLinkEditMode, setIsLinkEditMode] = useState(false);
+  const [anchorElem, setAnchorElem] = useState<HTMLDivElement | null>(null);
 
   const extension = useMemo(
     () =>
@@ -148,13 +137,29 @@ export function Editor({
   );
 
   return (
-    <LexicalExtensionComposer
-      extension={extension}
-      contentEditable={contentEditable}
-    >
-      <OnChangePlugin onChange={handleChange} />
-      <EditablePlugin editable={editable} />
-      {children}
-    </LexicalExtensionComposer>
+    <div ref={setAnchorElem} className="relative">
+      <LexicalExtensionComposer extension={extension}>
+        <OnChangePlugin onChange={onChange} />
+        <EditablePlugin editable={editable} />
+        {variant === "full" && (
+          <>
+            <FloatingTextFormatToolbarPlugin
+              anchorElem={anchorElem}
+              setIsLinkEditMode={setIsLinkEditMode}
+            />
+            <FloatingLinkEditorPlugin
+              anchorElem={anchorElem}
+              isLinkEditMode={isLinkEditMode}
+              setIsLinkEditMode={setIsLinkEditMode}
+            />
+            <ComponentPickerMenuPlugin
+              baseOptions={getDefaultComponentPickerOptions()}
+              dynamicOptionsFn={getDynamicComponentPickerOptions}
+            />
+          </>
+        )}
+        {children}
+      </LexicalExtensionComposer>
+    </div>
   );
 }

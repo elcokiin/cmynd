@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "src/components/select";
-import { cn } from "../lib/utils";
+import { cn } from "src/lib/utils";
 
 /**
  * @see https://github.com/radix-ui/primitives/blob/main/packages/react/compose-refs/src/compose-refs.tsx

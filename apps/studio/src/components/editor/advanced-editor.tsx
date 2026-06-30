@@ -1,15 +1,20 @@
 import type { SerializedEditorState } from "lexical";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
 import { Editor, type UploadFn } from "@elcokiin/ui/editor";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@elcokiin/ui/tooltip";
 import { cn } from "@elcokiin/ui/lib/utils";
 
 export type AdvancedEditorProps = {
   initialContent?: SerializedEditorState;
   onChange?: (state: SerializedEditorState) => void;
-  onDebouncedUpdate?: (state: SerializedEditorState) => void;
+  onSave?: (state: SerializedEditorState) => Promise<void>;
   debounceMs?: number;
   editable?: boolean;
   className?: string;
@@ -20,7 +25,7 @@ export type AdvancedEditorProps = {
 export function AdvancedEditor({
   initialContent,
   onChange,
-  onDebouncedUpdate,
+  onSave,
   debounceMs = 1000,
   editable = true,
   className,
@@ -31,10 +36,10 @@ export function AdvancedEditor({
     "saved",
   );
 
-  const debouncedUpdate = useDebouncedCallback(async (state: SerializedEditorState) => {
+  const debouncedSave = useDebouncedCallback(async (state: SerializedEditorState) => {
     setSaveStatus("saving");
     try {
-      await onDebouncedUpdate?.(state);
+      await onSave?.(state);
       setSaveStatus("saved");
     } catch (error) {
       console.error("[AdvancedEditor] Failed to save:", error);
@@ -42,34 +47,46 @@ export function AdvancedEditor({
     }
   }, debounceMs);
 
+  const handleChange = useCallback(
+    (state: SerializedEditorState) => {
+      onChange?.(state);
+      if (onSave) {
+        setSaveStatus("unsaved");
+        debouncedSave(state);
+      }
+    },
+    [onChange, onSave, debouncedSave],
+  );
+
   return (
     <div className={cn("relative w-full", className)}>
-      {onDebouncedUpdate && (
+      {onSave && (
         <div className="absolute top-2 right-2 z-10">
-          <span
-            className={cn(
-              "text-xs px-2 py-1 rounded-md",
-              saveStatus === "saved" && "text-muted-foreground",
-              saveStatus === "saving" &&
-                "text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20",
-              saveStatus === "unsaved" &&
-                "text-orange-600 bg-orange-50 dark:bg-orange-900/20",
-              saveStatus === "error" &&
-                "text-red-600 bg-red-50 dark:bg-red-900/20",
-            )}
-          >
-            {saveStatus === "saved" && "Saved"}
-            {saveStatus === "saving" && "Saving..."}
-            {saveStatus === "unsaved" && "Unsaved changes"}
-            {saveStatus === "error" && "Error saving"}
-          </span>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span
+                className={cn(
+                  "inline-block size-2.5 rounded-full transition-colors",
+                  saveStatus === "saved" && "bg-green-500",
+                  saveStatus === "saving" && "bg-yellow-500",
+                  saveStatus === "unsaved" && "bg-orange-500",
+                  saveStatus === "error" && "bg-red-500",
+                )}
+              />
+            </TooltipTrigger>
+            <TooltipContent>
+              {saveStatus === "saved" && "Saved"}
+              {saveStatus === "saving" && "Saving..."}
+              {saveStatus === "unsaved" && "Unsaved changes"}
+              {saveStatus === "error" && "Error saving"}
+            </TooltipContent>
+          </Tooltip>
         </div>
       )}
 
       <Editor
         initialContent={initialContent}
-        onChange={onChange}
-        onDebouncedUpdate={onDebouncedUpdate ? debouncedUpdate : undefined}
+        onChange={handleChange}
         editable={editable}
         uploadFn={uploadFn}
       />

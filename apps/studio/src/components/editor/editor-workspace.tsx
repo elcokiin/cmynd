@@ -6,7 +6,7 @@ import { ClientOnlyEditor } from "./client-only-editor";
 type EditorWorkspaceProps = {
   initialContent?: SerializedEditorState;
   onChange?: (state: SerializedEditorState) => void;
-  onDebouncedUpdate?: (state: SerializedEditorState) => void;
+  onSave?: (state: SerializedEditorState) => Promise<void>;
   editable: boolean;
   uploadFn?: UploadFn | null;
   onUploadError?: (error: Error) => void;
@@ -15,7 +15,7 @@ type EditorWorkspaceProps = {
 export function EditorWorkspace({
   initialContent,
   onChange,
-  onDebouncedUpdate,
+  onSave,
   editable,
   uploadFn,
   onUploadError,
@@ -26,7 +26,7 @@ export function EditorWorkspace({
         <ClientOnlyEditor
           initialContent={initialContent}
           onChange={onChange}
-          onDebouncedUpdate={onDebouncedUpdate}
+          onSave={onSave}
           editable={editable}
           uploadFn={uploadFn}
           onUploadError={onUploadError}

@@ -21,7 +21,7 @@ import {
   CommandItem,
   CommandList,
 } from "src/components/command";
-import { cn } from "../lib/utils";
+import { cn } from "src/lib/utils";
 
 // const LexicalTypeaheadMenuPlugin = dynamic(
 //   () =>

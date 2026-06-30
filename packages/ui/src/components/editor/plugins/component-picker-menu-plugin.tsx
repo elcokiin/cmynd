@@ -21,7 +21,7 @@ import {
   CommandItem,
   CommandList,
 } from "src/components/command";
-import { cn } from "../lib/utils";
+import { cn } from "src/lib/utils";
 
 import { ComponentPickerOption } from "./picker/component-picker-option";
 
