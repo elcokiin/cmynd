@@ -21,7 +21,7 @@ function NewDocumentRoute() {
   const {
     title,
     handleTitleChange,
-    documentIdRef,
+    documentId,
     handleContentChange,
     saveContentChange,
   } = useNewDocument();
@@ -48,8 +48,8 @@ function NewDocumentRoute() {
           </div>
 
           <div className="flex items-center gap-2">
-            <ButtonSubmit documentId={documentIdRef.current} title={title} />
-            <ButtonSettings documentId={documentIdRef.current} />
+            <ButtonSubmit documentId={documentId} title={title} />
+            <ButtonSettings documentId={documentId} />
           </div>
         </div>
       </div>

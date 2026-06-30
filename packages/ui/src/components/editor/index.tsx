@@ -112,6 +112,11 @@ export function Editor({
 }: EditorProps) {
   const [capturedInitialContent] = useState(() => initialContent);
   const [isLinkEditMode, setIsLinkEditMode] = useState(false);
+
+  const hasContent = capturedInitialContent
+    && capturedInitialContent.root
+    && capturedInitialContent.root.children
+    && capturedInitialContent.root.children.length > 0;
   const [anchorElem, setAnchorElem] = useState<HTMLDivElement | null>(null);
 
   const contentEditable = (
@@ -151,7 +156,7 @@ export function Editor({
         onError: (error: Error) => {
           console.error(error);
         },
-        $initialEditorState: capturedInitialContent
+        $initialEditorState: hasContent
           ? JSON.stringify(capturedInitialContent)
           : null,
         editable,

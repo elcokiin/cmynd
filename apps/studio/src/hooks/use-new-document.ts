@@ -13,6 +13,7 @@ export function useNewDocument() {
   const { handleError, handleErrorSilent } = useErrorHandler();
 
   const [title, setTitle] = useState("Untitled");
+  const [documentId, setDocumentId] = useState<Id<"documents"> | null>(null);
   const titleRef = useRef(title);
   const contentRef = useRef<SerializedEditorState | undefined>(undefined);
   const documentIdRef = useRef<Id<"documents"> | null>(null);
@@ -83,6 +84,7 @@ export function useNewDocument() {
         });
 
         documentIdRef.current = result.documentId;
+        setDocumentId(result.documentId);
       } catch (error) {
         handleError(error, { context: "Failed to create document" });
       }
@@ -147,7 +149,7 @@ export function useNewDocument() {
   return {
     title,
     handleTitleChange,
-    documentIdRef,
+    documentId,
     handleContentChange,
     saveContentChange,
   };

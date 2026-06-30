@@ -66,7 +66,7 @@ export const create = mutation({
       status: "building",
       isVisible: true,
       authorId,
-      content: args.content ?? {},
+      content: args.content,
       createdAt: now,
       updatedAt: now,
     });
