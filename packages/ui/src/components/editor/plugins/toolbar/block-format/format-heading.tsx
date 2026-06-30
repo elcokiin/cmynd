@@ -50,8 +50,8 @@ export function FormatHeading({ levels = [] }: { levels: HeadingTagType[] }) {
   return levels.map((level) => (
     <DropdownMenuItem key={level} onClick={() => formatHeading(level)}>
       <div className="flex items-center gap-1 font-normal">
-        {blockTypeToBlockName[level].icon}
-        {blockTypeToBlockName[level].label}
+        {blockTypeToBlockName[level]!.icon}
+        {blockTypeToBlockName[level]!.label}
       </div>
     </DropdownMenuItem>
   ));

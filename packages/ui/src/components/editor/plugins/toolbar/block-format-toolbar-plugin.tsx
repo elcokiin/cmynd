@@ -69,7 +69,7 @@ export function BlockFormatDropDown({
   useUpdateToolbarHandler($updateToolbar);
 
   const { label, icon } =
-    blockTypeToBlockName[blockType] ?? blockTypeToBlockName.paragraph;
+    blockTypeToBlockName[blockType] ?? blockTypeToBlockName.paragraph!;
 
   return (
     <DropdownMenu>

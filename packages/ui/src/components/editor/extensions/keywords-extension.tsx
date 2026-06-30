@@ -17,8 +17,8 @@ function getKeywordMatch(text: string) {
     return null;
   }
 
-  const hashtagLength = matchArr[2].length;
-  const startOffset = matchArr.index + matchArr[1].length;
+  const hashtagLength = matchArr[2]!.length;
+  const startOffset = matchArr.index + matchArr[1]!.length;
   const endOffset = startOffset + hashtagLength;
   return {
     end: endOffset,

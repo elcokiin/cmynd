@@ -27,6 +27,8 @@ function $findAndTransformText(node: TextNode): null | TextNode {
       [, targetNode] = node.splitText(startIndex, startIndex + match[0].length);
     }
 
+    if (!targetNode) return null;
+
     const specialTextNode = $createSpecialTextNode(matchedText);
     targetNode.replace(specialTextNode);
     return specialTextNode;

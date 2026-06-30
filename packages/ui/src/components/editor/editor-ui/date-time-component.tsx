@@ -90,7 +90,7 @@ export default function DateTimeComponent({
         setTimeValue(time);
         return;
       }
-      const [hours, minutes] = time.split(":").map((s) => parseInt(s, 10));
+      const [hours = 0, minutes = 0] = time.split(":").map((s) => parseInt(s, 10));
       const newDate = setHours(setMinutes(selected, minutes), hours);
       setSelected(newDate);
       node.setDateTime(newDate);

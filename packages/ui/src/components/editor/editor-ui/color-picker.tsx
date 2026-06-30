@@ -838,8 +838,8 @@ const ColorPickerRoot = React.memo((props: ColorPickerRootProps) => {
   const storeCallbacks = React.useMemo<ColorPickerStoreCallbacks>(
     () => ({
       onColorChange: onValueChange,
-      onOpenChange: onOpenChange,
-      onFormatChange: onFormatChange,
+      onOpenChange: (open) => (onOpenChange as ((open: boolean) => void) | undefined)?.(open),
+      onFormatChange: (value) => onFormatChange?.(value as ColorFormat),
     }),
     [onValueChange, onOpenChange, onFormatChange],
   );
@@ -937,9 +937,9 @@ function ColorPickerRootImpl(props: ColorPickerRootImplProps) {
   const open = useColorPickerStore((state) => state.open);
 
   const onPopoverOpenChange = React.useCallback(
-    (newOpen: boolean) => {
+    (newOpen: boolean, event?: unknown) => {
       store.setOpen(newOpen);
-      onOpenChange?.(newOpen);
+      (onOpenChange as ((open: boolean, event?: unknown) => void) | undefined)?.(newOpen, event);
     },
     [store.setOpen, onOpenChange],
   );
@@ -1009,7 +1009,9 @@ function ColorPickerTrigger(props: ColorPickerTriggerProps) {
 
 interface ColorPickerContentProps extends React.ComponentProps<
   typeof PopoverContent
-> {}
+> {
+  asChild?: boolean;
+}
 
 function ColorPickerContent(props: ColorPickerContentProps) {
   const { asChild, className, children, ...popoverContentProps } = props;
@@ -1376,7 +1378,7 @@ function ColorPickerFormatSelect(props: ColorPickerFormatSelectProps) {
       data-slot="color-picker-format-select"
       {...selectProps}
       value={format}
-      onValueChange={onFormatChange}
+      onValueChange={(value) => onFormatChange?.(value as ColorFormat)}
       disabled={context.disabled}
     >
       <SelectTrigger

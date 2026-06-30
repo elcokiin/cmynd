@@ -25,7 +25,7 @@ export function ClearEditorActionPlugin() {
 
   return (
     <Dialog>
-      <Tooltip disableHoverableContent>
+      <Tooltip>
         <TooltipTrigger render={<DialogTrigger render={<Button size={"sm"} variant={"ghost"} className="p-2" />} />}><Trash2Icon className="size-4" /></TooltipTrigger>
         <TooltipContent>Clear Editor</TooltipContent>
       </Tooltip>

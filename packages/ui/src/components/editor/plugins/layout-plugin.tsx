@@ -61,7 +61,7 @@ export function InsertLayoutDialog({
   activeEditor: LexicalEditor;
   onClose: () => void;
 }): JSX.Element {
-  const [layout, setLayout] = useState(LAYOUTS[0].value);
+  const [layout, setLayout] = useState(LAYOUTS[0]!.value);
   const buttonLabel = LAYOUTS.find((item) => item.value === layout)?.label;
 
   const onClick = () => {
@@ -71,7 +71,7 @@ export function InsertLayoutDialog({
 
   return (
     <>
-      <Select onValueChange={setLayout} defaultValue={layout}>
+      <Select onValueChange={(value) => value && setLayout(value)} defaultValue={layout}>
         <SelectTrigger className="w-full">
           <SelectValue placeholder={buttonLabel} />
         </SelectTrigger>

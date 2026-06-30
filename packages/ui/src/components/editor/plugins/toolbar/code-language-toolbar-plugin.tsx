@@ -96,11 +96,11 @@ export function CodeLanguageToolbarPlugin() {
   );
 
   return (
-    <Select value={codeLanguage} onValueChange={onCodeLanguageSelect}>
+    <Select value={codeLanguage} onValueChange={(value) => value && onCodeLanguageSelect(value)}>
       <SelectTrigger onMouseDown={(e) => e.stopPropagation()}>
         <SelectValue placeholder="Select Language" />
       </SelectTrigger>
-      <SelectContent onCloseAutoFocus={(e) => e.preventDefault()}>
+      <SelectContent>
         {CODE_LANGUAGE_OPTIONS.map(([value, label]) => (
           <SelectItem key={value} value={value}>
             {label}

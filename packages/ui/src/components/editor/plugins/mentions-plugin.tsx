@@ -552,14 +552,13 @@ function checkForAtSignMentions(
     // The strategy ignores leading whitespace but we need to know it's
     // length to add it to the leadOffset
 
-    const maybeLeadingWhitespace = match[1];
-
-    const matchingString = match[3];
+    const maybeLeadingWhitespace = match[1] ?? "";
+    const matchingString = match[3] ?? "";
     if (matchingString.length >= minMatchLength) {
       return {
         leadOffset: match.index + maybeLeadingWhitespace.length,
         matchingString,
-        replaceableString: match[2],
+        replaceableString: match[2] ?? "",
       };
     }
   }

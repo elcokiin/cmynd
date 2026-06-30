@@ -111,12 +111,9 @@ export function ElementFormatToolbarPlugin({
   return (
     <>
       <ToggleGroup
-        type="single"
-        value={elementFormat}
-        defaultValue={elementFormat}
-        onValueChange={handleValueChange}
+        value={[elementFormat]}
+        onValueChange={(values) => handleValueChange(values[values.length - 1] ?? "left")}
       >
-        {/* Alignment toggles */}
         {Object.entries(ELEMENT_FORMAT_OPTIONS).map(([value, option]) => (
           <ToggleGroupItem
             key={value}
@@ -132,10 +129,8 @@ export function ElementFormatToolbarPlugin({
       {showIndent && separator && <Separator orientation="vertical" className="h-7!" />}
       {showIndent && (
         <ToggleGroup
-          type="single"
-          value={elementFormat}
-          defaultValue={elementFormat}
-          onValueChange={handleValueChange}
+          value={[elementFormat]}
+          onValueChange={(values) => handleValueChange(values[values.length - 1] ?? "left")}
         >
           <ToggleGroupItem
             value="outdent"

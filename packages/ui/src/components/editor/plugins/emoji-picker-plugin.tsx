@@ -76,7 +76,7 @@ export function EmojiPickerPlugin() {
       emojis != null
         ? emojis.map(
             ({ emoji, aliases, tags }) =>
-              new EmojiOption(aliases[0], emoji, {
+              new EmojiOption(aliases[0] ?? "", emoji, {
                 keywords: [...aliases, ...tags],
               }),
           )

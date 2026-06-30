@@ -21,6 +21,15 @@ import { HashtagExtension } from "@lexical/hashtag";
 import { OverflowExtension } from "@lexical/overflow";
 import { HorizontalRuleExtension } from "@lexical/extension";
 
+import { AutocompleteNode } from "src/components/editor/nodes/autocomplete-node";
+import { TweetNode } from "src/components/editor/nodes/embeds/tweet-node";
+import { YouTubeNode } from "src/components/editor/nodes/embeds/youtube-node";
+import { EmojiNode } from "src/components/editor/nodes/emoji-node";
+import { LayoutContainerNode } from "src/components/editor/nodes/layout-container-node";
+import { LayoutItemNode } from "src/components/editor/nodes/layout-item-node";
+import { MentionNode } from "src/components/editor/nodes/mention-node";
+import { SpecialTextNode } from "src/components/editor/nodes/special-text-node";
+
 import { AutoLinkExtension } from "src/components/editor/extensions/auto-link-extension";
 import { DateTimeExtension } from "src/components/editor/extensions/date-time-extension";
 import { DragDropPasteExtension } from "src/components/editor/extensions/drag-drop-paste-extension";
@@ -42,6 +51,10 @@ import { HR } from "src/components/editor/transformers/markdown-hr-transformer";
 import { IMAGE } from "src/components/editor/transformers/markdown-image-transformer";
 
 import { EditorToolbar } from "src/components/editor/editor-toolbar";
+import { AutoEmbedPlugin } from "src/components/editor/plugins/embeds/auto-embed-plugin";
+import { TwitterPlugin } from "src/components/editor/plugins/embeds/twitter-plugin";
+import { YouTubePlugin } from "src/components/editor/plugins/embeds/youtube-plugin";
+import { EmojiPickerPlugin } from "src/components/editor/plugins/emoji-picker-plugin";
 import { FloatingTextFormatToolbarPlugin } from "src/components/editor/plugins/floating-text-format-plugin";
 import { FloatingLinkEditorPlugin } from "src/components/editor/plugins/floating-link-editor-plugin";
 import { ComponentPickerMenuPlugin } from "src/components/editor/plugins/component-picker-menu-plugin";
@@ -142,6 +155,16 @@ export function Editor({
           ? JSON.stringify(capturedInitialContent)
           : null,
         editable,
+        nodes: [
+          EmojiNode,
+          MentionNode,
+          AutocompleteNode,
+          SpecialTextNode,
+          LayoutContainerNode,
+          LayoutItemNode,
+          TweetNode,
+          YouTubeNode,
+        ],
         dependencies: [
           configExtension(ReactExtension, {
             contentEditable,
@@ -192,6 +215,10 @@ export function Editor({
               baseOptions={getDefaultComponentPickerOptions()}
               dynamicOptionsFn={getDynamicComponentPickerOptions}
             />
+            <EmojiPickerPlugin />
+            <AutoEmbedPlugin />
+            <TwitterPlugin />
+            <YouTubePlugin />
           </>
         )}
         {children}
