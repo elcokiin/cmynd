@@ -8,6 +8,7 @@ import { useDebouncedCallback } from "use-debounce";
 
 import { useErrorHandler } from "@/hooks/use-error-handler";
 import { getRandomTitle, isRandomTitle } from "@/lib/random-titles";
+import { extractImageStorageIds } from "@/utils/extract-image-storage-ids";
 
 export function useNewDocument() {
   const { handleError, handleErrorSilent } = useErrorHandler();
@@ -117,9 +118,12 @@ export function useNewDocument() {
     if (!documentIdRef.current) return;
 
     try {
+      const content = contentRef.current!;
+      const imageStorageIds = extractImageStorageIds(content);
       await updateContent({
         documentId: documentIdRef.current,
-        content: contentRef.current,
+        content,
+        imageStorageIds,
       });
     } catch (error) {
       handleError(error, { context: "Failed to save content" });

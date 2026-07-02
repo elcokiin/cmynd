@@ -6,18 +6,12 @@ import { useCallback } from "react";
 
 import { compressImage } from "@/utils/compress-image";
 
-/**
- * Hook that provides a Convex-based image upload function.
- * Handles generating upload URLs, uploading files, and retrieving public URLs.
- *
- * @returns Upload function that accepts a File and returns a Promise with the public URL
- */
 function useConvexImageUpload(): UploadFn {
   const convex = useConvex();
   const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
 
   return useCallback(
-    async (file: File): Promise<string> => {
+    async (file: File) => {
       const compressionResult = await compressImage(file);
 
       if (!compressionResult.ok) {
@@ -46,7 +40,7 @@ function useConvexImageUpload(): UploadFn {
         throw new Error("Failed to get file URL");
       }
 
-      return url;
+      return { url, storageId };
     },
     [convex, generateUploadUrl],
   );

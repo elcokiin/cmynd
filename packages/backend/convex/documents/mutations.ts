@@ -289,6 +289,7 @@ export const updateContent = mutation({
   args: {
     documentId: v.id("documents"),
     content: v.any(),
+    imageStorageIds: v.optional(v.array(v.id("_storage"))),
   },
   handler: async (ctx, args) => {
     const document = await getByIdForAuthor(ctx, args.documentId);
@@ -305,6 +306,17 @@ export const updateContent = mutation({
       content: args.content,
       updatedAt: Date.now(),
     };
+
+    // Clean up removed image storage IDs
+    const oldImageIds = document.imageStorageIds ?? [];
+    const newImageIds = args.imageStorageIds ?? [];
+    const removedIds = oldImageIds.filter(
+      (id) => !newImageIds.includes(id),
+    );
+    for (const storageId of removedIds) {
+      await ctx.storage.delete(storageId).catch(() => {});
+    }
+    updates.imageStorageIds = newImageIds;
 
     // Check if current title is invalid and content has a heading we can extract
     if (!isValidTitle(document.title)) {
@@ -571,6 +583,15 @@ export const remove = mutation({
   args: { documentId: v.id("documents") },
   handler: async (ctx, args) => {
     const document = await getByIdForAuthor(ctx, args.documentId);
+
+    // Clean up associated storage files before deleting the document
+    const imageIds = document.imageStorageIds ?? [];
+    for (const storageId of imageIds) {
+      await ctx.storage.delete(storageId).catch(() => {});
+    }
+    if (document.coverImage?.storageId) {
+      await ctx.storage.delete(document.coverImage.storageId).catch(() => {});
+    }
 
     // Delete the document (slugHistory is embedded and deleted automatically)
     await ctx.db.delete(args.documentId);

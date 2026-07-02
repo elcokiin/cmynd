@@ -12,6 +12,7 @@ import { EditorSkeleton } from "@/components/editor/editor-skeleton";
 import { EditorWorkspace } from "@/components/editor/editor-workspace";
 import { useEditor } from "@/hooks/use-editor";
 import { useErrorHandler } from "@/hooks/use-error-handler";
+import { extractImageStorageIds } from "@/utils/extract-image-storage-ids";
 
 export const Route = createFileRoute("/_auth/editor/$slug")({
   component: EditorRoute,
@@ -35,9 +36,11 @@ function EditorRoute() {
       if (!document) return;
 
       try {
+        const imageStorageIds = extractImageStorageIds(content);
         await updateContent({
           documentId: document._id,
           content,
+          imageStorageIds,
         });
       } catch (error) {
         handleErrorSilent(error, "EditorRoute.saveContent");

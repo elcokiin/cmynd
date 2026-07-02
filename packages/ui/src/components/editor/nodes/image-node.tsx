@@ -23,6 +23,7 @@ export interface ImagePayload {
   maxWidth?: number;
   src: string;
   width?: number;
+  storageId?: string;
 }
 
 function isGoogleDocCheckboxImg(img: HTMLImageElement): boolean {
@@ -52,6 +53,7 @@ export type SerializedImageNode = Spread<
     maxWidth: number;
     src: string;
     width?: number;
+    storageId?: string;
   },
   SerializedLexicalNode
 >;
@@ -62,6 +64,7 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
   __width: "inherit" | number;
   __height: "inherit" | number;
   __maxWidth: number;
+  __storageId: string | undefined;
 
   static getType(): string {
     return "image";
@@ -75,17 +78,19 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
       node.__width,
       node.__height,
       node.__key,
+      node.__storageId,
     );
   }
 
   static importJSON(serializedNode: SerializedImageNode): ImageNode {
-    const { altText, height, width, maxWidth, src } = serializedNode;
+    const { altText, height, width, maxWidth, src, storageId } = serializedNode;
     return $createImageNode({
       altText,
       height,
       maxWidth,
       src,
       width,
+      storageId,
     }).updateFromJSON(serializedNode);
   }
 
@@ -121,6 +126,7 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
     width?: "inherit" | number,
     height?: "inherit" | number,
     key?: NodeKey,
+    storageId?: string,
   ) {
     super(key);
     this.__src = src;
@@ -128,6 +134,7 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
     this.__maxWidth = maxWidth;
     this.__width = width || "inherit";
     this.__height = height || "inherit";
+    this.__storageId = storageId;
   }
 
   exportJSON(): SerializedImageNode {
@@ -138,6 +145,7 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
       maxWidth: this.__maxWidth,
       src: this.getSrc(),
       width: this.__width === "inherit" ? 0 : this.__width,
+      storageId: this.__storageId,
     };
   }
 
@@ -196,9 +204,10 @@ export function $createImageNode({
   src,
   width,
   key,
+  storageId,
 }: ImagePayload): ImageNode {
   return $applyNodeReplacement(
-    new ImageNode(src, altText, maxWidth, width, height, key),
+    new ImageNode(src, altText, maxWidth, width, height, key, storageId),
   );
 }
 

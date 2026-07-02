@@ -49,6 +49,7 @@ export const documentValidator = {
   content: v.any(),
   description: v.optional(v.string()),
   coverImage: v.optional(coverImageValidator),
+  imageStorageIds: v.optional(v.array(v.id("_storage"))),
   type: documentTypeValidator,
   status: documentStatusValidator,
   authorId: v.id("authors"),

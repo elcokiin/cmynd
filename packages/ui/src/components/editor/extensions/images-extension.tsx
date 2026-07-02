@@ -1,4 +1,4 @@
-import { type JSX, useState } from "react";
+import { type JSX, useCallback, useState } from "react";
 
 import {
   $isAutoLinkNode,
@@ -41,6 +41,7 @@ import { DialogFooter } from "src/components/dialog";
 import { Field, FieldLabel } from "src/components/field";
 import { Input } from "src/components/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "src/components/tabs";
+import { useEditorConfig } from "src/components/editor/context/editor-config-context";
 
 export type InsertImagePayload = Readonly<ImagePayload>;
 
@@ -153,32 +154,76 @@ export function InsertImageDialog({
   activeEditor: LexicalEditor;
   onClose: () => void;
 }): JSX.Element {
-  const [src, setSrc] = useState("");
+  const { uploadFn } = useEditorConfig();
+  const [urlOrPreview, setUrlOrPreview] = useState("");
   const [altText, setAltText] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [tab, setTab] = useState("url");
+  const [fileInputKey, setFileInputKey] = useState(0);
 
-  const isDisabled = src === "";
+  const isUrlTab = tab === "url";
+  const isDisabled = isUrlTab
+    ? urlOrPreview === ""
+    : !selectedFile || isUploading;
 
-  const onClick = () => {
-    activeEditor.dispatchCommand(INSERT_IMAGE_COMMAND, { altText, src });
-    onClose();
-  };
+  const resetFileState = useCallback(() => {
+    setSelectedFile(null);
+    setUrlOrPreview("");
+    setUploadError(null);
+    setFileInputKey((k) => k + 1);
+  }, []);
 
-  const loadImage = (files: FileList | null) => {
+  const handleFileSelect = useCallback((files: FileList | null) => {
+    const file = files?.[0];
+    if (!file) {
+      resetFileState();
+      return;
+    }
+    setSelectedFile(file);
+    setUploadError(null);
     const reader = new FileReader();
     reader.onload = function () {
       if (typeof reader.result === "string") {
-        setSrc(reader.result);
+        setUrlOrPreview(reader.result);
       }
     };
-    const file = files?.[0];
-    if (file) {
-      reader.readAsDataURL(file);
+    reader.readAsDataURL(file);
+  }, [resetFileState]);
+
+  const handleConfirm = useCallback(async () => {
+    if (isUrlTab) {
+      activeEditor.dispatchCommand(INSERT_IMAGE_COMMAND, { altText, src: urlOrPreview });
+      onClose();
+      return;
     }
-  };
+
+    if (!selectedFile || !uploadFn) {
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadError(null);
+
+    try {
+      const { url, storageId } = await uploadFn(selectedFile);
+      activeEditor.dispatchCommand(INSERT_IMAGE_COMMAND, {
+        altText,
+        src: url,
+        storageId,
+      });
+      onClose();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Upload failed. Try again.";
+      setUploadError(message);
+      setIsUploading(false);
+    }
+  }, [isUrlTab, activeEditor, altText, urlOrPreview, selectedFile, uploadFn, onClose]);
 
   return (
     <div className="flex flex-col gap-4">
-      <Tabs defaultValue="url">
+      <Tabs defaultValue="url" value={tab} onValueChange={(v) => { setTab(v); resetFileState(); }}>
         <TabsList className="w-full">
           <TabsTrigger value="url" className="flex-1">URL</TabsTrigger>
           <TabsTrigger value="file" className="flex-1">File</TabsTrigger>
@@ -189,8 +234,8 @@ export function InsertImageDialog({
             <Input
               id="image-dialog-url"
               placeholder="https://source.unsplash.com/random"
-              onChange={(e) => setSrc(e.target.value)}
-              value={src}
+              onChange={(e) => setUrlOrPreview(e.target.value)}
+              value={urlOrPreview}
               data-test-id="image-modal-url-input"
             />
           </Field>
@@ -199,13 +244,17 @@ export function InsertImageDialog({
           <Field>
             <FieldLabel htmlFor="image-dialog-file">Image</FieldLabel>
             <Input
+              key={fileInputKey}
               id="image-dialog-file"
               type="file"
-              onChange={(e) => loadImage(e.target.files)}
+              onChange={(e) => handleFileSelect(e.target.files)}
               accept="image/*"
               data-test-id="image-modal-file-upload"
             />
           </Field>
+          {uploadError && (
+            <p className="text-sm text-destructive mt-1">{uploadError}</p>
+          )}
         </TabsContent>
       </Tabs>
       <Field>
@@ -221,10 +270,10 @@ export function InsertImageDialog({
       <DialogFooter>
         <Button
           disabled={isDisabled}
-          onClick={onClick}
+          onClick={handleConfirm}
           data-test-id="image-modal-confirm-btn"
         >
-          Confirm
+          {isUploading ? "Uploading..." : "Confirm"}
         </Button>
       </DialogFooter>
     </div>

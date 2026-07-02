@@ -50,6 +50,7 @@ import type { Transformer } from "@lexical/markdown";
 import { HR } from "src/components/editor/transformers/markdown-hr-transformer";
 import { IMAGE } from "src/components/editor/transformers/markdown-image-transformer";
 
+import { EditorConfigProvider } from "src/components/editor/context/editor-config-context";
 import { EditorToolbar } from "src/components/editor/editor-toolbar";
 import { AutoEmbedPlugin } from "src/components/editor/plugins/embeds/auto-embed-plugin";
 import { TwitterPlugin } from "src/components/editor/plugins/embeds/twitter-plugin";
@@ -63,7 +64,8 @@ import {
   getDynamicComponentPickerOptions,
 } from "src/components/editor/plugins/picker";
 
-export type UploadFn = (file: File) => Promise<string>;
+export type UploadResult = { url: string; storageId: string };
+export type UploadFn = (file: File) => Promise<UploadResult>;
 
 export type EditorProps = {
   variant?: "minimal" | "medium" | "full";
@@ -107,7 +109,7 @@ export function Editor({
   initialContent,
   onChange,
   editable = true,
-  uploadFn: _uploadFn,
+  uploadFn,
   children,
 }: EditorProps) {
   const [capturedInitialContent] = useState(() => initialContent);
@@ -186,7 +188,7 @@ export function Editor({
           OverflowExtension,
           AutoLinkExtension,
           DateTimeExtension,
-          DragDropPasteExtension,
+          configExtension(DragDropPasteExtension, { uploadFn: uploadFn ?? undefined }),
           EmojisExtension,
           HorizontalRuleExtension,
           ImagesExtension,
@@ -202,6 +204,7 @@ export function Editor({
 
   return (
     <div ref={setAnchorElem} className="relative">
+      <EditorConfigProvider uploadFn={uploadFn ?? null}>
       <LexicalExtensionComposer extension={extension}>
         <OnChangePlugin onChange={onChange} />
         <EditablePlugin editable={editable} />
@@ -228,6 +231,7 @@ export function Editor({
         )}
         {children}
       </LexicalExtensionComposer>
+      </EditorConfigProvider>
     </div>
   );
 }
