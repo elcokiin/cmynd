@@ -1,4 +1,4 @@
-import { type JSX, useCallback, useState } from "react";
+import { type JSX, useCallback, useEffect, useRef, useState } from "react";
 
 import {
   $isAutoLinkNode,
@@ -162,6 +162,19 @@ export function InsertImageDialog({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [tab, setTab] = useState("url");
   const [fileInputKey, setFileInputKey] = useState(0);
+
+  const hasModifier = useRef(false);
+
+  useEffect(() => {
+    hasModifier.current = false;
+    const handler = (e: KeyboardEvent) => {
+      hasModifier.current = e.altKey;
+    };
+    document.addEventListener("keydown", handler);
+    return () => {
+      document.removeEventListener("keydown", handler);
+    };
+  }, [activeEditor]);
 
   const isUrlTab = tab === "url";
   const isDisabled = isUrlTab
