@@ -21,6 +21,8 @@ export type AdvancedEditorProps = {
   className?: string;
   uploadFn?: UploadFn | null;
   onUploadError?: (error: Error) => void;
+  maxLength?: number;
+  disableMaxLength?: boolean;
 };
 
 export function AdvancedEditor({
@@ -33,6 +35,8 @@ export function AdvancedEditor({
   className,
   uploadFn = null,
   onUploadError: _onUploadError,
+  maxLength,
+  disableMaxLength,
 }: AdvancedEditorProps) {
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved" | "error">(
     "saved",
@@ -106,6 +110,8 @@ export function AdvancedEditor({
         editable={editable}
         variant={variant}
         uploadFn={uploadFn}
+        maxLength={maxLength}
+        disableMaxLength={disableMaxLength}
       />
     </div>
   );

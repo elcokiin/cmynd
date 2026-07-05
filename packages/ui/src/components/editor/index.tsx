@@ -73,6 +73,8 @@ export type EditorProps = {
   onChange?: (state: SerializedEditorState) => void;
   editable?: boolean;
   uploadFn?: UploadFn | null;
+  maxLength?: number;
+  disableMaxLength?: boolean;
   children?: React.ReactNode;
 };
 
@@ -110,6 +112,8 @@ export function Editor({
   onChange,
   editable = true,
   uploadFn,
+  maxLength,
+  disableMaxLength,
   children,
 }: EditorProps) {
   const [capturedInitialContent] = useState(() => initialContent);
@@ -196,7 +200,10 @@ export function Editor({
           configExtension(MarkdownShortcutsExtension, {
             transformers: markdownTransformers,
           }),
-          MaxLengthExtension,
+          configExtension(MaxLengthExtension, {
+            disabled: disableMaxLength ?? maxLength === undefined,
+            maxLength: maxLength ?? 3000,
+          }),
         ],
       }),
     [],
