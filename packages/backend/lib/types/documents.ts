@@ -42,9 +42,11 @@ export type ReprintData = {
  * Links to external content that inspired the document.
  */
 export type Inspiration = {
-  url: string;
+  url?: string;
   title: string;
   author?: string;
+  note?: string;
+  emoji: string;
 };
 
 /**

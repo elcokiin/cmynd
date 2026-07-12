@@ -37,9 +37,11 @@ export const reprintDataValidator = v.object({
 });
 
 export const inspirationValidator = v.object({
-  url: v.string(),
+  url: v.optional(v.string()),
   title: v.string(),
   author: v.optional(v.string()),
+  note: v.optional(v.string()),
+  emoji: v.string(),
 });
 
 // Schema validator - used by defineTable() in schema.ts
