@@ -11,6 +11,7 @@ import {
   AlertDialogTitle,
 } from "@elcokiin/ui/alert-dialog";
 import { buttonVariants } from "@elcokiin/ui/button";
+import { Empty } from "@elcokiin/ui/empty";
 import { cn } from "@elcokiin/ui/lib/utils";
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";
@@ -123,27 +124,18 @@ export function InspirationsSection({
       </div>
 
       {inspirations.length === 0 && !isAdding && (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed bg-muted/20 px-6 py-12 text-center">
-          <span className="mb-3 text-3xl">✨</span>
-          <p className="text-sm font-medium">No inspirations yet</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Track what inspired this piece
-          </p>
-          <button
-            type="button"
-            onClick={() => {
+        <Empty
+          icon="✨"
+          title="No inspirations yet"
+          description="Track what inspired this piece"
+          action={{
+            label: "Add inspiration",
+            onClick: () => {
               setEditingIndex(null);
               setIsAdding(true);
-            }}
-            className={cn(
-              buttonVariants({ size: "sm" }),
-              "mt-4 cursor-pointer gap-1.5",
-            )}
-          >
-            <PlusIcon className="h-3.5 w-3.5" />
-            Add inspiration
-          </button>
-        </div>
+            },
+          }}
+        />
       )}
 
       {inspirations.length > 0 && (
