@@ -5,15 +5,13 @@ import { mutation } from "../_generated/server";
 import {
   documentTypeValidator,
   reprintDataValidator,
-  inspirationValidator,
 } from "../../lib/validators/documents";
 import { ErrorCode, throwConvexError } from "@elcokiin/errors";
 import * as Auth from "../_lib/auth";
 import {
   getByIdForAuthor,
   assertDocumentEditable,
-  assertNotReprint,
-  deriveDocumentTypeFromInspirations,
+  computePublishMetadata,
 } from "./helpers";
 import { getOrCreateAuthorForUser } from "../authors/helpers";
 import { generateUniqueSlug } from "../../lib/utils/slug";
@@ -24,10 +22,6 @@ import {
   type JSONContent,
 } from "../../lib/utils/title";
 import {
-  extractFirstWords,
-  extractTextFromNode,
-} from "../../lib/utils/text-manipulation";
-import {
   slugExists,
   addToSlugHistory,
 } from "./slug_helpers";
@@ -36,7 +30,6 @@ import {
   decrementStatusCount,
   updateStatusCount,
 } from "./stats_helpers";
-import { getReadingTimeMinutes } from "../../lib/reading-time-estimator";
 
 /**
  * Create a new document.
@@ -51,7 +44,6 @@ export const create = mutation({
     content: v.optional(v.any()),
   },
   handler: async (ctx, args) => {
-    // Validate title
     if (!isValidTitle(args.title)) {
       throwConvexError(
         ErrorCode.DOCUMENT_INVALID_TITLE,
@@ -64,10 +56,9 @@ export const create = mutation({
 
     const now = Date.now();
 
-    // Insert document with temporary slug
     const documentId = await ctx.db.insert("documents", {
       title: args.title,
-      slug: "temp", // Temporary slug, will be updated immediately
+      slug: "temp",
       type: args.type,
       status: "building",
       isVisible: true,
@@ -77,7 +68,6 @@ export const create = mutation({
       updatedAt: now,
     });
 
-    // Generate unique slug (without ID suffix if possible)
     const slug = await generateUniqueSlug(
       args.title,
       documentId,
@@ -85,7 +75,6 @@ export const create = mutation({
     );
     await ctx.db.patch(documentId, { slug });
 
-    // Increment building count
     await incrementStatusCount(ctx, "building");
 
     return { documentId, slug };
@@ -107,7 +96,6 @@ export const updateTitle = mutation({
     title: v.string(),
   },
   handler: async (ctx, args) => {
-    // Validate title
     if (!isValidTitle(args.title)) {
       throwConvexError(
         ErrorCode.DOCUMENT_INVALID_TITLE,
@@ -125,25 +113,20 @@ export const updateTitle = mutation({
     let slugDeleted: string | null = null;
     let newSlug: string | null = null;
 
-    // Regenerate slug only if document is still in building status
     if (document.status === "building") {
-      // Generate new unique slug
       newSlug = await generateUniqueSlug(
         args.title,
         args.documentId,
         async (checkSlug) => await slugExists(ctx, checkSlug, args.documentId),
       );
 
-      // Only proceed with slug change if it's actually different
       if (newSlug !== document.slug) {
-        // Add old slug to history (FIFO queue, max 3)
         const { newHistory, deletedSlug } = addToSlugHistory(
           document.slugHistory,
           document.slug,
         );
         slugDeleted = deletedSlug;
 
-        // Update slug and history
         updates.slug = newSlug;
         updates.slugHistory = newHistory;
       }
@@ -169,14 +152,7 @@ export const updateType = mutation({
   },
   handler: async (ctx, args) => {
     const document = await getByIdForAuthor(ctx, args.documentId);
-
-    if (document.status === "published") {
-      throwConvexError(ErrorCode.DOCUMENT_PUBLISHED);
-    }
-
-    if (document.status === "pending") {
-      throwConvexError(ErrorCode.DOCUMENT_PENDING_REVIEW);
-    }
+    assertDocumentEditable(document);
 
     await ctx.db.patch(args.documentId, {
       type: args.type as DocumentType,
@@ -202,14 +178,7 @@ export const updateCoverImage = mutation({
   },
   handler: async (ctx, args) => {
     const document = await getByIdForAuthor(ctx, args.documentId);
-
-    if (document.status === "published") {
-      throwConvexError(ErrorCode.DOCUMENT_PUBLISHED);
-    }
-
-    if (document.status === "pending") {
-      throwConvexError(ErrorCode.DOCUMENT_PENDING_REVIEW);
-    }
+    assertDocumentEditable(document);
 
     if (
       document.coverImage?.storageId &&
@@ -236,14 +205,7 @@ export const updateMetadata = mutation({
   },
   handler: async (ctx, args) => {
     const document = await getByIdForAuthor(ctx, args.documentId);
-
-    if (document.status === "published") {
-      throwConvexError(ErrorCode.DOCUMENT_PUBLISHED);
-    }
-
-    if (document.status === "pending") {
-      throwConvexError(ErrorCode.DOCUMENT_PENDING_REVIEW);
-    }
+    assertDocumentEditable(document);
 
     const updates: Record<string, unknown> = {
       updatedAt: Date.now(),
@@ -268,162 +230,10 @@ export const updateReprint = mutation({
   },
   handler: async (ctx, args) => {
     const document = await getByIdForAuthor(ctx, args.documentId);
-
-    if (document.status === "published") {
-      throwConvexError(ErrorCode.DOCUMENT_PUBLISHED);
-    }
-
-    if (document.status === "pending") {
-      throwConvexError(ErrorCode.DOCUMENT_PENDING_REVIEW);
-    }
+    assertDocumentEditable(document);
 
     await ctx.db.patch(args.documentId, {
       reprint: args.reprint,
-      updatedAt: Date.now(),
-    });
-  },
-});
-
-/**
- * Update document inspirations (full replacement).
- * Only allowed for documents in "building" status.
- * Reprint documents cannot have inspirations.
- * Automatically updates document type via deriveDocumentTypeFromInspirations.
- */
-export const updateInspirations = mutation({
-  args: {
-    documentId: v.id("documents"),
-    inspirations: v.array(inspirationValidator),
-  },
-  handler: async (ctx, args) => {
-    const document = await getByIdForAuthor(ctx, args.documentId);
-    assertDocumentEditable(document);
-    assertNotReprint(document);
-
-    const updates: Record<string, unknown> = {
-      inspirations: args.inspirations,
-      updatedAt: Date.now(),
-    };
-
-    const newType = deriveDocumentTypeFromInspirations(
-      document.type,
-      args.inspirations.length,
-    );
-    if (newType) {
-      updates.type = newType;
-    }
-
-    await ctx.db.patch(args.documentId, updates);
-  },
-});
-
-/**
- * Add a single inspiration to a document.
- * Only allowed for documents in "building" status.
- * Reprint documents cannot have inspirations.
- * Automatically updates document type (own -> inspiration) if first one.
- */
-export const addInspiration = mutation({
-  args: {
-    documentId: v.id("documents"),
-    inspiration: inspirationValidator,
-  },
-  handler: async (ctx, args) => {
-    const document = await getByIdForAuthor(ctx, args.documentId);
-    assertDocumentEditable(document);
-    assertNotReprint(document);
-
-    const newInspirations = [...(document.inspirations ?? []), args.inspiration];
-
-    const updates: Record<string, unknown> = {
-      inspirations: newInspirations,
-      updatedAt: Date.now(),
-    };
-
-    const newType = deriveDocumentTypeFromInspirations(
-      document.type,
-      newInspirations.length,
-    );
-    if (newType) {
-      updates.type = newType;
-    }
-
-    await ctx.db.patch(args.documentId, updates);
-  },
-});
-
-/**
- * Remove a single inspiration by index.
- * Only allowed for documents in "building" status.
- * Automatically updates document type (inspiration -> own) if last one removed.
- */
-export const removeInspiration = mutation({
-  args: {
-    documentId: v.id("documents"),
-    index: v.number(),
-  },
-  handler: async (ctx, args) => {
-    const document = await getByIdForAuthor(ctx, args.documentId);
-    assertDocumentEditable(document);
-
-    const currentInspirations = document.inspirations ?? [];
-    if (args.index < 0 || args.index >= currentInspirations.length) {
-      throwConvexError(
-        ErrorCode.DOCUMENT_VALIDATION,
-        "Invalid inspiration index",
-      );
-    }
-
-    const newInspirations = currentInspirations.filter(
-      (_, i) => i !== args.index,
-    );
-
-    const updates: Record<string, unknown> = {
-      inspirations: newInspirations,
-      updatedAt: Date.now(),
-    };
-
-    const newType = deriveDocumentTypeFromInspirations(
-      document.type,
-      newInspirations.length,
-    );
-    if (newType) {
-      updates.type = newType;
-    }
-
-    await ctx.db.patch(args.documentId, updates);
-  },
-});
-
-/**
- * Update a single inspiration by index.
- * Only allowed for documents in "building" status.
- * Does not change document type (count stays the same).
- */
-export const updateInspiration = mutation({
-  args: {
-    documentId: v.id("documents"),
-    index: v.number(),
-    inspiration: inspirationValidator,
-  },
-  handler: async (ctx, args) => {
-    const document = await getByIdForAuthor(ctx, args.documentId);
-    assertDocumentEditable(document);
-
-    const currentInspirations = document.inspirations ?? [];
-    if (args.index < 0 || args.index >= currentInspirations.length) {
-      throwConvexError(
-        ErrorCode.DOCUMENT_VALIDATION,
-        "Invalid inspiration index",
-      );
-    }
-
-    const newInspirations = currentInspirations.map((insp, i) =>
-      i === args.index ? args.inspiration : insp,
-    );
-
-    await ctx.db.patch(args.documentId, {
-      inspirations: newInspirations,
       updatedAt: Date.now(),
     });
   },
@@ -444,21 +254,13 @@ export const updateContent = mutation({
   },
   handler: async (ctx, args) => {
     const document = await getByIdForAuthor(ctx, args.documentId);
-
-    if (document.status === "published") {
-      throwConvexError(ErrorCode.DOCUMENT_PUBLISHED);
-    }
-
-    if (document.status === "pending") {
-      throwConvexError(ErrorCode.DOCUMENT_PENDING_REVIEW);
-    }
+    assertDocumentEditable(document);
 
     const updates: Record<string, unknown> = {
       content: args.content,
       updatedAt: Date.now(),
     };
 
-    // Clean up removed image storage IDs
     const oldImageIds = document.imageStorageIds ?? [];
     const newImageIds = args.imageStorageIds ?? [];
     const removedIds = oldImageIds.filter(
@@ -469,15 +271,11 @@ export const updateContent = mutation({
     }
     updates.imageStorageIds = newImageIds;
 
-    // Check if current title is invalid and content has a heading we can extract
     if (!isValidTitle(document.title)) {
       const contentHasText = hasContent(args.content as JSONContent);
-
-      // Try to extract title from content
       const extractedTitle = extractFirstHeading(args.content as JSONContent);
 
       if (extractedTitle && isValidTitle(extractedTitle)) {
-        // Update title and regenerate slug
         updates.title = extractedTitle;
 
         const newSlug = await generateUniqueSlug(
@@ -489,7 +287,6 @@ export const updateContent = mutation({
 
         updates.slug = newSlug;
       } else if (!contentHasText) {
-        // No valid title and no content - cannot save
         throwConvexError(
           ErrorCode.DOCUMENT_EMPTY,
           "Document must have either a valid title or content to be saved",
@@ -549,18 +346,8 @@ export const publish = mutation({
       }
     }
 
-    const text = document.content
-      ? extractTextFromNode(document.content as JSONContent)
-      : "";
-    const estimatedReadTime = getReadingTimeMinutes(text);
-
-    let description = document.description?.trim() || "";
-    if (!description && document.content) {
-      description = extractFirstWords(document.content as JSONContent);
-    }
-    if (!description) {
-      description = "Check out this post";
-    }
+    const { estimatedReadTime, description } =
+      computePublishMetadata(document);
 
     await ctx.db.patch(args.documentId, {
       status: "published",
@@ -571,7 +358,6 @@ export const publish = mutation({
       updatedAt: Date.now(),
     });
 
-    // Update status counts (building -> published)
     await updateStatusCount(ctx, document.status, "published");
   },
 });
@@ -607,7 +393,6 @@ export const submit = mutation({
       throwConvexError(ErrorCode.DOCUMENT_COVER_REQUIRED);
     }
 
-    // Rate limiting: check submission history
     const submissionHistory = document.submissionHistory ?? [];
     const now = Date.now();
     const twentyFourHoursAgo = now - 24 * 60 * 60 * 1000;
@@ -630,98 +415,7 @@ export const submit = mutation({
       updatedAt: now,
     });
 
-    // Update status counts (building -> pending)
     await updateStatusCount(ctx, "building", "pending");
-  },
-});
-
-/**
- * Approve a document (admin only).
- * Changes status from "pending" to "published".
- */
-export const approve = mutation({
-  args: { documentId: v.id("documents") },
-  handler: async (ctx, args) => {
-    await Auth.requireAdmin(ctx);
-
-    const document = await ctx.db.get(args.documentId);
-    if (!document) {
-      throwConvexError(ErrorCode.DOCUMENT_NOT_FOUND);
-    }
-
-    if (document.status !== "pending") {
-      throwConvexError(
-        ErrorCode.DOCUMENT_INVALID_STATUS,
-        "Only pending documents can be approved",
-      );
-    }
-
-    const text = document.content
-      ? extractTextFromNode(document.content as JSONContent)
-      : "";
-    const estimatedReadTime = getReadingTimeMinutes(text);
-
-    let description = document.description?.trim() || "";
-    if (!description && document.content) {
-      description = extractFirstWords(document.content as JSONContent);
-    }
-    if (!description) {
-      description = "Check out this post";
-    }
-
-    await ctx.db.patch(args.documentId, {
-      status: "published",
-      isVisible: true,
-      publishedAt: Date.now(),
-      estimatedReadTime,
-      description,
-      updatedAt: Date.now(),
-    });
-
-    // Update status counts (pending -> published)
-    await updateStatusCount(ctx, "pending", "published");
-  },
-});
-
-/**
- * Reject a document (admin only).
- * Changes status from "pending" back to "building" with a rejection reason.
- */
-export const reject = mutation({
-  args: {
-    documentId: v.id("documents"),
-    reason: v.string(),
-  },
-  handler: async (ctx, args) => {
-    await Auth.requireAdmin(ctx);
-
-    const document = await ctx.db.get(args.documentId);
-    if (!document) {
-      throwConvexError(ErrorCode.DOCUMENT_NOT_FOUND);
-    }
-
-    if (document.status !== "pending") {
-      throwConvexError(
-        ErrorCode.DOCUMENT_INVALID_STATUS,
-        "Only pending documents can be rejected",
-      );
-    }
-
-    if (!args.reason || args.reason.trim() === "") {
-      throwConvexError(
-        ErrorCode.DOCUMENT_VALIDATION,
-        "Rejection reason is required",
-      );
-    }
-
-    await ctx.db.patch(args.documentId, {
-      status: "building",
-      rejectionReason: args.reason,
-      updatedAt: Date.now(),
-    });
-
-    // Update status counts (pending -> building)
-    await updateStatusCount(ctx, "pending", "building");
   },
 });
 
@@ -735,7 +429,6 @@ export const remove = mutation({
   handler: async (ctx, args) => {
     const document = await getByIdForAuthor(ctx, args.documentId);
 
-    // Clean up associated storage files before deleting the document
     const imageIds = document.imageStorageIds ?? [];
     for (const storageId of imageIds) {
       await ctx.storage.delete(storageId).catch(() => {});
@@ -744,73 +437,12 @@ export const remove = mutation({
       await ctx.storage.delete(document.coverImage.storageId).catch(() => {});
     }
 
-    // Delete the document (slugHistory is embedded and deleted automatically)
     await ctx.db.delete(args.documentId);
 
-    // Decrement the status count
     await decrementStatusCount(ctx, document.status);
   },
 });
 
-/**
- * Move a published document back to pending (admin only).
- * Changes status from "published" to "pending".
- */
-export const moveBackToPending = mutation({
-  args: { documentId: v.id("documents") },
-  handler: async (ctx, args) => {
-    await Auth.requireAdmin(ctx);
-
-    const document = await ctx.db.get(args.documentId);
-    if (!document) {
-      throwConvexError(ErrorCode.DOCUMENT_NOT_FOUND);
-    }
-
-    if (document.status !== "published") {
-      throwConvexError(
-        ErrorCode.DOCUMENT_INVALID_STATUS,
-        "Only published documents can be moved back to pending",
-      );
-    }
-
-    await ctx.db.patch(args.documentId, {
-      status: "pending",
-      publishedAt: undefined,
-      updatedAt: Date.now(),
-    });
-
-    // Update status counts (published -> pending)
-    await updateStatusCount(ctx, "published", "pending");
-  },
-});
-
-/**
- * Set visibility for a published document (admin only).
- * Keeps status as "published" and controls whether it is shown publicly.
- */
-export const setPublishedVisibility = mutation({
-  args: {
-    documentId: v.id("documents"),
-    isVisible: v.boolean(),
-  },
-  handler: async (ctx, args) => {
-    await Auth.requireAdmin(ctx);
-
-    const document = await ctx.db.get(args.documentId);
-    if (!document) {
-      throwConvexError(ErrorCode.DOCUMENT_NOT_FOUND);
-    }
-
-    if (document.status !== "published") {
-      throwConvexError(
-        ErrorCode.DOCUMENT_INVALID_STATUS,
-        "Only published documents can have visibility changed",
-      );
-    }
-
-    await ctx.db.patch(args.documentId, {
-      isVisible: args.isVisible,
-      updatedAt: Date.now(),
-    });
-  },
-});
+// Re-export domain-specific mutations
+export * from "./mutations_inspirations";
+export * from "./mutations_admin";

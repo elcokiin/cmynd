@@ -16,6 +16,8 @@ import type * as authors_projections from "../authors/projections.js";
 import type * as authors_queries from "../authors/queries.js";
 import type * as documents_helpers from "../documents/helpers.js";
 import type * as documents_mutations from "../documents/mutations.js";
+import type * as documents_mutations_admin from "../documents/mutations_admin.js";
+import type * as documents_mutations_inspirations from "../documents/mutations_inspirations.js";
 import type * as documents_projections from "../documents/projections.js";
 import type * as documents_queries from "../documents/queries.js";
 import type * as documents_slug_helpers from "../documents/slug_helpers.js";
@@ -45,6 +47,8 @@ declare const fullApi: ApiFromModules<{
   "authors/queries": typeof authors_queries;
   "documents/helpers": typeof documents_helpers;
   "documents/mutations": typeof documents_mutations;
+  "documents/mutations_admin": typeof documents_mutations_admin;
+  "documents/mutations_inspirations": typeof documents_mutations_inspirations;
   "documents/projections": typeof documents_projections;
   "documents/queries": typeof documents_queries;
   "documents/slug_helpers": typeof documents_slug_helpers;

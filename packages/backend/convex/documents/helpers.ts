@@ -8,6 +8,12 @@ import type { DocumentType } from "../../lib/types/documents";
 
 import * as Auth from "../_lib/auth";
 import { ErrorCode, throwConvexError } from "@elcokiin/errors";
+import {
+  extractFirstWords,
+  extractTextFromNode,
+} from "../../lib/utils/text-manipulation";
+import { getReadingTimeMinutes } from "../../lib/reading-time-estimator";
+import type { JSONContent } from "../../lib/utils/title";
 
 export { paginationOptsValidator } from "convex/server";
 
@@ -83,4 +89,28 @@ export function deriveDocumentTypeFromInspirations(
     return "own";
   }
   return null;
+}
+
+/**
+ * Computes publish metadata from a document's content.
+ * Shared between publish (author) and approve (admin) mutations.
+ */
+export function computePublishMetadata(document: Doc<"documents">): {
+  estimatedReadTime: number;
+  description: string;
+} {
+  const text = document.content
+    ? extractTextFromNode(document.content as JSONContent)
+    : "";
+  const estimatedReadTime = getReadingTimeMinutes(text);
+
+  let description = document.description?.trim() || "";
+  if (!description && document.content) {
+    description = extractFirstWords(document.content as JSONContent);
+  }
+  if (!description) {
+    description = "Check out this post";
+  }
+
+  return { estimatedReadTime, description };
 }
