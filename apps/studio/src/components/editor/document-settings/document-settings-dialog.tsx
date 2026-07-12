@@ -1,6 +1,8 @@
 import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
 
+import { api } from "@elcokiin/backend/convex/_generated/api";
 import { Dialog, DialogContent } from "@elcokiin/ui/dialog";
+import { useQuery } from "convex/react";
 import { useState } from "react";
 
 import { CoverSection } from "./cover-section";
@@ -22,6 +24,9 @@ export function DocumentSettingsDialog({
   const [activeSection, setActiveSection] =
     useState<NavigationSection>("cover");
 
+  const document = useQuery(api.documents.queries.getForEdit, { documentId });
+  const isReprint = document?.type === "reprint";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[96vw] max-w-[96vw] sm:max-w-4xl p-0 gap-0 h-[76vh]">
@@ -29,6 +34,7 @@ export function DocumentSettingsDialog({
           <SettingsSidebar
             activeSection={activeSection}
             onSectionChange={setActiveSection}
+            disabledSections={isReprint ? ["inspirations"] : []}
           />
           <div className="flex-1 p-6 overflow-y-auto min-h-0 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-primary/50 [&::-webkit-scrollbar-thumb]:hover:bg-primary/70">
             {activeSection === "cover" && (
@@ -37,7 +43,12 @@ export function DocumentSettingsDialog({
             {activeSection === "reprint" && (
               <ReprintSection documentId={documentId} />
             )}
-            {activeSection === "inspirations" && <InspirationsSection />}
+            {activeSection === "inspirations" && (
+              <InspirationsSection
+                documentId={documentId}
+                onNavigateToReprint={() => setActiveSection("reprint")}
+              />
+            )}
           </div>
         </div>
       </DialogContent>
