@@ -2,6 +2,7 @@ import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
 
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { buttonVariants } from "@elcokiin/ui/button";
+import { EmojiPicker } from "@elcokiin/ui/emoji-picker";
 import emojiList from "@elcokiin/ui/emoji-list";
 import { Input } from "@elcokiin/ui/input";
 import { Label } from "@elcokiin/ui/label";
@@ -88,9 +89,10 @@ export function InspirationForm({
         <div className="flex items-center gap-1">
           <form.Field name="emoji">
             {(field) => (
-              <span className="select-none text-2xl leading-none">
-                {field.state.value}
-              </span>
+              <EmojiPicker
+                value={field.state.value}
+                onChange={(emoji) => field.handleChange(emoji)}
+              />
             )}
           </form.Field>
           <button

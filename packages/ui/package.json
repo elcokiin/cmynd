@@ -38,6 +38,7 @@
     "./atmosphere": "./src/components/atmosphere.tsx",
     "./switch": "./src/components/switch.tsx",
     "./textarea": "./src/components/textarea.tsx",
+    "./emoji-picker": "./src/components/custom/emoji-picker.tsx",
     "./tooltip": "./src/components/tooltip.tsx"
   },
   "scripts": {
