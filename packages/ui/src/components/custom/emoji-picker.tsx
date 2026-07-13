@@ -1,14 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { buttonVariants } from "../button";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "../command";
+import { Input } from "../input";
 import {
   Popover,
   PopoverContent,
@@ -32,6 +25,14 @@ type EmojiPickerProps = {
 export function EmojiPicker({ value, onChange }: EmojiPickerProps) {
   const [open, setOpen] = useState(false);
   const [emojis, setEmojis] = useState<EmojiItem[]>([]);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 150);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   useEffect(() => {
     import("../editor/utils/emoji-list").then((m) =>
@@ -39,9 +40,30 @@ export function EmojiPicker({ value, onChange }: EmojiPickerProps) {
     );
   }, []);
 
-  const grouped = useMemo(() => {
+  useEffect(() => {
+    if (open) {
+      requestAnimationFrame(() => inputRef.current?.focus());
+    } else {
+      setSearch("");
+      setDebouncedSearch("");
+    }
+  }, [open]);
+
+  const itemsWithSearchValue = useMemo(
+    () =>
+      emojis.map((e) => ({
+        ...e,
+        searchValue: `${e.emoji} ${e.aliases.join(" ")} ${e.tags.join(" ")} ${e.description} ${e.category}`.toLowerCase(),
+      })),
+    [emojis],
+  );
+
+  const filteredGrouped = useMemo(() => {
+    const query = debouncedSearch.toLowerCase().trim();
     const map = new Map<string, EmojiItem[]>();
-    for (const e of emojis) {
+
+    for (const e of itemsWithSearchValue) {
+      if (query && !e.searchValue.includes(query)) continue;
       let list = map.get(e.category);
       if (!list) {
         list = [];
@@ -50,7 +72,7 @@ export function EmojiPicker({ value, onChange }: EmojiPickerProps) {
       list.push(e);
     }
     return map;
-  }, [emojis]);
+  }, [itemsWithSearchValue, debouncedSearch]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -67,37 +89,49 @@ export function EmojiPicker({ value, onChange }: EmojiPickerProps) {
       >
         {value}
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="start">
-        <Command>
-          <CommandInput placeholder="Search emoji..." autoFocus />
-          <CommandList>
-            <CommandEmpty>No emoji found</CommandEmpty>
-            {emojis.length === 0 && (
-              <div className="py-6 text-center text-xs text-muted-foreground">
-                Loading...
+      <PopoverContent className="w-80 border p-3" align="start">
+        <Input
+          ref={inputRef}
+          placeholder="Search emoji..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="mb-3"
+        />
+        {emojis.length === 0 && (
+          <div className="py-6 text-center text-xs text-muted-foreground">
+            Loading...
+          </div>
+        )}
+        {filteredGrouped.size === 0 && emojis.length > 0 && (
+          <div className="py-6 text-center text-xs text-muted-foreground">
+            No emoji found
+          </div>
+        )}
+        <div className="no-scrollbar max-h-72 overflow-y-auto">
+          {Array.from(filteredGrouped.entries()).map(([category, items]) => (
+            <div key={category} className="mb-2">
+              <div className="px-1 py-0.5 text-xs text-muted-foreground">
+                {category}
               </div>
-            )}
-            {Array.from(grouped.entries()).map(([category, items]) => (
-              <CommandGroup key={category} heading={category}>
+              <div className="grid grid-cols-8 gap-0">
                 {items.map((e) => (
-                  <CommandItem
+                  <button
                     key={e.emoji}
-                    value={`${e.emoji} ${e.aliases.join(" ")} ${e.tags.join(" ")} ${e.description} ${e.category}`}
-                    onSelect={() => {
+                    type="button"
+                    onClick={() => {
                       onChange(e.emoji);
                       setOpen(false);
                     }}
+                    className="flex size-8 cursor-pointer items-center justify-center rounded-none text-lg leading-none transition-colors hover:bg-muted"
+                    title={`:${e.aliases[0]}:`}
                   >
-                    <span className="text-lg leading-none">{e.emoji}</span>
-                    <span className="text-xs text-muted-foreground">
-                      :{e.aliases[0]}:
-                    </span>
-                  </CommandItem>
+                    {e.emoji}
+                  </button>
                 ))}
-              </CommandGroup>
-            ))}
-          </CommandList>
-        </Command>
+              </div>
+            </div>
+          ))}
+        </div>
       </PopoverContent>
     </Popover>
   );

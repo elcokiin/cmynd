@@ -107,14 +107,14 @@ export function InspirationForm({
             🎲
           </button>
         </div>
-        <div className="flex-1">
+        <div className="flex-1 space-y-1">
+          <Label className="text-xs text-muted-foreground">Title</Label>
           <form.Field name="title">
             {(field) => (
               <Input
                 value={field.state.value}
                 onChange={(e) => field.handleChange(e.target.value)}
                 placeholder="What inspired you?"
-                className="h-9 border-0 bg-transparent px-0 text-base font-medium shadow-none placeholder:text-muted-foreground/50 focus-visible:ring-0"
                 autoFocus
               />
             )}
