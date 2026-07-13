@@ -2,6 +2,7 @@ import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
 
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { buttonVariants } from "@elcokiin/ui/button";
+import emojiList from "@elcokiin/ui/emoji-list";
 import { Input } from "@elcokiin/ui/input";
 import { Label } from "@elcokiin/ui/label";
 import { cn } from "@elcokiin/ui/lib/utils";
@@ -11,45 +12,6 @@ import { useMutation } from "convex/react";
 import { ChevronRightIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-
-const RANDOM_EMOJIS = [
-  "📚", "🎨", "💡", "✨", "🖋️", "🎵", "🎬", "📖", "🎯", "🌟",
-  "🔥", "💭", "🎭", "📷", "🎶", "🪄", "🧠", "👁️", "🌿", "⚡",
-  "💫", "🕯️", "🏛️", "🎧", "🎪", "🗺️", "🧩", "🎲", "🏆", "📜",
-  "🌈", "🎀", "💎", "🪐", "🌊", "🍃", "🔮", "🎻", "🥁", "🎺",
-  "🖼️", "🗿", "🌋", "🎡", "🎠", "🧬", "🔭", "🧭", "📡", "🎛️",
-  "⚗️", "🧿", "🪷", "🌙", "☀️", "⭐",
-];
-
-const ADJECTIVES = [
-  "Abstract", "Ancient", "Autumn", "Blinding", "Burning", "Calm",
-  "Crimson", "Cosmic", "Crystal", "Deep", "Distant", "Echoing",
-  "Eternal", "Fading", "Falling", "Flowing", "Golden", "Hidden",
-  "Infinite", "Liquid", "Luminous", "Melting", "Midnight", "Misty",
-  "Quiet", "Radiant", "Rusted", "Shattered", "Silent", "Silver",
-  "Strange", "Subtle", "Thunder", "Velvet", "Whispering", "Wild",
-];
-
-const NOUNS = [
-  "Echo", "Shadow", "Dream", "Light", "Wave", "Fire",
-  "Horizon", "Memory", "Storm", "River", "Cloud", "Signal",
-  "Pulse", "Glow", "Mirror", "Garden", "Ocean", "Spiral",
-  "Fragment", "Breath", "Moment", "Origin", "Vessel", "Bloom",
-  "Drift", "Hollow", "Prism", "Lantern", "Ember", "Tide",
-  "Veil", "Core", "Flux", "Nexus", "Mirage", "Echo",
-];
-
-function pick<T>(arr: readonly T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function getRandomEmoji(): string {
-  return pick(RANDOM_EMOJIS);
-}
-
-function generateRandomTitle(): string {
-  return `${pick(ADJECTIVES)} ${pick(NOUNS)}`;
-}
 
 export type InspirationFormValues = {
   emoji: string;
@@ -82,14 +44,14 @@ export function InspirationForm({
 
   const form = useForm({
     defaultValues: initialValues ?? {
-      emoji: getRandomEmoji(),
+      emoji: emojiList[Math.floor(Math.random() * emojiList.length)].emoji,
       title: "",
       url: "",
       author: "",
       note: "",
     },
     onSubmit: async ({ value }) => {
-      const title = value.title.trim() || generateRandomTitle();
+      const title = value.title.trim() || "Untitled";
       const inspiration = {
         emoji: value.emoji,
         title,
@@ -133,7 +95,7 @@ export function InspirationForm({
           </form.Field>
           <button
             type="button"
-            onClick={() => form.setFieldValue("emoji", getRandomEmoji())}
+            onClick={() => form.setFieldValue("emoji", emojiList[Math.floor(Math.random() * emojiList.length)].emoji)}
             className={cn(
               buttonVariants({ variant: "ghost", size: "icon-xs" }),
               "cursor-pointer opacity-50 transition-opacity hover:opacity-100",

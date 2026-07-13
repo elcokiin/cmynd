@@ -17,6 +17,7 @@
     "./empty": "./src/components/empty.tsx",
     "./editor": "./src/components/editor/index.tsx",
     "./editor/render": "./src/components/editor/render.ts",
+    "./emoji-list": "./src/components/editor/utils/emoji-list.ts",
     "./input": "./src/components/input.tsx",
     "./input-group": "./src/components/input-group.tsx",
     "./label": "./src/components/label.tsx",
