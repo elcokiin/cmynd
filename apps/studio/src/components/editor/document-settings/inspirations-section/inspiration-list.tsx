@@ -1,18 +1,10 @@
 import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@elcokiin/ui/alert-dialog";
+import { api } from "@elcokiin/backend/convex/_generated/api";
 import { buttonVariants } from "@elcokiin/ui/button";
 import { Empty } from "@elcokiin/ui/empty";
 import { cn } from "@elcokiin/ui/lib/utils";
+import { useQuery } from "convex/react";
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";
 
@@ -20,62 +12,23 @@ import {
   InspirationCard,
   type InspirationItem,
 } from "./inspiration-card";
-import {
-  InspirationForm,
-  type InspirationFormValues,
-} from "./inspiration-form";
+import { InspirationForm } from "./inspiration-form";
 
 type InspirationListProps = {
-  /* TODO: recibir documentId cuando se conecte al backend
-   * inspirations vendrá de api.documents.queries.getForEdit
-   */
   documentId: Id<"documents">;
   onNavigateToReprint?: () => void;
 };
 
 export function InspirationsSection({
-  documentId: _documentId,
+  documentId,
   onNavigateToReprint,
 }: InspirationListProps) {
-  /* TODO: reemplazar por:
-   * const document = useQuery(api.documents.queries.getForEdit, { documentId });
-   * const isReprint = document?.type === "reprint";
-   * const inspirations = (document?.inspirations ?? []) as InspirationItem[];
-   */
-  const [inspirations, setInspirations] = useState<InspirationItem[]>([]);
-  const isReprint = false;
+  const document = useQuery(api.documents.queries.getForEdit, { documentId });
+  const isReprint = document?.type === "reprint";
+  const inspirations = (document?.inspirations ?? []) as InspirationItem[];
 
   const [isAdding, setIsAdding] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
-
-  const handleSave = (values: InspirationFormValues) => {
-    const newInspiration: InspirationItem = {
-      emoji: values.emoji,
-      title: values.title,
-      url: values.url || undefined,
-      author: values.author || undefined,
-      note: values.note || undefined,
-    };
-
-    if (editingIndex !== null) {
-      setInspirations((prev) => {
-        const next = [...prev];
-        next[editingIndex] = newInspiration;
-        return next;
-      });
-      setEditingIndex(null);
-    } else {
-      setInspirations((prev) => [...prev, newInspiration]);
-      setIsAdding(false);
-    }
-  };
-
-  const handleDelete = () => {
-    if (deleteIndex === null) return;
-    setInspirations((prev) => prev.filter((_, i) => i !== deleteIndex));
-    setDeleteIndex(null);
-  };
 
   const cancelForm = () => {
     setIsAdding(false);
@@ -144,6 +97,8 @@ export function InspirationsSection({
             editingIndex === i ? (
               <InspirationForm
                 key={i}
+                documentId={documentId}
+                index={i}
                 initialValues={{
                   emoji: insp.emoji,
                   title: insp.title,
@@ -151,19 +106,20 @@ export function InspirationsSection({
                   author: insp.author ?? "",
                   note: insp.note ?? "",
                 }}
-                onSave={handleSave}
+                onDone={cancelForm}
                 onCancel={cancelForm}
                 submitLabel="Save"
               />
             ) : (
               <InspirationCard
                 key={i}
+                documentId={documentId}
+                index={i}
                 inspiration={insp}
                 onEdit={() => {
                   setIsAdding(false);
                   setEditingIndex(i);
                 }}
-                onDelete={() => setDeleteIndex(i)}
               />
             ),
           )}
@@ -171,7 +127,11 @@ export function InspirationsSection({
       )}
 
       {isAdding && (
-        <InspirationForm onSave={handleSave} onCancel={cancelForm} />
+        <InspirationForm
+          documentId={documentId}
+          onDone={cancelForm}
+          onCancel={cancelForm}
+        />
       )}
 
       {!isAdding && inspirations.length > 0 && (
@@ -190,27 +150,6 @@ export function InspirationsSection({
           Add inspiration
         </button>
       )}
-
-      <AlertDialog
-        open={deleteIndex !== null}
-        onOpenChange={(open) => !open && setDeleteIndex(null)}
-      >
-        <AlertDialogContent size="sm">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Remove inspiration</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to remove this inspiration? This
-              action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" onClick={handleDelete}>
-              Remove
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

@@ -1,11 +1,16 @@
+import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
+
+import { api } from "@elcokiin/backend/convex/_generated/api";
 import { buttonVariants } from "@elcokiin/ui/button";
 import { Input } from "@elcokiin/ui/input";
 import { Label } from "@elcokiin/ui/label";
 import { cn } from "@elcokiin/ui/lib/utils";
 import { Textarea } from "@elcokiin/ui/textarea";
 import { useForm } from "@tanstack/react-form";
+import { useMutation } from "convex/react";
 import { ChevronRightIcon } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 const RANDOM_EMOJIS = [
   "📚", "🎨", "💡", "✨", "🖋️", "🎵", "🎬", "📖", "🎯", "🌟",
@@ -55,19 +60,25 @@ export type InspirationFormValues = {
 };
 
 type InspirationFormProps = {
+  documentId: Id<"documents">;
+  index?: number;
   initialValues?: InspirationFormValues;
-  onSave: (values: InspirationFormValues) => void;
+  onDone: () => void;
   onCancel: () => void;
   submitLabel?: string;
 };
 
 export function InspirationForm({
+  documentId,
+  index,
   initialValues,
-  onSave,
+  onDone,
   onCancel,
   submitLabel = "Add Inspiration",
 }: InspirationFormProps) {
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const addInspiration = useMutation(api.documents.mutations.addInspiration);
+  const updateInspiration = useMutation(api.documents.mutations.updateInspiration);
 
   const form = useForm({
     defaultValues: initialValues ?? {
@@ -79,7 +90,26 @@ export function InspirationForm({
     },
     onSubmit: async ({ value }) => {
       const title = value.title.trim() || generateRandomTitle();
-      onSave({ ...value, title });
+      const inspiration = {
+        emoji: value.emoji,
+        title,
+        url: value.url || undefined,
+        author: value.author || undefined,
+        note: value.note || undefined,
+      };
+
+      try {
+        if (index !== undefined) {
+          await updateInspiration({ documentId, index, inspiration });
+        } else {
+          await addInspiration({ documentId, inspiration });
+        }
+        onDone();
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Failed to save inspiration";
+        toast.error(message);
+      }
     },
   });
 
