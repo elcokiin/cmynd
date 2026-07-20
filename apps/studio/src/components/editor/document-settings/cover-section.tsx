@@ -39,7 +39,7 @@ export function CoverSection({ documentId }: CoverSectionProps) {
   const document = useQuery(api.documents.queries.getForEdit, { documentId });
   const coverImageUrl = useQuery(
     api.storage.getUrl,
-    document?.coverImage?.storageId ? { storageId: document.coverImage.storageId } : "skip",
+    document?.coverImage?.storageId ? { key: document.coverImage.storageId } : "skip",
   );
 
   const updateCoverImage = useMutation(api.documents.mutations.updateCoverImage);
@@ -107,8 +107,8 @@ export function CoverSection({ documentId }: CoverSectionProps) {
         return;
       }
 
-      const postUrl = await generateUploadUrl();
-      const uploadResult = await fetch(postUrl, {
+      const { key, url } = await generateUploadUrl();
+      const uploadResult = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": compressionResult.file.type },
         body: compressionResult.file,
@@ -118,12 +118,10 @@ export function CoverSection({ documentId }: CoverSectionProps) {
         throw new Error(`Upload failed: ${uploadResult.statusText}`);
       }
 
-      const { storageId } = await uploadResult.json();
-
       await updateCoverImage({
         documentId,
         coverImage: {
-          storageId: storageId as Id<"_storage">,
+          storageId: key,
           prompt: normalizeOptionalText(coverImagePrompt) || undefined,
         },
       });

@@ -1,5 +1,3 @@
-import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
-
 type LexicalNode = {
   type?: string;
   children?: LexicalNode[];
@@ -11,14 +9,14 @@ type SerializedEditorState = {
   root: LexicalNode;
 };
 
-export function extractImageStorageIds(
+export function extractImageKeys(
   content: SerializedEditorState,
-): Id<"_storage">[] {
-  const ids: Id<"_storage">[] = [];
+): string[] {
+  const keys: string[] = [];
 
   function walk(node: LexicalNode) {
     if (node.type === "image" && node.storageId) {
-      ids.push(node.storageId as Id<"_storage">);
+      keys.push(node.storageId);
     }
     if (node.children) {
       for (const child of node.children) {
@@ -28,5 +26,5 @@ export function extractImageStorageIds(
   }
 
   walk(content.root);
-  return ids;
+  return keys;
 }

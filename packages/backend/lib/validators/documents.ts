@@ -8,7 +8,7 @@ export const slugHistoryEntryValidator = v.object({
 });
 
 export const coverImageValidator = v.object({
-  storageId: v.optional(v.id("_storage")),
+  storageId: v.optional(v.string()),
   prompt: v.optional(v.string()),
 });
 
@@ -51,7 +51,7 @@ export const documentValidator = {
   content: v.any(),
   description: v.optional(v.string()),
   coverImage: v.optional(coverImageValidator),
-  imageStorageIds: v.optional(v.array(v.id("_storage"))),
+  imageStorageIds: v.optional(v.array(v.string())),
   type: documentTypeValidator,
   status: documentStatusValidator,
   authorId: v.id("authors"),

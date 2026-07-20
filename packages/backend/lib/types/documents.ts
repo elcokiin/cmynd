@@ -2,7 +2,7 @@ import type { Id } from "../../convex/_generated/dataModel";
 import type { PublicAuthor } from "./authors";
 
 export type CoverImageData = {
-  storageId?: Id<"_storage">;
+  storageId?: string;
   prompt?: string;
 };
 

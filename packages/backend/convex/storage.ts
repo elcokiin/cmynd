@@ -1,58 +1,55 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import * as Auth from "./_lib/auth";
+import { r2 } from "./r2";
 
 /**
- * Generate an upload URL for file storage.
- * Use this to upload files directly to Convex storage.
- *
- * IMPORTANT: File size and type validation should be done client-side
- * before posting to this URL. See apps/studio/src/utils/compress-image.ts.
- * Convex storage does not support server-side size limits at upload time.
+ * Generate an upload URL for file storage via R2.
+ * Use this to upload files directly to Cloudflare R2.
  */
 export const generateUploadUrl = mutation({
   args: {},
-  handler: async (ctx): Promise<string> => {
+  handler: async (ctx): Promise<{ key: string; url: string }> => {
     await Auth.requireAuth(ctx);
-    return await ctx.storage.generateUploadUrl();
+    return await r2.generateUploadUrl();
   },
 });
 
 /**
- * Get a URL for a stored file.
+ * Get a signed URL for an R2 object.
  * Requires authentication to access storage URLs.
  */
 export const getUrl = query({
-  args: { storageId: v.id("_storage") },
+  args: { key: v.string() },
   handler: async (ctx, args): Promise<string | null> => {
-    // Require authentication for storage access
     const user = await Auth.getCurrentUserOrNull(ctx);
     if (!user) {
       return null;
     }
-    
-    return await ctx.storage.getUrl(args.storageId);
+
+    return await r2.getUrl(args.key, { expiresIn: 900 });
   },
 });
 
 /**
- * Get a public URL for a stored file.
+ * Get a public signed URL for an R2 object.
  * Intended for public-facing consumers (e.g. blog covers).
+ * Longer expiry (1 day) since blog images are cached.
  */
 export const getPublicUrl = query({
-  args: { storageId: v.id("_storage") },
-  handler: async (ctx, args): Promise<string | null> => {
-    return await ctx.storage.getUrl(args.storageId);
+  args: { key: v.string() },
+  handler: async (_ctx, args): Promise<string | null> => {
+    return await r2.getUrl(args.key, { expiresIn: 86400 });
   },
 });
 
 /**
- * Delete a stored file.
+ * Delete an R2 object.
  */
 export const deleteFile = mutation({
-  args: { storageId: v.id("_storage") },
+  args: { key: v.string() },
   handler: async (ctx, args): Promise<void> => {
     await Auth.requireAuth(ctx);
-    await ctx.storage.delete(args.storageId);
+    await r2.deleteObject(ctx, args.key);
   },
 });

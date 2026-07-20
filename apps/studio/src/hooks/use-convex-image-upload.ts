@@ -1,14 +1,14 @@
-import type { UploadFn } from "@elcokiin/backend/lib/types";
-
+import { useUploadFile } from "@convex-dev/r2/react";
 import { api } from "@elcokiin/backend/convex/_generated/api";
-import { useConvex, useMutation } from "convex/react";
+import { useConvex } from "convex/react";
 import { useCallback } from "react";
 
 import { compressImage } from "@/utils/compress-image";
+import type { UploadFn } from "@elcokiin/backend/lib/types";
 
 function useConvexImageUpload(): UploadFn {
   const convex = useConvex();
-  const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
+  const uploadFile = useUploadFile(api.r2);
 
   return useCallback(
     async (file: File) => {
@@ -21,28 +21,16 @@ function useConvexImageUpload(): UploadFn {
         throw new Error("Failed to process image. Try a different file.");
       }
 
-      const uploadUrl = await generateUploadUrl();
+      const key = await uploadFile(compressionResult.file);
 
-      const response = await fetch(uploadUrl, {
-        method: "POST",
-        headers: { "Content-Type": compressionResult.file.type },
-        body: compressionResult.file,
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to upload file");
-      }
-
-      const { storageId } = await response.json();
-
-      const url = await convex.query(api.storage.getUrl, { storageId });
+      const url = await convex.query(api.storage.getUrl, { key });
       if (!url) {
         throw new Error("Failed to get file URL");
       }
 
-      return { url, storageId };
+      return { url, storageId: key };
     },
-    [convex, generateUploadUrl],
+    [convex, uploadFile],
   );
 }
 

@@ -8,7 +8,7 @@ import { useDebouncedCallback } from "use-debounce";
 
 import { useErrorHandler } from "@/hooks/use-error-handler";
 import { getRandomTitle, isRandomTitle } from "@/lib/random-titles";
-import { extractImageStorageIds } from "@/utils/extract-image-storage-ids";
+import { extractImageKeys } from "@/utils/extract-image-keys";
 
 export function useNewDocument() {
   const { handleError, handleErrorSilent } = useErrorHandler();
@@ -119,7 +119,7 @@ export function useNewDocument() {
 
     try {
       const content = contentRef.current!;
-      const imageStorageIds = extractImageStorageIds(content);
+      const imageStorageIds = extractImageKeys(content);
       await updateContent({
         documentId: documentIdRef.current,
         content,
