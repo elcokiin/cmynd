@@ -3,10 +3,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "deploy:dev": "bun alchemy deploy --stage dev ../alchemy.run.ts",
-    "deploy:prod": "bun alchemy deploy --stage prod ../alchemy.run.ts",
-    "destroy:dev": "bun alchemy destroy --stage dev ../alchemy.run.ts",
-    "destroy:prod": "bun alchemy destroy --stage prod ../alchemy.run.ts",
+    "deploy:dev": "bun alchemy deploy --yes --stage dev ../alchemy.run.ts",
+    "deploy:prod": "bun alchemy deploy --yes --stage prod ../alchemy.run.ts",
+    "destroy:dev": "bun alchemy destroy --yes --stage dev ../alchemy.run.ts",
+    "destroy:prod": "bun alchemy destroy --yes --stage prod ../alchemy.run.ts",
     "plan:dev": "bun alchemy plan --stage dev ../alchemy.run.ts",
     "plan:prod": "bun alchemy plan --stage prod ../alchemy.run.ts"
   }

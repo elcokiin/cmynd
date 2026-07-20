@@ -37,7 +37,7 @@
     "@effect/platform-bun": "^4.0.0-beta.99",
     "@effect/platform-node": ">=4.0.0-beta.97|| >=4.0.0",
     "@elcokiin/env": "workspace:*",
-    "alchemy": "^2.0.0-beta.63",
+    "alchemy": "2.0.0-beta.63",
     "blog": "^1.0.0",
     "colorthief": "^3.3.1",
     "dotenv": "catalog:",

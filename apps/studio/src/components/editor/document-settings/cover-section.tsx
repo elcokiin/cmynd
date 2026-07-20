@@ -109,7 +109,7 @@ export function CoverSection({ documentId }: CoverSectionProps) {
 
       const { key, url } = await generateUploadUrl();
       const uploadResult = await fetch(url, {
-        method: "POST",
+        method: "PUT",
         headers: { "Content-Type": compressionResult.file.type },
         body: compressionResult.file,
       });
