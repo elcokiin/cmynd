@@ -11,6 +11,7 @@ import { OverflowNode } from "@lexical/overflow";
 import { HashtagNode } from "@lexical/hashtag";
 
 import { AutocompleteNode } from "./nodes/autocomplete-node";
+import { ImageNode } from "./nodes/image-node";
 import { LayoutContainerNode } from "./nodes/layout-container-node";
 import { LayoutItemNode } from "./nodes/layout-item-node";
 import { MentionNode } from "./nodes/mention-node";
@@ -33,6 +34,7 @@ const defaultNodes: Klass<LexicalNode>[] = [
   OverflowNode,
   HashtagNode,
   AutocompleteNode,
+  ImageNode,
   LayoutContainerNode,
   LayoutItemNode,
   MentionNode,

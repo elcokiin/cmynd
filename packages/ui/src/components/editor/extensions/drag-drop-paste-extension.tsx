@@ -37,12 +37,8 @@ export const DragDropPasteExtension = defineExtension({
                     src: url,
                     storageId,
                   });
-                } catch {
-                  // Fallback: insert as data URL if upload fails
-                  editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
-                    altText: file.name,
-                    src: result,
-                  });
+                } catch (error) {
+                  console.error("[DragDropPaste] Image upload failed:", error);
                 }
               } else {
                 editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
