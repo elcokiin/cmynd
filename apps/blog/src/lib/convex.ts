@@ -1,7 +1,6 @@
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@elcokiin/backend/convex/_generated/api";
 
-import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
 import type {
   PublishedDocument,
   PublishedDocumentListItem,
@@ -68,8 +67,8 @@ export async function getPublishedDocumentBySlug(
 }
 
 export async function getPublicStorageUrl(
-  storageId: Id<"_storage">,
+  key: string,
 ): Promise<string | null> {
   const client = getClient();
-  return await client.query(api.storage.getPublicUrl, { storageId });
+  return await client.query(api.storage.getPublicUrl, { key });
 }

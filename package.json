@@ -4,7 +4,8 @@
   "workspaces": {
     "packages": [
       "apps/*",
-      "packages/*"
+      "packages/*",
+      "infrastructure"
     ],
     "catalog": {
       "dotenv": "^17.2.2",
@@ -25,7 +26,11 @@
     "dev:studio": "turbo -F studio dev",
     "dev:server": "turbo -F @elcokiin/backend dev",
     "dev:portfolio": "turbo -F @elcokiin/portfolio dev",
-    "dev:setup": "turbo -F @elcokiin/backend dev:setup"
+    "dev:setup": "turbo -F @elcokiin/backend dev:setup",
+    "infra:deploy:dev": "cd infrastructure && bun run deploy:dev",
+    "infra:deploy:prod": "cd infrastructure && bun run deploy:prod",
+    "infra:destroy:dev": "cd infrastructure && bun run destroy:dev",
+    "infra:destroy:prod": "cd infrastructure && bun run destroy:prod"
   },
   "dependencies": {
     "@elcokiin/env": "workspace:*",
