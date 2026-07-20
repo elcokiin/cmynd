@@ -30,6 +30,7 @@ import {
   decrementStatusCount,
   updateStatusCount,
 } from "./stats_helpers";
+import { r2 } from "../r2";
 
 /**
  * Create a new document.
@@ -171,7 +172,7 @@ export const updateCoverImage = mutation({
     documentId: v.id("documents"),
     coverImage: v.optional(
       v.object({
-        storageId: v.optional(v.id("_storage")),
+        storageId: v.optional(v.string()),
         prompt: v.optional(v.string()),
       }),
     ),
@@ -184,7 +185,7 @@ export const updateCoverImage = mutation({
       document.coverImage?.storageId &&
       args.coverImage?.storageId !== document.coverImage.storageId
     ) {
-      await ctx.storage.delete(document.coverImage.storageId);
+      await r2.deleteObject(ctx, document.coverImage.storageId);
     }
 
     await ctx.db.patch(args.documentId, {
@@ -250,7 +251,7 @@ export const updateContent = mutation({
   args: {
     documentId: v.id("documents"),
     content: v.any(),
-    imageStorageIds: v.optional(v.array(v.id("_storage"))),
+    imageStorageIds: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
     const document = await getByIdForAuthor(ctx, args.documentId);
@@ -266,8 +267,8 @@ export const updateContent = mutation({
     const removedIds = oldImageIds.filter(
       (id) => !newImageIds.includes(id),
     );
-    for (const storageId of removedIds) {
-      await ctx.storage.delete(storageId).catch(() => {});
+    for (const key of removedIds) {
+      await r2.deleteObject(ctx, key).catch(() => {});
     }
     updates.imageStorageIds = newImageIds;
 
@@ -429,12 +430,12 @@ export const remove = mutation({
   handler: async (ctx, args) => {
     const document = await getByIdForAuthor(ctx, args.documentId);
 
-    const imageIds = document.imageStorageIds ?? [];
-    for (const storageId of imageIds) {
-      await ctx.storage.delete(storageId).catch(() => {});
+    const imageKeys = document.imageStorageIds ?? [];
+    for (const key of imageKeys) {
+      await r2.deleteObject(ctx, key).catch(() => {});
     }
     if (document.coverImage?.storageId) {
-      await ctx.storage.delete(document.coverImage.storageId).catch(() => {});
+      await r2.deleteObject(ctx, document.coverImage.storageId).catch(() => {});
     }
 
     await ctx.db.delete(args.documentId);
