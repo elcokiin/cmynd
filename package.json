@@ -4,8 +4,7 @@
   "workspaces": {
     "packages": [
       "apps/*",
-      "packages/*",
-      "infrastructure"
+      "packages/*"
     ],
     "catalog": {
       "dotenv": "^17.2.2",
@@ -30,13 +29,19 @@
     "infra:deploy:dev": "cd infrastructure && bun run deploy:dev",
     "infra:deploy:prod": "cd infrastructure && bun run deploy:prod",
     "infra:destroy:dev": "cd infrastructure && bun run destroy:dev",
-    "infra:destroy:prod": "cd infrastructure && bun run destroy:prod"
+    "infra:destroy:prod": "cd infrastructure && bun run destroy:prod",
+    "infra:plan:dev": "cd infrastructure && bun run plan:dev",
+    "infra:plan:prod": "cd infrastructure && bun run plan:prod"
   },
   "dependencies": {
+    "@effect/platform-bun": "^4.0.0-beta.99",
+    "@effect/platform-node": ">=4.0.0-beta.97|| >=4.0.0",
     "@elcokiin/env": "workspace:*",
+    "alchemy": "^2.0.0-beta.63",
     "blog": "^1.0.0",
     "colorthief": "^3.3.1",
     "dotenv": "catalog:",
+    "effect": "^4.0.0-beta.99",
     "gsap": "^3.15.0",
     "split-type": "^0.3.4",
     "zod": "catalog:"
