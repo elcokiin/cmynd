@@ -1,0 +1,25 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "convex/react";
+import { api } from "@elcokiin/backend/convex/_generated/api";
+import { ProjectsList } from "@/components/portfolio/projects-list";
+
+export const Route = createFileRoute("/_auth/admin/portfolio/projects")({
+  component: ProjectsPage,
+});
+
+function ProjectsPage() {
+  const projects = useQuery(api.portfolio.queries.listAllProjects);
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-3xl font-bold mb-2">Projects</h2>
+        <p className="text-muted-foreground">
+          Manage your portfolio projects
+        </p>
+      </div>
+
+      <ProjectsList projects={projects} />
+    </div>
+  );
+}

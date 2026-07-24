@@ -25,7 +25,12 @@ export const seed = mutation({
           label: "@elcokiin",
         },
         {
-          platform: "Twitter",
+          platform: "LinkedIn",
+          url: "https://www.linkedin.com/in/diego-tenjo/",
+          label: "in/diego-tenjo",
+        },
+        {
+          platform: "X",
           url: "https://x.com/elcokiin",
           label: "@elcokiin",
         },

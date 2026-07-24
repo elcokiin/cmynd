@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "@tanstack/react-router";
 import { createFileRoute } from "@tanstack/react-router";
-import { FileTextIcon, UsersIcon, FileCheckIcon } from "lucide-react";
+import { FileTextIcon, UsersIcon, FileCheckIcon, UserIcon } from "lucide-react";
 
 import { MobileTabBar } from "@/components/admin/mobile-tab-bar";
 
 import { useIsMobile } from "@/hooks/use-is-mobile";
 
-type MobileTab = "dashboard" | "authors" | "published" | "review";
+type MobileTab = "dashboard" | "authors" | "published" | "review" | "portfolio";
 
 export const Route = createFileRoute("/_auth/admin")({
   component: AdminLayout,
@@ -22,12 +22,14 @@ function AdminLayout() {
   const [mobileTab, setMobileTab] = useState<MobileTab>(() => {
     if (currentPath === "/admin/authors") return "authors";
     if (currentPath === "/admin/published") return "published";
+    if (currentPath.startsWith("/admin/portfolio")) return "portfolio";
     return "dashboard";
   });
 
   useEffect(() => {
     if (currentPath === "/admin/authors") setMobileTab("authors");
     else if (currentPath === "/admin/published") setMobileTab("published");
+    else if (currentPath.startsWith("/admin/portfolio")) setMobileTab("portfolio");
     else if (currentPath === "/admin") setMobileTab("dashboard");
   }, [currentPath]);
 
@@ -47,6 +49,11 @@ function AdminLayout() {
       label: "Published",
       icon: FileCheckIcon,
     },
+    {
+      id: "portfolio" as const,
+      label: "Portfolio",
+      icon: UserIcon,
+    },
   ];
 
   const handleTabChange = (tabId: string): void => {
@@ -61,6 +68,9 @@ function AdminLayout() {
         break;
       case "published":
         navigate({ to: "/admin/published" });
+        break;
+      case "portfolio":
+        navigate({ to: "/admin/portfolio" });
         break;
     }
   };

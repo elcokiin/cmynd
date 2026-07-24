@@ -30,6 +30,11 @@ import type * as email_templates_password_reset from "../email/templates/passwor
 import type * as email_templates_verification from "../email/templates/verification.js";
 import type * as healthCheck from "../healthCheck.js";
 import type * as http from "../http.js";
+import type * as portfolio_helpers from "../portfolio/helpers.js";
+import type * as portfolio_mutations from "../portfolio/mutations.js";
+import type * as portfolio_projections from "../portfolio/projections.js";
+import type * as portfolio_queries from "../portfolio/queries.js";
+import type * as portfolio_seed from "../portfolio/seed.js";
 import type * as r2 from "../r2.js";
 import type * as storage from "../storage.js";
 
@@ -62,6 +67,11 @@ declare const fullApi: ApiFromModules<{
   "email/templates/verification": typeof email_templates_verification;
   healthCheck: typeof healthCheck;
   http: typeof http;
+  "portfolio/helpers": typeof portfolio_helpers;
+  "portfolio/mutations": typeof portfolio_mutations;
+  "portfolio/projections": typeof portfolio_projections;
+  "portfolio/queries": typeof portfolio_queries;
+  "portfolio/seed": typeof portfolio_seed;
   r2: typeof r2;
   storage: typeof storage;
 }>;

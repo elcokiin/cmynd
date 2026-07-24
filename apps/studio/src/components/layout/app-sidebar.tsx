@@ -2,7 +2,7 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { ThemeToggle } from "@elcokiin/ui/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
 import { useTheme } from "next-themes";
-import { HomeIcon, ShieldIcon } from "lucide-react";
+import { HomeIcon, ShieldIcon, UserIcon, WrenchIcon, FolderKanbanIcon, BriefcaseIcon } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import {
@@ -11,6 +11,7 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -35,16 +36,44 @@ export function AppSidebar() {
       icon: HomeIcon,
       active: location.pathname === "/",
     },
+    ...(isAdmin
+      ? [
+          {
+            label: "Admin",
+            to: "/admin",
+            icon: ShieldIcon,
+            active: location.pathname.startsWith("/admin") && !location.pathname.startsWith("/admin/portfolio"),
+          } as const,
+        ]
+      : []),
   ];
 
-  if (isAdmin) {
-    navItems.push({
-      label: "Admin",
-      to: "/admin",
-      icon: ShieldIcon,
-      active: location.pathname.startsWith("/admin"),
-    });
-  }
+  const portfolioItems = [
+    {
+      label: "Profile",
+      to: "/admin/portfolio",
+      icon: UserIcon,
+      active: location.pathname === "/admin/portfolio",
+    },
+    {
+      label: "Skills",
+      to: "/admin/portfolio/skills",
+      icon: WrenchIcon,
+      active: location.pathname === "/admin/portfolio/skills",
+    },
+    {
+      label: "Projects",
+      to: "/admin/portfolio/projects",
+      icon: FolderKanbanIcon,
+      active: location.pathname === "/admin/portfolio/projects",
+    },
+    {
+      label: "Experience",
+      to: "/admin/portfolio/experience",
+      icon: BriefcaseIcon,
+      active: location.pathname === "/admin/portfolio/experience",
+    },
+  ];
 
   return (
     <Sidebar collapsible="icon">
@@ -78,6 +107,27 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Portfolio</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {portfolioItems.map((item, index) => (
+                  <SidebarMenuItem key={index}>
+                    <SidebarMenuButton
+                      render={<Link to={item.to} />}
+                      isActive={item.active}
+                    >
+                      <item.icon />
+                      {item.label}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter>
