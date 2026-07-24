@@ -48,6 +48,15 @@ export const ERROR_DEFAULTS: Record<ErrorCode, string> = {
   [ErrorCodes.AUTHOR_ALREADY_UNVERIFIED]: "Author is already unverified",
   [ErrorCodes.AUTHOR_UNVERIFIED]: "Original author must be verified before publishing",
 
+  // Portfolio Errors (7xxx)
+  [ErrorCodes.PORTFOLIO_NOT_FOUND]: "Portfolio not found",
+  [ErrorCodes.PORTFOLIO_INVALID_DATA]: "Portfolio data validation failed",
+  [ErrorCodes.SKILL_NOT_FOUND]: "Skill not found",
+  [ErrorCodes.SKILL_DUPLICATE_NAME]: "A skill with this name already exists",
+  [ErrorCodes.PROJECT_NOT_FOUND]: "Project not found",
+  [ErrorCodes.PROJECT_SLUG_TAKEN]: "A project with this slug already exists",
+  [ErrorCodes.EXPERIENCE_NOT_FOUND]: "Experience entry not found",
+
   // Unknown Errors (9xxx)
   [ErrorCodes.UNKNOWN]: "An error occurred",
 };

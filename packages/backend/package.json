@@ -13,7 +13,9 @@
     "./lib/types/authors": "./lib/types/authors.ts",
     "./lib/types": "./lib/types/index.ts",
     "./lib/validators/documents": "./lib/validators/documents.ts",
-    "./lib/validators/auth": "./lib/validators/auth.ts"
+    "./lib/validators/auth": "./lib/validators/auth.ts",
+    "./lib/validators/portfolio": "./lib/validators/portfolio.ts",
+    "./lib/types/portfolio": "./lib/types/portfolio.ts"
   },
   "scripts": {
     "dev": "convex dev",

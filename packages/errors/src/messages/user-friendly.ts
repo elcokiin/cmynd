@@ -45,6 +45,15 @@ export const USER_FRIENDLY_MESSAGES: Record<ErrorCode, string> = {
   [ErrorCode.AUTHOR_ALREADY_UNVERIFIED]: "This author is already unverified",
   [ErrorCode.AUTHOR_UNVERIFIED]: "The original author needs to be verified before this document can be published",
 
+  // Portfolio Errors
+  [ErrorCode.PORTFOLIO_NOT_FOUND]: "Portfolio profile not found",
+  [ErrorCode.PORTFOLIO_INVALID_DATA]: "Portfolio data could not be saved. Please check your input",
+  [ErrorCode.SKILL_NOT_FOUND]: "Skill not found",
+  [ErrorCode.SKILL_DUPLICATE_NAME]: "A skill with this name already exists",
+  [ErrorCode.PROJECT_NOT_FOUND]: "Project not found",
+  [ErrorCode.PROJECT_SLUG_TAKEN]: "A project with this URL slug already exists",
+  [ErrorCode.EXPERIENCE_NOT_FOUND]: "Experience entry not found",
+
   // Catch-all
   [ErrorCode.UNKNOWN]: "An unexpected error occurred",
 };
