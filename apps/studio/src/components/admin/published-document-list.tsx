@@ -150,6 +150,7 @@ export function PublishedDocumentList({
               className="pl-8"
               value={localSearch}
               onChange={(e) => setLocalSearch(e.target.value)}
+              aria-label="Search published documents"
             />
           </div>
         </div>

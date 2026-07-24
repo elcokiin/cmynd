@@ -132,16 +132,17 @@ export function DashboardDocumentList({
           <div className="flex items-center space-x-2">
              <div className="relative">
               <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-               <Input
-                type="search"
-                placeholder="Search..."
-                className="w-[200px] pl-8"
-                value={localSearch}
-                onChange={handleSearchChange}
-              />
+<Input
+                 type="search"
+                 placeholder="Search..."
+                 className="w-[200px] pl-8"
+                 value={localSearch}
+                 onChange={handleSearchChange}
+                 aria-label="Search documents"
+               />
             </div>
             <Select value={status} onValueChange={handleStatusChange}>
-              <SelectTrigger className="w-[150px]">
+              <SelectTrigger className="w-[150px]" aria-label="Filter by status">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>

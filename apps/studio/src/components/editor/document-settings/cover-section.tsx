@@ -212,6 +212,7 @@ export function CoverSection({ documentId }: CoverSectionProps) {
                 size="icon"
                 className="absolute right-2 top-2 h-8 w-8"
                 onClick={handleRemoveCoverImage}
+                aria-label="Remove cover image"
               >
                 <XIcon className="h-4 w-4" />
               </Button>
@@ -227,7 +228,7 @@ export function CoverSection({ documentId }: CoverSectionProps) {
                 isUploading && "pointer-events-none opacity-60",
               )}
             >
-              <input {...getInputProps()} />
+              <input {...getInputProps()} aria-label="Upload cover image" />
               <div
                 className={cn(
                   "rounded-full p-3 shadow-sm transition-all duration-200",
@@ -274,7 +275,9 @@ export function CoverSection({ documentId }: CoverSectionProps) {
             inside the blog. Save the prompt used to generate this
             image.
           </p>
+          <label htmlFor="cover-prompt" className="sr-only">Cover image prompt</label>
           <Textarea
+            id="cover-prompt"
             value={coverImagePrompt}
             onChange={(event) => handlePromptChange(event.target.value)}
             placeholder="e.g. cinematic street photo, golden hour, 50mm lens, high detail"
@@ -288,7 +291,9 @@ export function CoverSection({ documentId }: CoverSectionProps) {
           <p className="text-sm text-muted-foreground">
             Add a short summary for this document. Optional.
           </p>
+          <label htmlFor="cover-description" className="sr-only">Document description</label>
           <Textarea
+            id="cover-description"
             value={description}
             onChange={(event) => handleDescriptionChange(event.target.value)}
             placeholder="Write a concise summary of what this document covers..."
