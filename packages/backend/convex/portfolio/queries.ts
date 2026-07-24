@@ -159,14 +159,16 @@ export const listPublicExperience = query({
 // ═════════════════════════════════════════════════════════════════════
 
 /**
- * Get portfolio for editing (admin only).
+ * Get portfolio for editing (admin only). Returns null if no portfolio exists yet.
  */
 export const getPortfolioForEdit = query({
   args: {},
-  returns: adminPortfolioValidator,
+  returns: v.union(adminPortfolioValidator, v.null()),
   handler: async (ctx) => {
     await Auth.requireAdmin(ctx);
-    const portfolio = await getPortfolio(ctx);
+    const existing = await ctx.db.query("portfolio").collect();
+    if (existing.length === 0) return null;
+    const portfolio = existing[0]!;
     return {
       _id: portfolio._id,
       name: portfolio.name,

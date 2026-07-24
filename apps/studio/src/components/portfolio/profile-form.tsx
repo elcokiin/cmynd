@@ -52,7 +52,7 @@ const profileSchema = z.object({
 });
 
 interface ProfileFormProps {
-  portfolio: AdminPortfolio;
+  portfolio: AdminPortfolio | null;
 }
 
 export function ProfileForm({ portfolio }: ProfileFormProps) {
@@ -61,14 +61,14 @@ export function ProfileForm({ portfolio }: ProfileFormProps) {
 
   const form = useForm({
     defaultValues: {
-      name: portfolio.name ?? "",
-      headline: portfolio.headline ?? "",
-      avatarUrl: portfolio.avatarUrl ?? "",
-      about: portfolio.about ?? "",
-      philosophy: portfolio.philosophy ?? "",
-      socialLinks: portfolio.socialLinks ?? [],
-      hobbies: portfolio.hobbies ?? [],
-      playlist: portfolio.playlist ?? { spotifyPlaylistId: "", songs: [] },
+      name: portfolio?.name ?? "",
+      headline: portfolio?.headline ?? "",
+      avatarUrl: portfolio?.avatarUrl ?? "",
+      about: portfolio?.about ?? "",
+      philosophy: portfolio?.philosophy ?? "",
+      socialLinks: portfolio?.socialLinks ?? [],
+      hobbies: portfolio?.hobbies ?? [],
+      playlist: portfolio?.playlist ?? { spotifyPlaylistId: "", songs: [] },
     },
     validators: {
       onSubmit: profileSchema as any,
