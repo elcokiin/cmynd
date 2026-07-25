@@ -4,9 +4,12 @@ import {
   useState,
   useRef,
   useEffect,
+  useMemo,
   type MouseEvent as ReactMouseEvent,
 } from "react";
 import { useSearchParams } from "next/navigation";
+import { useQuery } from "convex/react";
+import { api } from "@elcokiin/backend/convex/_generated/api";
 import { ScrollArea } from "@elcokiin/ui/scroll-area";
 import {
   TerminalInput,
@@ -17,7 +20,8 @@ import {
   getCompletions,
   type TerminalState,
 } from "@/lib/vfs/command-parser";
-import { neofetchOutput } from "@/lib/neofetch";
+import { buildVfs } from "@/lib/build-vfs";
+import { buildNeofetch } from "@/lib/neofetch";
 
 interface HistoryEntry {
   command: string;
@@ -29,28 +33,64 @@ export function TerminalView() {
   const searchParams = useSearchParams();
   const hideNeofetch = searchParams.get("neofetch") === "hidden";
 
+  const profile = useQuery(api["portfolio/queries"].getProfile);
+  const skills = useQuery(api["portfolio/queries"].listPublicSkills, {});
+  const projects = useQuery(api["portfolio/queries"].listPublicProjects);
+  const experience = useQuery(api["portfolio/queries"].listPublicExperience);
+
   const [state, setState] = useState<TerminalState>({ cwd: "/" });
-  const [history, setHistory] = useState<HistoryEntry[]>(() => {
-    const entries: HistoryEntry[] = [];
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const inputHandleRef = useRef<TerminalInputHandle>(null);
+
+  const isLoading = profile === undefined || skills === undefined || projects === undefined || experience === undefined;
+
+  const vfsRoot = useMemo(() => {
+    if (profile === undefined || skills === undefined || projects === undefined || experience === undefined) {
+      return null;
+    }
+    return buildVfs(profile, skills, projects, experience);
+  }, [profile, skills, projects, experience]);
+
+  const neofetch = useMemo(() => {
+    if (profile === undefined) return null;
+    return buildNeofetch(profile);
+  }, [profile]);
+
+  const promptName = useMemo(() => {
+    if (profile === undefined) return "portfolio";
+    return profile.name.split(" ")[0]?.toLowerCase() ?? "portfolio";
+  }, [profile]);
+
+  const getPrompt = (cwd: string) => {
+    if (cwd === "/") {
+      return `diego@${promptName} ~ $`;
+    }
+    const displayPath = cwd.replace(/^\//, "~/");
+    return `diego@${promptName} ${displayPath} $`;
+  };
+
+  useEffect(() => {
+    if (isLoading || !neofetch) return;
+
+    const initial: HistoryEntry[] = [];
 
     if (!hideNeofetch) {
-      entries.push({
+      initial.push({
         command: "neofetch",
-        output: neofetchOutput,
-        prompt: "diegotenjo@elcokiin ~ $",
+        output: neofetch,
+        prompt: getPrompt("/"),
       });
     }
 
-    entries.push({
+    initial.push({
       command: "",
       output: 'Type "help" to see available commands.',
       prompt: "",
     });
 
-    return entries;
-  });
-  const bottomRef = useRef<HTMLDivElement>(null);
-  const inputHandleRef = useRef<TerminalInputHandle>(null);
+    setHistory(initial);
+  }, [isLoading, hideNeofetch, neofetch, promptName]);
 
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -61,7 +101,6 @@ export function TerminalView() {
   }, [history]);
 
   const handleTerminalClick = (event: ReactMouseEvent<HTMLElement>) => {
-    // If the user selected text, don't steal focus
     const selection = window.getSelection();
     if (selection && selection.toString().length > 0) {
       return;
@@ -72,7 +111,6 @@ export function TerminalView() {
       return;
     }
 
-    // Allow scrollbar interactions
     if (
       event.target.closest(
         "[data-slot='scroll-area-scrollbar'], [data-slot='scroll-area-thumb']",
@@ -81,7 +119,6 @@ export function TerminalView() {
       return;
     }
 
-    // Allow interactive elements to keep focus
     if (
       event.target.closest(
         "input, textarea, button, select, a, [contenteditable='true']",
@@ -93,15 +130,9 @@ export function TerminalView() {
     inputHandleRef.current?.focus();
   };
 
-  const getPrompt = (cwd: string) => {
-    if (cwd === "/") {
-      return "diegotenjo@elcokiin ~ $";
-    }
-    const displayPath = cwd.replace(/^\//, "~/");
-    return `diegotenjo@elcokiin ${displayPath} $`;
-  };
-
   const handleCommandSubmit = async (commandLine: string) => {
+    if (!vfsRoot || !neofetch) return;
+
     const prompt = getPrompt(state.cwd);
 
     if (!commandLine.trim()) {
@@ -115,6 +146,8 @@ export function TerminalView() {
     const { newState, output, clear, isAsync } = executeCommand(
       commandLine,
       state,
+      vfsRoot,
+      neofetch,
     );
 
     if (clear) {
@@ -128,7 +161,7 @@ export function TerminalView() {
         ...prev,
         {
           command: commandLine,
-          output: "Contacting elcokiin's AI agent...\n\n",
+          output: `Contacting ${promptName}'s AI agent...\n\n`,
           prompt,
         },
       ]);
@@ -150,7 +183,6 @@ export function TerminalView() {
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
 
-        // Remove the loading message before streaming the actual response
         setHistory((prev) => {
           const newHistory = [...prev];
           const lastIndex = newHistory.length - 1;
@@ -219,6 +251,14 @@ export function TerminalView() {
 
   const currentPrompt = getPrompt(state.cwd);
 
+  if (isLoading) {
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <div className="text-zinc-500 text-sm font-mono">Loading portfolio...</div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="h-full w-full min-h-0"
@@ -245,7 +285,7 @@ export function TerminalView() {
             <TerminalInput
               ref={inputHandleRef}
               onSubmit={handleCommandSubmit}
-              getCompletions={(input) => getCompletions(input, state)}
+              getCompletions={vfsRoot ? (input) => getCompletions(input, state, vfsRoot) : undefined}
               onCompletionCandidates={handleCompletionCandidates}
               prompt={currentPrompt}
             />

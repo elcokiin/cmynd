@@ -13,7 +13,11 @@ interface ChatMessage {
   content: string
 }
 
-export function SummaryCard() {
+interface SummaryCardProps {
+  portfolioName?: string
+}
+
+export function SummaryCard({ portfolioName = "Diego" }: SummaryCardProps) {
   const { components, remarkPlugins, rehypePlugins } = useMarkdownResponse()
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState("")
@@ -156,7 +160,7 @@ export function SummaryCard() {
           <Input
             value={input}
             onChange={(event) => setInput(event.target.value)}
-            placeholder="Ask about Diego's profile..."
+            placeholder={`Ask about ${portfolioName}'s profile...`}
             className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500"
             disabled={isLoading}
           />

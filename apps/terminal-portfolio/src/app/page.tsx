@@ -8,6 +8,7 @@ import {
   ResizablePanelGroup,
 } from "@elcokiin/ui/resizable"
 import { TerminalView } from "@/components/terminal-view"
+import { ConvexErrorBoundary } from "@/components/convex-error-boundary"
 import { SummaryCard } from "@/components/summary-card"
 import { useIsMobile } from "@/hooks/use-mobile"
 import {
@@ -39,9 +40,11 @@ export default function Home() {
     return (
       <main className="flex h-screen w-full bg-black text-white overflow-hidden font-mono relative">
         <div className="flex-1 flex flex-col h-full w-full">
-          <Suspense fallback={<div className="flex-1 h-full" />}>
-            <TerminalView />
-          </Suspense>
+          <ConvexErrorBoundary>
+            <Suspense fallback={<div className="flex-1 h-full" />}>
+              <TerminalView />
+            </Suspense>
+          </ConvexErrorBoundary>
         </div>
         
         <Sheet>
@@ -79,9 +82,11 @@ export default function Home() {
         <ResizablePanel defaultSize={60} minSize={30} className="flex flex-col min-h-0">
           {/* Terminal View Pane */}
           <div className="flex-1 min-h-0">
-            <Suspense fallback={<div className="flex-1 h-full" />}>
-              <TerminalView />
-            </Suspense>
+            <ConvexErrorBoundary>
+              <Suspense fallback={<div className="flex-1 h-full" />}>
+                <TerminalView />
+              </Suspense>
+            </ConvexErrorBoundary>
           </div>
         </ResizablePanel>
         <ResizableHandle withHandle className="bg-zinc-800" />

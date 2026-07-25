@@ -1,9 +1,7 @@
-// import { openai } from '@ai-sdk/openai';
 import { google } from "@ai-sdk/google";
 import type { ModelMessage } from "ai";
 import { streamText } from "ai";
-import fsData from "@/lib/vfs/fs.json";
-import "@elcokiin/env/portfolio";
+import { fetchPortfolioData } from "@/lib/convex-server";
 
 export const maxDuration = 30;
 
@@ -24,15 +22,24 @@ export async function POST(req: Request) {
 
     const messages = incomingMessages.slice(-20);
 
-    const systemPrompt = `You are an AI assistant representing Diego Tenjo (username: elcokiin), a Full-Stack Developer.
-You have access to the following virtual file system representing their resume data and skills:
+    const { profile, skills, projects, experience } = await fetchPortfolioData();
 
-${JSON.stringify(fsData, null, 2)}
+    const systemPrompt = `You are an AI assistant representing ${profile.name} (a ${profile.headline}).
+${profile.philosophy ? `\nPhilosophy: ${profile.philosophy}\n` : ""}
+You have access to the following data:
+
+## Skills
+${skills.map((s) => `- ${s.name} (${s.category})${s.proficiency ? ` - proficiency: ${s.proficiency}` : ""}`).join("\n")}
+
+## Projects
+${projects.map((p) => `- ${p.title}${p.description ? `: ${p.description}` : ""}${p.technologies?.length ? ` [${p.technologies.join(", ")}]` : ""}`).join("\n")}
+
+## Experience
+${experience.map((e) => `- ${e.title} at ${e.organization}${e.startDate ? ` (${e.startDate} - ${e.isCurrent ? "Present" : e.endDate ?? "Present"})` : ""}${e.description ? `: ${e.description}` : ""}`).join("\n")}
 
 Answer questions accurately based on this information. Be concise, professional, and directly address the user's queries. Keep your tone aligned with an experienced software engineer.`;
 
     const result = streamText({
-      // model: openai('gpt-4o'),
       model: google("gemini-2.5-flash"),
       messages,
       system: systemPrompt,

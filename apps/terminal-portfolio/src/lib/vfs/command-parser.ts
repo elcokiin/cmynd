@@ -1,8 +1,4 @@
 import type { DirectoryNode, FileSystemNode } from "./schema";
-import fsData from "./fs.json";
-import { neofetchOutput } from "@/lib/neofetch";
-
-const rootDir = fsData as DirectoryNode;
 
 export interface TerminalState {
   cwd: string; // Always starts with '/', where '/' is the root
@@ -37,7 +33,7 @@ export function normalizePath(cwd: string, targetPath: string): string {
   return "/" + resolved.join("/");
 }
 
-export function getNode(path: string): FileSystemNode | null {
+export function getNode(path: string, rootDir: DirectoryNode): FileSystemNode | null {
   if (path === "/" || path === "") return rootDir;
 
   const segments = path.split("/").filter(Boolean);
@@ -74,7 +70,7 @@ function tokenizeInput(input: string): { tokens: string[]; endsWithSpace: boolea
   return { tokens: trimmed.split(/\s+/), endsWithSpace };
 }
 
-function listPathCompletions(cwd: string, rawToken: string): string[] {
+function listPathCompletions(cwd: string, rawToken: string, rootDir: DirectoryNode): string[] {
   const token = rawToken || "";
   const trailingSlash = token.endsWith("/");
   const splitIndex = token.lastIndexOf("/");
@@ -84,7 +80,7 @@ function listPathCompletions(cwd: string, rawToken: string): string[] {
   const basePathInput =
     hasPathPrefix || trailingSlash ? (dirPart || ".") : ".";
   const basePath = normalizePath(cwd, basePathInput);
-  const baseNode = getNode(basePath);
+  const baseNode = getNode(basePath, rootDir);
 
   if (!baseNode || baseNode.type !== "directory") {
     return [];
@@ -99,7 +95,7 @@ function listPathCompletions(cwd: string, rawToken: string): string[] {
     .sort((a, b) => a.localeCompare(b));
 }
 
-export function getCompletions(commandLine: string, state: TerminalState): string[] {
+export function getCompletions(commandLine: string, state: TerminalState, rootDir: DirectoryNode): string[] {
   const { tokens, endsWithSpace } = tokenizeInput(commandLine);
 
   if (tokens.length === 0) {
@@ -115,7 +111,7 @@ export function getCompletions(commandLine: string, state: TerminalState): strin
   const tokenForPath = endsWithSpace ? "" : (tokens[tokens.length - 1] ?? "");
 
   if (cmd === "cd" || cmd === "ls" || cmd === "cat") {
-    return listPathCompletions(state.cwd, tokenForPath);
+    return listPathCompletions(state.cwd, tokenForPath, rootDir);
   }
 
   return [];
@@ -124,6 +120,8 @@ export function getCompletions(commandLine: string, state: TerminalState): strin
 export function executeCommand(
   commandLine: string,
   state: TerminalState,
+  rootDir: DirectoryNode,
+  neofetchOutput: string,
 ): CommandResponse {
   const args = commandLine.trim().split(/\s+/);
   const cmd = args[0];
@@ -136,7 +134,7 @@ export function executeCommand(
     case "cd": {
       const target = args[1] || "/";
       const resolved = normalizePath(state.cwd, target);
-      const node = getNode(resolved);
+      const node = getNode(resolved, rootDir);
 
       if (!node) {
         return {
@@ -153,7 +151,7 @@ export function executeCommand(
     case "ls": {
       const target = args[1] || ".";
       const resolved = normalizePath(state.cwd, target);
-      const node = getNode(resolved);
+      const node = getNode(resolved, rootDir);
 
       if (!node) {
         return {
@@ -175,7 +173,7 @@ export function executeCommand(
       }
       const target = args[1] as string;
       const resolved = normalizePath(state.cwd, target);
-      const node = getNode(resolved);
+      const node = getNode(resolved, rootDir);
 
       if (!node) {
         return {
