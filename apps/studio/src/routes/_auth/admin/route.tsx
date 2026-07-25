@@ -1,13 +1,35 @@
 import { useState, useEffect } from "react";
-import { Outlet, useNavigate, useLocation } from "@tanstack/react-router";
+import { Outlet, useNavigate, useLocation, Link } from "@tanstack/react-router";
 import { createFileRoute } from "@tanstack/react-router";
-import { FileTextIcon, UsersIcon, FileCheckIcon, UserIcon } from "lucide-react";
+import {
+  HomeIcon,
+  LayoutDashboardIcon,
+  UserIcon,
+  WrenchIcon,
+  BriefcaseIcon,
+  LayersIcon,
+} from "lucide-react";
 
 import { MobileTabBar } from "@/components/admin/mobile-tab-bar";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@elcokiin/ui/sheet";
 
 import { useIsMobile } from "@/hooks/use-is-mobile";
 
-type MobileTab = "dashboard" | "authors" | "published" | "review" | "portfolio";
+type MobileTab = "home" | "admin" | "portfolio";
+
+type PortfolioTab = "profile" | "skills" | "projects" | "experience";
+
+const portfolioSections: { tab: PortfolioTab; label: string; icon: typeof UserIcon; path: string }[] = [
+  { tab: "profile", label: "Profile", icon: UserIcon, path: "/admin/portfolio" },
+  { tab: "skills", label: "Skills", icon: WrenchIcon, path: "/admin/portfolio/skills" },
+  { tab: "projects", label: "Projects", icon: BriefcaseIcon, path: "/admin/portfolio/projects" },
+  { tab: "experience", label: "Experience", icon: LayersIcon, path: "/admin/portfolio/experience" },
+];
 
 export const Route = createFileRoute("/_auth/admin")({
   component: AdminLayout,
@@ -17,37 +39,31 @@ function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const currentPath = location.pathname;
 
   const [mobileTab, setMobileTab] = useState<MobileTab>(() => {
-    if (currentPath === "/admin/authors") return "authors";
-    if (currentPath === "/admin/published") return "published";
-    if (currentPath.startsWith("/admin/portfolio")) return "portfolio";
-    return "dashboard";
+    if (location.pathname.startsWith("/admin/portfolio")) return "portfolio";
+    if (location.pathname === "/admin") return "admin";
+    return "home";
   });
 
+  const [portfolioSheetOpen, setPortfolioSheetOpen] = useState(false);
+
   useEffect(() => {
-    if (currentPath === "/admin/authors") setMobileTab("authors");
-    else if (currentPath === "/admin/published") setMobileTab("published");
-    else if (currentPath.startsWith("/admin/portfolio")) setMobileTab("portfolio");
-    else if (currentPath === "/admin") setMobileTab("dashboard");
-  }, [currentPath]);
+    if (location.pathname.startsWith("/admin/portfolio")) setMobileTab("portfolio");
+    else if (location.pathname === "/admin") setMobileTab("admin");
+    else setMobileTab("home");
+  }, [location.pathname]);
 
   const tabs = [
     {
-      id: "dashboard" as const,
-      label: "Dashboard",
-      icon: FileTextIcon,
+      id: "home" as const,
+      label: "Home",
+      icon: HomeIcon,
     },
     {
-      id: "authors" as const,
-      label: "Authors",
-      icon: UsersIcon,
-    },
-    {
-      id: "published" as const,
-      label: "Published",
-      icon: FileCheckIcon,
+      id: "admin" as const,
+      label: "Admin",
+      icon: LayoutDashboardIcon,
     },
     {
       id: "portfolio" as const,
@@ -59,24 +75,27 @@ function AdminLayout() {
   const handleTabChange = (tabId: string): void => {
     setMobileTab(tabId as MobileTab);
 
+    if (tabId === "portfolio") {
+      setPortfolioSheetOpen(true);
+      return;
+    }
+
     switch (tabId) {
-      case "dashboard":
+      case "home":
+        navigate({ to: "/" });
+        break;
+      case "admin":
         navigate({ to: "/admin" });
-        break;
-      case "authors":
-        navigate({ to: "/admin/authors" });
-        break;
-      case "published":
-        navigate({ to: "/admin/published" });
-        break;
-      case "portfolio":
-        navigate({ to: "/admin/portfolio" });
         break;
     }
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col min-h-full">
+      <div className="flex-1 p-6 pb-20 md:pb-6">
+        <Outlet />
+      </div>
+
       {isMobile ? (
         <MobileTabBar
           tabs={tabs.map((tab) => ({
@@ -88,9 +107,30 @@ function AdminLayout() {
         />
       ) : null}
 
-      <div className="flex-1 p-6 overflow-y-auto">
-        <Outlet />
-      </div>
+      <Sheet open={portfolioSheetOpen} onOpenChange={setPortfolioSheetOpen}>
+        <SheetContent side="bottom" className="h-auto">
+          <SheetHeader>
+            <SheetTitle>Portfolio Sections</SheetTitle>
+          </SheetHeader>
+          <div className="flex flex-col gap-1 p-4 pt-0">
+            {portfolioSections.map((section) => (
+              <Link
+                key={section.tab}
+                to={section.path}
+                className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-colors hover:bg-accent hover:text-accent-foreground ${
+                  location.pathname === section.path
+                    ? "bg-accent text-accent-foreground font-medium"
+                    : ""
+                }`}
+                onClick={() => setPortfolioSheetOpen(false)}
+              >
+                <section.icon className="h-4 w-4" />
+                {section.label}
+              </Link>
+            ))}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
