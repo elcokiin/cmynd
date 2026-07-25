@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
+import { env } from "@elcokiin/env/backend";
 
 import {
   upsertSkillArgsValidator,
@@ -10,6 +11,8 @@ import {
 } from "../../lib/validators/portfolio";
 import * as Auth from "../_lib/auth";
 import { ErrorCode, throwConvexError } from "@elcokiin/errors";
+import { r2 } from "../r2";
+import { getCdnUrl } from "../../lib/utils/cdn";
 import {
   getPortfolioId,
   getSkillById,
@@ -209,6 +212,46 @@ export const removeProject = mutation({
     await Auth.requireAdmin(ctx);
     await getProjectById(ctx, args._id);
     await ctx.db.delete(args._id);
+  },
+});
+
+// ═════════════════════════════════════════════════════════════════════
+// Project image mutations
+// ═════════════════════════════════════════════════════════════════════
+
+export const uploadProjectImage = mutation({
+  args: {
+    projectId: v.id("projects"),
+    storageId: v.string(),
+    alt: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await Auth.requireAdmin(ctx);
+    const project = await getProjectById(ctx, args.projectId);
+
+    const url = getCdnUrl(args.storageId, env.R2_PUBLIC_DOMAIN);
+    const newImage = { storageId: args.storageId, url, alt: args.alt };
+    const images = [...(project.images ?? []), newImage];
+
+    await ctx.db.patch(args.projectId, { images, updatedAt: Date.now() });
+  },
+});
+
+export const removeProjectImage = mutation({
+  args: {
+    projectId: v.id("projects"),
+    storageId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await Auth.requireAdmin(ctx);
+    const project = await getProjectById(ctx, args.projectId);
+
+    const images = (project.images ?? []).filter(
+      (img) => img.storageId !== args.storageId,
+    );
+
+    await r2.deleteObject(ctx, args.storageId);
+    await ctx.db.patch(args.projectId, { images, updatedAt: Date.now() });
   },
 });
 

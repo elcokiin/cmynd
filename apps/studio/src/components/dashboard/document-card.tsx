@@ -2,7 +2,6 @@ import type { DocumentListItem } from "@elcokiin/backend/lib/types/documents";
 
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { useQuery } from "convex/react";
-import { memo } from "react";
 
 import { formatDate } from "@/lib/format";
 import { DocumentCardMenu } from "./document-card-menu";
@@ -160,14 +159,13 @@ function DocumentCardWithoutCover({
 /**
  * Main document card component that handles both variants
  */
-export const DocumentCard = memo(function DocumentCard({
+export const DocumentCard = function DocumentCard({
   document,
   onOpen,
 }: DocumentCardProps): React.ReactNode {
-  // Only fetch cover URL if document has a cover image
   const coverUrl = useQuery(
-    api.storage.getUrl,
-    document.coverImage?.storageId ? { key: document.coverImage.storageId } : "skip"
+    api.storage.getCdnUrl,
+    document.coverImage?.storageId ? { key: document.coverImage.storageId } : "skip",
   );
 
   // Show with-cover variant if we have a cover image URL
@@ -188,4 +186,4 @@ export const DocumentCard = memo(function DocumentCard({
       onOpen={onOpen}
     />
   );
-});
+};

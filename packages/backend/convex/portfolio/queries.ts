@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
+import { env } from "@elcokiin/env/backend";
 
 import {
   publicPortfolioValidator,
@@ -11,8 +12,10 @@ import type {
   PublicSkill,
   PublicProject,
   PublicExperience,
+  ProjectImage,
 } from "../../lib/types/portfolio";
 import * as Auth from "../_lib/auth";
+import { getCdnUrl } from "../../lib/utils/cdn";
 import {
   getPortfolio,
   getProjectBySlug,
@@ -25,6 +28,39 @@ import {
   toPublicExperience,
   toAdminExperience,
 } from "./projections";
+
+async function resolveProjectImages(
+  images: ProjectImage[] | undefined,
+): Promise<ProjectImage[] | undefined> {
+  if (!images) return undefined;
+  return images.map((img) => {
+    if (img.storageId) {
+      const url = getCdnUrl(img.storageId, env.R2_PUBLIC_DOMAIN);
+      return { ...img, url };
+    }
+    return img;
+  });
+}
+
+async function resolveProjects<T extends { images?: ProjectImage[] }>(
+  projects: T[],
+): Promise<T[]> {
+  return Promise.all(
+    projects.map(async (project) => ({
+      ...project,
+      images: await resolveProjectImages(project.images),
+    })),
+  );
+}
+
+async function resolveSingleProject<T extends { images?: ProjectImage[] }>(
+  project: T,
+): Promise<T> {
+  return {
+    ...project,
+    images: await resolveProjectImages(project.images),
+  };
+}
 
 // ═════════════════════════════════════════════════════════════════════
 // Public queries
@@ -111,7 +147,7 @@ export const listPublicProjects = query({
       .order("asc")
       .collect();
 
-    return projects.map(toPublicProject);
+    return resolveProjects(projects.map(toPublicProject));
   },
 });
 
@@ -124,7 +160,7 @@ export const getProjectBySlugQuery = query({
   handler: async (ctx, args): Promise<PublicProject | null> => {
     const project = await getProjectBySlug(ctx, args.slug);
     if (!project || !project.isVisible) return null;
-    return toPublicProject(project);
+    return resolveSingleProject(toPublicProject(project));
   },
 });
 
@@ -205,7 +241,7 @@ export const listAllProjects = query({
   handler: async (ctx) => {
     await Auth.requireAdmin(ctx);
     const projects = await ctx.db.query("projects").order("asc").collect();
-    return projects.map(toAdminProject);
+    return resolveProjects(projects.map(toAdminProject));
   },
 });
 

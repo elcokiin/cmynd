@@ -15,7 +15,9 @@
     "./lib/validators/documents": "./lib/validators/documents.ts",
     "./lib/validators/auth": "./lib/validators/auth.ts",
     "./lib/validators/portfolio": "./lib/validators/portfolio.ts",
-    "./lib/types/portfolio": "./lib/types/portfolio.ts"
+    "./lib/types/portfolio": "./lib/types/portfolio.ts",
+    "./lib/utils/slug": "./lib/utils/slug.ts",
+    "./lib/utils/cdn": "./lib/utils/cdn.ts"
   },
   "scripts": {
     "dev": "convex dev",

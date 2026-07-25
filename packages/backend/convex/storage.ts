@@ -1,7 +1,9 @@
 import { v } from "convex/values";
+import { env } from "@elcokiin/env/backend";
 import { mutation, query } from "./_generated/server";
 import * as Auth from "./_lib/auth";
 import { r2 } from "./r2";
+import { getCdnUrl as getCdnUrlUtil } from "../lib/utils/cdn";
 
 /**
  * Generate an upload URL for file storage via R2.
@@ -40,6 +42,28 @@ export const getPublicUrl = query({
   args: { key: v.string() },
   handler: async (_ctx, args): Promise<string | null> => {
     return await r2.getUrl(args.key, { expiresIn: 86400 });
+  },
+});
+
+/**
+ * Get a permanent CDN URL for a single R2 object key.
+ * No expiry — the URL is stable as long as the object exists.
+ */
+export const getCdnUrl = query({
+  args: { key: v.string() },
+  handler: async (_ctx, args): Promise<string> => {
+    return getCdnUrlUtil(args.key, env.R2_PUBLIC_DOMAIN);
+  },
+});
+
+/**
+ * Get permanent CDN URLs for an array of R2 object keys.
+ * No expiry — use for resolving multiple image URLs at once.
+ */
+export const getCdnUrls = query({
+  args: { keys: v.array(v.string()) },
+  handler: async (_ctx, args): Promise<string[]> => {
+    return args.keys.map((key) => getCdnUrlUtil(key, env.R2_PUBLIC_DOMAIN));
   },
 });
 

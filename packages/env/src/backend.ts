@@ -26,6 +26,12 @@ export const env = createEnv({
     // Email configuration (Resend)
     RESEND_API_KEY: z.string().min(1).optional(),
     EMAIL_FROM: z.string().email().default("diego.tenjo@elcokiin.com"),
+    R2_PUBLIC_DOMAIN: z
+      .url()
+      .refine(
+        (url) => url.startsWith("http://") || url.startsWith("https://"),
+        "URL must include 'http://' or 'https://' protocol",
+      ),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,

@@ -66,9 +66,7 @@ export async function getPublishedDocumentBySlug(
   return await client.query(api.documents.queries.getPublishedBySlug, { slug });
 }
 
-export async function getPublicStorageUrl(
-  key: string,
-): Promise<string | null> {
+export async function getPublicStorageUrl(key: string): Promise<string | null> {
   const client = getClient();
-  return await client.query(api.storage.getPublicUrl, { key });
+  return await client.query(api.storage.getCdnUrl, { key });
 }

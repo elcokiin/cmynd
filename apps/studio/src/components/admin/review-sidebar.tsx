@@ -40,7 +40,7 @@ export function ReviewSidebar({
   );
 
   const coverImageUrl = useQuery(
-    api.storage.getUrl,
+    api.storage.getCdnUrl,
     document?.coverImage?.storageId ? { key: document.coverImage.storageId } : "skip",
   );
 

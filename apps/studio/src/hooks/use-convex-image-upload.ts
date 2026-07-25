@@ -23,9 +23,9 @@ function useConvexImageUpload(): UploadFn {
 
       const key = await uploadFile(compressionResult.file);
 
-      const url = await convex.query(api.storage.getUrl, { key });
+      const url = await convex.query(api.storage.getCdnUrl, { key });
       if (!url) {
-        throw new Error("Failed to get file URL");
+        throw new Error("Failed to resolve file URL");
       }
 
       return { url, storageId: key };

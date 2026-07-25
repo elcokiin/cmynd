@@ -38,7 +38,7 @@ export function CoverSection({ documentId }: CoverSectionProps) {
 
   const document = useQuery(api.documents.queries.getForEdit, { documentId });
   const coverImageUrl = useQuery(
-    api.storage.getUrl,
+    api.storage.getCdnUrl,
     document?.coverImage?.storageId ? { key: document.coverImage.storageId } : "skip",
   );
 
