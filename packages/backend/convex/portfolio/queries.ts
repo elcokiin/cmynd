@@ -215,6 +215,7 @@ export const getPortfolioForEdit = query({
       socialLinks: portfolio.socialLinks,
       hobbies: portfolio.hobbies,
       playlist: portfolio.playlist,
+      createdBy: portfolio.createdBy,
       createdAt: portfolio.createdAt,
       updatedAt: portfolio.updatedAt,
     };

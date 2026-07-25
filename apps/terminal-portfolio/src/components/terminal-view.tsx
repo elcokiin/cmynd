@@ -8,8 +8,9 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from "react";
 import { useSearchParams } from "next/navigation";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@elcokiin/backend/convex/_generated/api";
+import { useUIMessages } from "@convex-dev/agent/react";
 import { ScrollArea } from "@elcokiin/ui/scroll-area";
 import {
   TerminalInput,
@@ -38,10 +39,27 @@ export function TerminalView() {
   const projects = useQuery(api["portfolio/queries"].listPublicProjects);
   const experience = useQuery(api["portfolio/queries"].listPublicExperience);
 
+  const createThread = useMutation(api.chat.mutations.createThread);
+  const sendMessage = useMutation(api.chat.mutations.sendMessage);
+
   const [state, setState] = useState<TerminalState>({ cwd: "/" });
   const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [threadId, setThreadId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputHandleRef = useRef<TerminalInputHandle>(null);
+  const threadCreatedRef = useRef(false);
+
+  const { results: chatMessages } = useUIMessages(
+    api.chat.queries.listMessages,
+    threadId ? { threadId } : "skip",
+    { initialNumItems: 50, stream: true },
+  );
+
+  useEffect(() => {
+    if (threadCreatedRef.current) return;
+    threadCreatedRef.current = true;
+    createThread().then(({ threadId: id }) => setThreadId(id));
+  }, [createThread]);
 
   const isLoading = profile === undefined || skills === undefined || projects === undefined || experience === undefined;
 
@@ -98,7 +116,7 @@ export function TerminalView() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [history]);
+  }, [history, chatMessages]);
 
   const handleTerminalClick = (event: ReactMouseEvent<HTMLElement>) => {
     const selection = window.getSelection();
@@ -130,6 +148,18 @@ export function TerminalView() {
     inputHandleRef.current?.focus();
   };
 
+  const chatOutput = useMemo(() => {
+    if (!chatMessages || chatMessages.length === 0) return "";
+
+    return chatMessages
+      .map((msg) => {
+        const text = msg.parts.map((p) => ("text" in p ? p.text : "")).join("");
+        const label = msg.role === "user" ? "You" : promptName;
+        return `[${label}] ${text}`;
+      })
+      .join("\n\n");
+  }, [chatMessages, promptName]);
+
   const handleCommandSubmit = async (commandLine: string) => {
     if (!vfsRoot || !neofetch) return;
 
@@ -157,77 +187,19 @@ export function TerminalView() {
     }
 
     if (isAsync) {
+      const query = commandLine.replace(/^ask-diego\s+/, "").trim();
       setHistory((prev) => [
         ...prev,
-        {
-          command: commandLine,
-          output: `Contacting ${promptName}'s AI agent...\n\n`,
-          prompt,
-        },
+        { command: commandLine, output: "", prompt },
       ]);
-      setState(newState);
 
-      try {
-        const query = commandLine.replace(/^ask-diego\s+/, "").trim();
-        const response = await fetch("/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            messages: [{ role: "user", content: query }],
-          }),
-        });
-
-        if (!response.ok) throw new Error("Network response was not ok");
-        if (!response.body) throw new Error("No body in response");
-
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-
+      if (threadId) {
+        sendMessage({ threadId, prompt: query });
+      } else {
         setHistory((prev) => {
           const newHistory = [...prev];
-          const lastIndex = newHistory.length - 1;
-          const lastEntry = newHistory[lastIndex];
-          if (
-            lastIndex >= 0 &&
-            lastEntry &&
-            lastEntry.command === commandLine
-          ) {
-            lastEntry.output = "";
-          }
-          return newHistory;
-        });
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          const chunk = decoder.decode(value, { stream: true });
-
-          setHistory((prev) => {
-            const newHistory = [...prev];
-            const lastIndex = newHistory.length - 1;
-            const lastEntry = newHistory[lastIndex];
-            if (
-              lastIndex >= 0 &&
-              lastEntry &&
-              lastEntry.command === commandLine
-            ) {
-              lastEntry.output += chunk;
-            }
-            return newHistory;
-          });
-        }
-      } catch {
-        setHistory((prev) => {
-          const newHistory = [...prev];
-          const lastIndex = newHistory.length - 1;
-          const lastEntry = newHistory[lastIndex];
-          if (
-            lastIndex >= 0 &&
-            lastEntry &&
-            lastEntry.command === commandLine
-          ) {
-            lastEntry.output += "\nError: Failed to fetch response from AI.";
-          }
+          const last = newHistory[newHistory.length - 1];
+          if (last) last.output = "\nError: Chat not initialized yet. Try again.";
           return newHistory;
         });
       }
@@ -251,6 +223,8 @@ export function TerminalView() {
 
   const currentPrompt = getPrompt(state.cwd);
 
+  const hasChat = chatMessages.length > 0;
+
   if (isLoading) {
     return (
       <div className="flex h-full w-full items-center justify-center">
@@ -268,12 +242,14 @@ export function TerminalView() {
         <div className="flex flex-col p-4 pb-16 min-h-full">
           {history.map((entry, i) => (
             <div key={i} className="flex flex-col mb-2">
-              <div className="flex items-center">
-                <span className="text-zinc-200 mr-2 whitespace-nowrap">
-                  {entry.prompt}
-                </span>
-                <span className="text-white">{entry.command}</span>
-              </div>
+              {entry.prompt !== "" && (
+                <div className="flex items-center">
+                  <span className="text-zinc-200 mr-2 whitespace-nowrap">
+                    {entry.prompt}
+                  </span>
+                  <span className="text-white">{entry.command}</span>
+                </div>
+              )}
               {entry.output && (
                 <div className="text-zinc-300 whitespace-pre-wrap mt-1 font-mono text-sm leading-relaxed">
                   {entry.output}
@@ -281,6 +257,11 @@ export function TerminalView() {
               )}
             </div>
           ))}
+          {hasChat && (
+            <div className="text-zinc-300 whitespace-pre-wrap mt-1 font-mono text-sm leading-relaxed">
+              {chatOutput}
+            </div>
+          )}
           <div className="flex items-center mt-2">
             <TerminalInput
               ref={inputHandleRef}

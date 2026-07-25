@@ -28,6 +28,7 @@ export function toAdminSkill(skill: Doc<"skills">): AdminSkill {
     proficiency: skill.proficiency,
     isVisible: skill.isVisible,
     icon: skill.icon,
+    createdBy: skill.createdBy,
     createdAt: skill.createdAt,
     updatedAt: skill.updatedAt,
   };
@@ -67,6 +68,7 @@ export function toAdminProject(project: Doc<"projects">): AdminProject {
     images: project.images,
     order: project.order,
     isVisible: project.isVisible,
+    createdBy: project.createdBy,
     createdAt: project.createdAt,
     updatedAt: project.updatedAt,
   };
@@ -111,6 +113,7 @@ export function toAdminExperience(
     credentialUrl: experience.credentialUrl,
     technologies: experience.technologies,
     order: experience.order,
+    createdBy: experience.createdBy,
     createdAt: experience.createdAt,
     updatedAt: experience.updatedAt,
   };

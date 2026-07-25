@@ -26,6 +26,7 @@ export const playlistValidator = v.object({
 });
 
 export const projectImageValidator = v.object({
+  storageId: v.optional(v.string()),
   url: v.string(),
   alt: v.optional(v.string()),
 });
@@ -49,6 +50,7 @@ export const portfolioValidator = {
   socialLinks: v.optional(v.array(socialLinkValidator)),
   hobbies: v.optional(v.array(hobbyValidator)),
   playlist: v.optional(playlistValidator),
+  createdBy: v.optional(v.string()),
   createdAt: v.number(),
   updatedAt: v.number(),
 };
@@ -59,6 +61,7 @@ export const skillValidator = v.object({
   proficiency: v.optional(v.number()),
   isVisible: v.optional(v.boolean()),
   icon: v.optional(v.string()),
+  createdBy: v.optional(v.string()),
   createdAt: v.number(),
   updatedAt: v.number(),
 });
@@ -76,6 +79,7 @@ export const projectValidator = v.object({
   images: v.optional(v.array(projectImageValidator)),
   order: v.number(),
   isVisible: v.optional(v.boolean()),
+  createdBy: v.optional(v.string()),
   createdAt: v.number(),
   updatedAt: v.number(),
 });
@@ -93,6 +97,7 @@ export const experienceValidator = v.object({
   credentialUrl: v.optional(v.string()),
   technologies: v.optional(v.array(v.string())),
   order: v.number(),
+  createdBy: v.optional(v.string()),
   createdAt: v.number(),
   updatedAt: v.number(),
 });
@@ -164,6 +169,7 @@ export const adminPortfolioValidator = v.object({
   socialLinks: v.optional(v.array(socialLinkValidator)),
   hobbies: v.optional(v.array(hobbyValidator)),
   playlist: v.optional(playlistValidator),
+  createdBy: v.optional(v.string()),
   createdAt: v.number(),
   updatedAt: v.number(),
 });
@@ -175,6 +181,7 @@ export const adminSkillValidator = v.object({
   proficiency: v.optional(v.number()),
   isVisible: v.optional(v.boolean()),
   icon: v.optional(v.string()),
+  createdBy: v.optional(v.string()),
   createdAt: v.number(),
   updatedAt: v.number(),
 });
@@ -193,6 +200,7 @@ export const adminProjectValidator = v.object({
   images: v.optional(v.array(projectImageValidator)),
   order: v.number(),
   isVisible: v.optional(v.boolean()),
+  createdBy: v.optional(v.string()),
   createdAt: v.number(),
   updatedAt: v.number(),
 });
@@ -211,6 +219,7 @@ export const adminExperienceValidator = v.object({
   credentialUrl: v.optional(v.string()),
   technologies: v.optional(v.array(v.string())),
   order: v.number(),
+  createdBy: v.optional(v.string()),
   createdAt: v.number(),
   updatedAt: v.number(),
 });

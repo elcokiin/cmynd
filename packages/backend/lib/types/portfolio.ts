@@ -26,6 +26,7 @@ export type Playlist = {
 };
 
 export type ProjectImage = {
+  storageId?: string;
   url: string;
   alt?: string;
 };
@@ -98,7 +99,9 @@ export type PublicExperience = {
 
 // ── Admin types (includes management fields) ──────────────────────────
 
-export type AdminPortfolio = PublicPortfolio;
+export type AdminPortfolio = PublicPortfolio & {
+  createdBy?: string;
+};
 
 export type AdminSkill = {
   _id: Id<"skills">;
@@ -107,6 +110,7 @@ export type AdminSkill = {
   proficiency?: number;
   isVisible?: boolean;
   icon?: string;
+  createdBy?: string;
   createdAt: number;
   updatedAt: number;
 };
@@ -125,6 +129,7 @@ export type AdminProject = {
   images?: ProjectImage[];
   order: number;
   isVisible?: boolean;
+  createdBy?: string;
   createdAt: number;
   updatedAt: number;
 };
@@ -143,6 +148,7 @@ export type AdminExperience = {
   credentialUrl?: string;
   technologies?: string[];
   order: number;
+  createdBy?: string;
   createdAt: number;
   updatedAt: number;
 };

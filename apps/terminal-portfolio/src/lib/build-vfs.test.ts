@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildVfs } from '../build-vfs';
+import { buildVfs } from './build-vfs';
 import type { PublicPortfolio, PublicSkill, PublicProject, PublicExperience } from '@elcokiin/backend/lib/types/portfolio';
 
 const mockProfile: PublicPortfolio = {

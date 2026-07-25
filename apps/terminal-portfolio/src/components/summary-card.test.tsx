@@ -1,98 +1,46 @@
-import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react'
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { render, screen, cleanup } from '@testing-library/react'
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest'
 import { SummaryCard } from './summary-card'
 
-describe('SummaryCard component', () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let fetchMock: any
+const createThreadResult = vi.hoisted(() => ({ current: Promise.resolve({ threadId: "test" }) as Promise<{ threadId: string }> }))
 
+vi.mock('convex/react', () => ({
+  useQuery: vi.fn(),
+  useMutation: () => vi.fn(() => createThreadResult.current),
+}))
+
+vi.mock('@convex-dev/agent/react', () => ({
+  useUIMessages: () => ({ results: [], status: "loaded", loadMore: vi.fn() }),
+}))
+
+vi.mock('@/hooks/use-markdown-response', () => ({
+  useMarkdownResponse: () => ({
+    components: {},
+    remarkPlugins: [],
+    rehypePlugins: [],
+  }),
+}))
+
+describe('SummaryCard component', () => {
   beforeEach(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fetchMock = vi.spyOn(global, 'fetch') as any
-    window.HTMLElement.prototype.scrollIntoView = function() {}
+    localStorage.clear()
   })
 
   afterEach(() => {
-    fetchMock.mockRestore()
     cleanup()
   })
 
-  it('renders correctly with initial state', () => {
+  it('shows loading state while initializing', () => {
+    createThreadResult.current = new Promise(() => {})
     render(<SummaryCard />)
     expect(screen.getByText('AI Summary')).toBeDefined()
-    expect(screen.getByText('Chat with an AI version of me powered by my portfolio files.')).toBeDefined()
-    expect(screen.getByRole('button', { name: 'Send' })).toBeDefined()
-    expect(screen.getByPlaceholderText("Ask about Diego's profile...")).toBeDefined()
-    expect(screen.getByText(/Ask me anything about my experience/i)).toBeDefined()
+    expect(screen.getByText('Initializing chat...')).toBeDefined()
   })
 
-  it('handles successful chat request', async () => {
-    const mockResponse = 'Here is a summary of the profile.'
-    const encoder = new TextEncoder()
-    const stream = new ReadableStream({
-      start(controller) {
-        controller.enqueue(encoder.encode(mockResponse))
-        controller.close()
-      },
-    })
-
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      body: stream,
-    })
-
+  it('shows empty state after initialization', async () => {
+    createThreadResult.current = Promise.resolve({ threadId: "test-thread" })
     render(<SummaryCard />)
-
-    const input = screen.getByPlaceholderText("Ask about Diego's profile...")
-    fireEvent.change(input, { target: { value: 'Tell me about your experience' } })
-
-    const button = screen.getByRole('button', { name: 'Send' })
-    fireEvent.click(button)
-
-    await waitFor(() => {
-      expect(screen.getByText(mockResponse)).toBeDefined()
-    })
-
-    expect(fetchMock).toHaveBeenCalledWith('/api/chat', expect.objectContaining({
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messages: [{ role: 'user', content: 'Tell me about your experience' }]
-      }),
-    }))
-  })
-
-  it('handles error during chat request', async () => {
-    fetchMock.mockResolvedValueOnce({
-      ok: false,
-    })
-
-    render(<SummaryCard />)
-
-    const input = screen.getByPlaceholderText("Ask about Diego's profile...")
-    fireEvent.change(input, { target: { value: 'Tell me about your experience' } })
-
-    const button = screen.getByRole('button', { name: 'Send' })
-    fireEvent.click(button)
-
-    await waitFor(() => {
-      expect(screen.getByText('Failed to fetch response')).toBeDefined()
-    })
-  })
-
-  it('handles fetch network error', async () => {
-    fetchMock.mockRejectedValueOnce(new Error('Network error'))
-
-    render(<SummaryCard />)
-
-    const input = screen.getByPlaceholderText("Ask about Diego's profile...")
-    fireEvent.change(input, { target: { value: 'Tell me about your experience' } })
-
-    const button = screen.getByRole('button', { name: 'Send' })
-    fireEvent.click(button)
-
-    await waitFor(() => {
-      expect(screen.getByText('Network error')).toBeDefined()
-    })
+    const text = await screen.findByText(/Ask me anything about my experience/i)
+    expect(text).toBeDefined()
   })
 })

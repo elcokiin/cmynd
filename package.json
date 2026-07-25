@@ -40,10 +40,12 @@
     "alchemy": "2.0.0-beta.63",
     "blog": "^1.0.0",
     "colorthief": "^3.3.1",
+    "convex": "^1.42.3",
     "dotenv": "catalog:",
     "effect": "^4.0.0-beta.99",
     "gsap": "^3.15.0",
     "split-type": "^0.3.4",
+    "terminal-portfolio": "^1.0.0",
     "zod": "catalog:"
   },
   "devDependencies": {

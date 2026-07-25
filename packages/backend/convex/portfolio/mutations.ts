@@ -67,7 +67,7 @@ export const updateProfile = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    await Auth.requireAdmin(ctx);
+    const user = await Auth.requireAdmin(ctx);
 
     const portfolioId = await getPortfolioId(ctx);
 
@@ -84,6 +84,11 @@ export const updateProfile = mutation({
     if (args.hobbies !== undefined) updates.hobbies = args.hobbies;
     if (args.playlist !== undefined) updates.playlist = args.playlist;
 
+    const existing = await ctx.db.get(portfolioId);
+    if (!existing?.createdBy) {
+      updates.createdBy = user._id;
+    }
+
     await ctx.db.patch(portfolioId, updates);
   },
 });
@@ -95,7 +100,7 @@ export const updateProfile = mutation({
 export const upsertSkill = mutation({
   args: upsertSkillArgsValidator,
   handler: async (ctx, args) => {
-    await Auth.requireAdmin(ctx);
+    const user = await Auth.requireAdmin(ctx);
 
     const duplicate = await isSkillNameTaken(ctx, args.name, args.category, args._id);
     if (duplicate) {
@@ -121,6 +126,7 @@ export const upsertSkill = mutation({
         proficiency: args.proficiency,
         isVisible: args.isVisible ?? true,
         icon: args.icon,
+        createdBy: user._id,
         createdAt: now,
         updatedAt: now,
       });
@@ -144,7 +150,7 @@ export const removeSkill = mutation({
 export const createProject = mutation({
   args: createProjectArgsValidator,
   handler: async (ctx, args) => {
-    await Auth.requireAdmin(ctx);
+    const user = await Auth.requireAdmin(ctx);
 
     const slugTaken = await isSlugTaken(ctx, args.slug);
     if (slugTaken) {
@@ -165,6 +171,7 @@ export const createProject = mutation({
       images: args.images,
       order: args.order,
       isVisible: args.isVisible ?? true,
+      createdBy: user._id,
       createdAt: now,
       updatedAt: now,
     });
@@ -262,7 +269,7 @@ export const removeProjectImage = mutation({
 export const createExperience = mutation({
   args: createExperienceArgsValidator,
   handler: async (ctx, args) => {
-    await Auth.requireAdmin(ctx);
+    const user = await Auth.requireAdmin(ctx);
 
     const now = Date.now();
     await ctx.db.insert("experience", {
@@ -278,6 +285,7 @@ export const createExperience = mutation({
       credentialUrl: args.credentialUrl,
       technologies: args.technologies,
       order: args.order,
+      createdBy: user._id,
       createdAt: now,
       updatedAt: now,
     });

@@ -1,6 +1,9 @@
 "use client"
 
 import { type FormEvent, useEffect, useRef, useState } from "react"
+import { useMutation } from "convex/react"
+import { api } from "@elcokiin/backend/convex/_generated/api"
+import { useUIMessages } from "@convex-dev/agent/react"
 import { Button } from "@elcokiin/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@elcokiin/ui/card"
 import { Input } from "@elcokiin/ui/input"
@@ -8,144 +11,148 @@ import { ScrollArea } from "@elcokiin/ui/scroll-area"
 import ReactMarkdown from "react-markdown"
 import { useMarkdownResponse } from "@/hooks/use-markdown-response"
 
-interface ChatMessage {
-  role: "user" | "assistant"
-  content: string
-}
-
 interface SummaryCardProps {
   portfolioName?: string
 }
 
+function extractText(msg: { parts: { type: string; text?: string }[] }): string {
+  return msg.parts.map((p) => ("text" in p ? p.text ?? "" : "")).join("")
+}
+
+const THREAD_STORAGE_KEY = "cmynd-chat-thread-id"
+
 export function SummaryCard({ portfolioName = "Diego" }: SummaryCardProps) {
   const { components, remarkPlugins, rehypePlugins } = useMarkdownResponse()
-  const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [threadId, setThreadId] = useState<string | null>(null)
+  const [isInitializing, setIsInitializing] = useState(true)
   const bottomRef = useRef<HTMLDivElement>(null)
+
+  const createThread = useMutation(api.chat.mutations.createThread)
+  const sendMessage = useMutation(api.chat.mutations.sendMessage)
+  const resetThread = useMutation(api.chat.mutations.resetThread)
+
+  const { results: messages, status: messagesStatus } = useUIMessages(
+    api.chat.queries.listMessages,
+    threadId ? { threadId } : "skip",
+    { initialNumItems: 50, stream: true },
+  )
+
+  useEffect(() => {
+    const stored = localStorage.getItem(THREAD_STORAGE_KEY)
+    if (stored) {
+      setThreadId(stored)
+      setIsInitializing(false)
+    } else {
+      createThread().then(({ threadId: id }) => {
+        setThreadId(id)
+        localStorage.setItem(THREAD_STORAGE_KEY, id)
+        setIsInitializing(false)
+      })
+    }
+  }, [createThread])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages, isLoading])
+  }, [messages])
 
   const handleSendMessage = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     const userMessage = input.trim()
-    if (!userMessage || isLoading) return
+    if (!userMessage || !threadId || messagesStatus === "loading") return
 
-    setIsLoading(true)
-    setError(null)
     setInput("")
+    sendMessage({ threadId, prompt: userMessage })
+  }
 
-    const conversation = [...messages, { role: "user" as const, content: userMessage }]
-    setMessages((prev) => [...prev, { role: "user", content: userMessage }, { role: "assistant", content: "" }])
+  const handleClearHistory = async () => {
+    if (!threadId) return
 
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: conversation
-        }),
-      })
+    localStorage.removeItem(THREAD_STORAGE_KEY)
+    await resetThread({ threadId })
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch response')
-      }
+    const { threadId: newId } = await createThread()
+    setThreadId(newId)
+    localStorage.setItem(THREAD_STORAGE_KEY, newId)
+  }
 
-      if (!response.body) {
-        throw new Error('No body in response')
-      }
+  const isResponding = messages.some(
+    (m) => m.status === "streaming" || m.status === "pending",
+  )
 
-      const reader = response.body.getReader()
-      const decoder = new TextDecoder()
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        const chunk = decoder.decode(value, { stream: true })
-        setMessages((prev) => {
-          const next = [...prev]
-          const lastIndex = next.length - 1
-          const lastMessage = next[lastIndex]
-
-          if (lastMessage && lastMessage.role === "assistant") {
-            next[lastIndex] = {
-              ...lastMessage,
-              content: `${lastMessage.content}${chunk}`,
-            }
-          }
-
-          return next
-        })
-      }
-    } catch (err) {
-      setMessages((prev) => {
-        const next = [...prev]
-        const lastIndex = next.length - 1
-        const lastMessage = next[lastIndex]
-
-        if (lastMessage && lastMessage.role === "assistant" && !lastMessage.content) {
-          next.pop()
-        }
-
-        return next
-      })
-      setError(err instanceof Error ? err.message : 'An error occurred')
-    } finally {
-      setIsLoading(false)
-    }
+  if (isInitializing) {
+    return (
+      <Card className="flex flex-col h-full bg-zinc-950 border-zinc-800 text-zinc-100">
+        <CardHeader className="pb-4 shrink-0">
+          <CardTitle className="text-lg text-zinc-100">AI Summary</CardTitle>
+        </CardHeader>
+        <CardContent className="flex-1 flex items-center justify-center">
+          <div className="text-zinc-500 text-sm">Initializing chat...</div>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
     <Card className="flex flex-col h-full bg-zinc-950 border-zinc-800 text-zinc-100">
       <CardHeader className="pb-4 shrink-0">
-        <div>
-          <CardTitle className="text-lg text-zinc-100">AI Summary</CardTitle>
-          <CardDescription className="text-zinc-400">
-            Chat with an AI version of me powered by my portfolio files.
-          </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-lg text-zinc-100">AI Summary</CardTitle>
+            <CardDescription className="text-zinc-400">
+              Chat with an AI version of me powered by my portfolio files.
+            </CardDescription>
+          </div>
+          {messages.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClearHistory}
+              className="text-zinc-500 hover:text-zinc-300"
+            >
+              Clear
+            </Button>
+          )}
         </div>
       </CardHeader>
       <CardContent className="flex-1 overflow-hidden p-0 min-h-0">
         <ScrollArea className="h-full px-6 pb-4">
-          {error ? (
-            <div className="text-red-400 text-sm p-4 bg-red-950/20 rounded-md border border-red-900/50">
-              {error}
-            </div>
-          ) : messages.length > 0 ? (
+          {messages.length > 0 ? (
             <div className="space-y-3">
-              {messages.map((message, index) => (
-                <div key={`${message.role}-${index}`} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+              {messages.map((message, index) => {
+                const text = extractText(message)
+                return (
                   <div
-                    className={`max-w-[90%] rounded-md px-3 py-2 text-sm whitespace-pre-wrap leading-relaxed ${
-                      message.role === "user"
-                        ? "bg-zinc-800 text-zinc-100"
-                        : "bg-zinc-900 text-zinc-300 border border-zinc-800 whitespace-normal"
-                    }`}
+                    key={`${message.role}-${message.order}-${index}`}
+                    className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
                   >
-                    {message.role === "assistant" ? (
-                      message.content ? (
-                        <ReactMarkdown
-                          remarkPlugins={remarkPlugins}
-                          rehypePlugins={rehypePlugins}
-                          components={components}
-                        >
-                          {message.content}
-                        </ReactMarkdown>
-                      ) : isLoading ? (
-                        "Thinking..."
+                    <div
+                      className={`max-w-[90%] rounded-md px-3 py-2 text-sm whitespace-pre-wrap leading-relaxed ${
+                        message.role === "user"
+                          ? "bg-zinc-800 text-zinc-100"
+                          : "bg-zinc-900 text-zinc-300 border border-zinc-800 whitespace-normal"
+                      }`}
+                    >
+                      {message.role === "assistant" ? (
+                        text ? (
+                          <ReactMarkdown
+                            remarkPlugins={remarkPlugins}
+                            rehypePlugins={rehypePlugins}
+                            components={components}
+                          >
+                            {text}
+                          </ReactMarkdown>
+                        ) : isResponding ? (
+                          "Thinking..."
+                        ) : null
                       ) : (
-                        ""
-                      )
-                    ) : (
-                      message.content
-                    )}
+                        text
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
               <div ref={bottomRef} />
             </div>
           ) : (
@@ -162,15 +169,15 @@ export function SummaryCard({ portfolioName = "Diego" }: SummaryCardProps) {
             onChange={(event) => setInput(event.target.value)}
             placeholder={`Ask about ${portfolioName}'s profile...`}
             className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500"
-            disabled={isLoading}
+            disabled={isResponding}
           />
           <Button
             type="submit"
-            disabled={isLoading || !input.trim()}
+            disabled={isResponding || !input.trim()}
             variant="secondary"
             className="bg-zinc-800 text-zinc-100 hover:bg-zinc-700 disabled:opacity-50"
           >
-            {isLoading ? "Sending..." : "Send"}
+            {isResponding ? "Thinking..." : "Send"}
           </Button>
         </form>
       </div>

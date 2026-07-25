@@ -1,16 +1,13 @@
-import { mutation } from "../_generated/server";
-import * as Auth from "../_lib/auth";
+import { internalMutation } from "../_generated/server";
 import { getPortfolioId } from "./helpers";
 
 /**
  * Seed the portfolio with initial data.
  * Call this once after setting up the portfolio tables.
  */
-export const seed = mutation({
+export const seed = internalMutation({
   args: {},
   handler: async (ctx) => {
-    await Auth.requireAdmin(ctx);
-
     const portfolioId = await getPortfolioId(ctx);
 
     await ctx.db.patch(portfolioId, {

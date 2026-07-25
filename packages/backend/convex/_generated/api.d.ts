@@ -14,6 +14,11 @@ import type * as authors_helpers from "../authors/helpers.js";
 import type * as authors_mutations from "../authors/mutations.js";
 import type * as authors_projections from "../authors/projections.js";
 import type * as authors_queries from "../authors/queries.js";
+import type * as chat_agent from "../chat/agent.js";
+import type * as chat_helpers from "../chat/helpers.js";
+import type * as chat_internal from "../chat/internal.js";
+import type * as chat_mutations from "../chat/mutations.js";
+import type * as chat_queries from "../chat/queries.js";
 import type * as documents_helpers from "../documents/helpers.js";
 import type * as documents_mutations from "../documents/mutations.js";
 import type * as documents_mutations_admin from "../documents/mutations_admin.js";
@@ -51,6 +56,11 @@ declare const fullApi: ApiFromModules<{
   "authors/mutations": typeof authors_mutations;
   "authors/projections": typeof authors_projections;
   "authors/queries": typeof authors_queries;
+  "chat/agent": typeof chat_agent;
+  "chat/helpers": typeof chat_helpers;
+  "chat/internal": typeof chat_internal;
+  "chat/mutations": typeof chat_mutations;
+  "chat/queries": typeof chat_queries;
   "documents/helpers": typeof documents_helpers;
   "documents/mutations": typeof documents_mutations;
   "documents/mutations_admin": typeof documents_mutations_admin;
@@ -103,6 +113,7 @@ export declare const internal: FilterApi<
 >;
 
 export declare const components: {
+  agent: import("@convex-dev/agent/_generated/component.js").ComponentApi<"agent">;
   betterAuth: import("@convex-dev/better-auth/_generated/component.js").ComponentApi<"betterAuth">;
   resend: import("@convex-dev/resend/_generated/component.js").ComponentApi<"resend">;
   r2: import("@convex-dev/r2/_generated/component.js").ComponentApi<"r2">;
