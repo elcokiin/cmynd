@@ -3,6 +3,7 @@
 import {
   useState,
   useRef,
+  useCallback,
   useEffect,
   useMemo,
   type MouseEvent as ReactMouseEvent,
@@ -45,9 +46,9 @@ export function TerminalView() {
   const [state, setState] = useState<TerminalState>({ cwd: "/" });
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [threadId, setThreadId] = useState<string | null>(null);
+  const [threadError, setThreadError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputHandleRef = useRef<TerminalInputHandle>(null);
-  const threadCreatedRef = useRef(false);
 
   const { results: chatMessages } = useUIMessages(
     api.chat.queries.listMessages,
@@ -55,11 +56,27 @@ export function TerminalView() {
     { initialNumItems: 50, stream: true },
   );
 
-  useEffect(() => {
-    if (threadCreatedRef.current) return;
-    threadCreatedRef.current = true;
-    createThread().then(({ threadId: id }) => setThreadId(id));
+  const THREAD_STORAGE_KEY = "cmynd-terminal-chat-thread-id";
+
+  const initThread = useCallback(async () => {
+    setThreadError(null);
+    try {
+      const stored = localStorage.getItem(THREAD_STORAGE_KEY);
+      if (stored) {
+        setThreadId(stored);
+      } else {
+        const { threadId: id } = await createThread();
+        setThreadId(id);
+        localStorage.setItem(THREAD_STORAGE_KEY, id);
+      }
+    } catch {
+      setThreadError("Failed to initialize chat. Try again.");
+    }
   }, [createThread]);
+
+  useEffect(() => {
+    initThread();
+  }, [initThread]);
 
   const isLoading = profile === undefined || skills === undefined || projects === undefined || experience === undefined;
 
@@ -151,11 +168,11 @@ export function TerminalView() {
   const chatOutput = useMemo(() => {
     if (!chatMessages || chatMessages.length === 0) return "";
 
-    return chatMessages
+    const assistantMessages = chatMessages.filter((m) => m.role === "assistant");
+    return assistantMessages
       .map((msg) => {
         const text = msg.parts.map((p) => ("text" in p ? p.text : "")).join("");
-        const label = msg.role === "user" ? "You" : promptName;
-        return `[${label}] ${text}`;
+        return `[${promptName}] ${text}`;
       })
       .join("\n\n");
   }, [chatMessages, promptName]);
@@ -188,20 +205,18 @@ export function TerminalView() {
 
     if (isAsync) {
       const query = commandLine.replace(/^ask-diego\s+/, "").trim();
-      setHistory((prev) => [
-        ...prev,
-        { command: commandLine, output: "", prompt },
-      ]);
 
       if (threadId) {
+        setHistory((prev) => [
+          ...prev,
+          { command: commandLine, output: "", prompt },
+        ]);
         sendMessage({ threadId, prompt: query });
       } else {
-        setHistory((prev) => {
-          const newHistory = [...prev];
-          const last = newHistory[newHistory.length - 1];
-          if (last) last.output = "\nError: Chat not initialized yet. Try again.";
-          return newHistory;
-        });
+        setHistory((prev) => [
+          ...prev,
+          { command: commandLine, output: "\nChat not initialized yet. Try again.", prompt },
+        ]);
       }
     } else {
       setHistory((prev) => [...prev, { command: commandLine, output, prompt }]);
@@ -223,7 +238,7 @@ export function TerminalView() {
 
   const currentPrompt = getPrompt(state.cwd);
 
-  const hasChat = chatMessages.length > 0;
+  const hasChat = chatMessages && chatMessages.length > 0;
 
   if (isLoading) {
     return (
@@ -257,6 +272,11 @@ export function TerminalView() {
               )}
             </div>
           ))}
+          {threadError && (
+            <div className="text-red-400 whitespace-pre-wrap mt-1 font-mono text-sm leading-relaxed">
+              Error: {threadError}
+            </div>
+          )}
           {hasChat && (
             <div className="text-zinc-300 whitespace-pre-wrap mt-1 font-mono text-sm leading-relaxed">
               {chatOutput}
