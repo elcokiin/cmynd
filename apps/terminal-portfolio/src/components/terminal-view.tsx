@@ -24,6 +24,7 @@ import {
 } from "@/lib/vfs/command-parser";
 import { buildVfs } from "@/lib/build-vfs";
 import { buildNeofetch } from "@/lib/neofetch";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface HistoryEntry {
   command: string;
@@ -33,7 +34,8 @@ interface HistoryEntry {
 
 export function TerminalView() {
   const searchParams = useSearchParams();
-  const hideNeofetch = searchParams.get("neofetch") === "hidden";
+  const isMobile = useIsMobile();
+  const hideNeofetch = searchParams.get("neofetch") === "hidden" || isMobile;
 
   const profile = useQuery(api["portfolio/queries"].getProfile);
   const skills = useQuery(api["portfolio/queries"].listPublicSkills, {});
@@ -46,6 +48,7 @@ export function TerminalView() {
   const [state, setState] = useState<TerminalState>({ cwd: "/" });
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [threadId, setThreadId] = useState<string | null>(null);
+  const [showChat, setShowChat] = useState(false);
   const [threadError, setThreadError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputHandleRef = useRef<TerminalInputHandle>(null);
@@ -56,7 +59,7 @@ export function TerminalView() {
     { initialNumItems: 50, stream: true },
   );
 
-  const THREAD_STORAGE_KEY = "cmynd-terminal-chat-thread-id";
+  const THREAD_STORAGE_KEY = "cmynd-chat-thread-id";
 
   const initThread = useCallback(async () => {
     setThreadError(null);
@@ -199,11 +202,13 @@ export function TerminalView() {
 
     if (clear) {
       setHistory([]);
+      setShowChat(false);
       setState(newState);
       return;
     }
 
     if (isAsync) {
+      setShowChat(true);
       const query = commandLine.replace(/^ask-diego\s+/, "").trim();
 
       if (threadId) {
@@ -277,7 +282,7 @@ export function TerminalView() {
               Error: {threadError}
             </div>
           )}
-          {hasChat && (
+          {showChat && hasChat && (
             <div className="text-zinc-300 whitespace-pre-wrap mt-1 font-mono text-sm leading-relaxed">
               {chatOutput}
             </div>

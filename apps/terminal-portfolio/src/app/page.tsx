@@ -12,14 +12,14 @@ import { ConvexErrorBoundary } from "@/components/convex-error-boundary"
 import { SummaryCard } from "@/components/summary-card"
 import { useIsMobile } from "@/hooks/use-mobile"
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@elcokiin/ui/sheet"
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@elcokiin/ui/dialog"
 import { Button } from "@elcokiin/ui/button"
-import { Menu } from "lucide-react"
+import { Sparkles } from "lucide-react"
 
 export default function Home() {
   const isMobile = useIsMobile()
@@ -47,27 +47,25 @@ export default function Home() {
           </ConvexErrorBoundary>
         </div>
         
-        <Sheet>
-          <SheetTrigger
+        <Dialog>
+          <DialogTrigger
             render={
               <Button
                 variant="outline"
                 size="icon"
-                className="absolute top-4 right-4 z-50 bg-zinc-950 border-zinc-800 text-zinc-100 hover:bg-zinc-800"
+                className="absolute top-4 right-4 z-50 bg-zinc-950 border-zinc-800 text-zinc-100 hover:bg-zinc-800 size-9"
               />
             }
           >
-            <Menu className="h-4 w-4" />
-          </SheetTrigger>
-          <SheetContent side="right" className="bg-zinc-950 border-zinc-800 text-zinc-100 w-[85vw] sm:w-[350px] p-0 flex flex-col h-full border-l-0">
-            <SheetHeader className="sr-only">
-              <SheetTitle>AI Summary</SheetTitle>
-            </SheetHeader>
-            <div className="flex-1 overflow-hidden h-full">
-              <SummaryCard />
-            </div>
-          </SheetContent>
-        </Sheet>
+            <Sparkles className="h-5 w-5" />
+          </DialogTrigger>
+          <DialogContent className="bg-zinc-950 border-zinc-800 text-zinc-100 inset-0 top-0 left-0 w-full h-dvh max-w-none translate-x-0 translate-y-0 m-0 rounded-none p-0 flex flex-col overscroll-contain">
+            <DialogHeader className="sr-only">
+              <DialogTitle>AI Summary</DialogTitle>
+            </DialogHeader>
+            <SummaryCard />
+          </DialogContent>
+        </Dialog>
       </main>
     )
   }

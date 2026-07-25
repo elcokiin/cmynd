@@ -21,6 +21,17 @@ import {
 import { Marker, MarkerContent } from "@elcokiin/ui/marker"
 import ReactMarkdown from "react-markdown"
 import { useMarkdownResponse } from "@/hooks/use-markdown-response"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@elcokiin/ui/alert-dialog"
 
 interface SummaryCardProps {
   portfolioName?: string
@@ -78,7 +89,7 @@ export function SummaryCard({ portfolioName = "Diego" }: SummaryCardProps) {
     event.preventDefault()
 
     const userMessage = input.trim()
-    if (!userMessage || !threadId || messagesStatus === "loading") return
+    if (!userMessage || !threadId || messagesStatus === "LoadingFirstPage") return
 
     setInput("")
     sendMessage({ threadId, prompt: userMessage })
@@ -135,23 +146,11 @@ export function SummaryCard({ portfolioName = "Diego" }: SummaryCardProps) {
   return (
     <Card className="flex flex-col h-full bg-zinc-950 border-zinc-800 text-zinc-100">
       <CardHeader className="pb-4 shrink-0">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-lg text-zinc-100">AI Summary</CardTitle>
-            <CardDescription className="text-zinc-400">
-              Chat with an AI version of me powered by my portfolio files.
-            </CardDescription>
-          </div>
-          {messages.length > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClearHistory}
-              className="text-zinc-500 hover:text-zinc-300"
-            >
-              Clear
-            </Button>
-          )}
+        <div>
+          <CardTitle className="text-lg text-zinc-100">AI Summary</CardTitle>
+          <CardDescription className="text-zinc-400">
+            Chat with an AI version of me powered by my portfolio files.
+          </CardDescription>
         </div>
       </CardHeader>
       <CardContent className="flex-1 overflow-hidden p-0 min-h-0">
@@ -223,11 +222,47 @@ export function SummaryCard({ portfolioName = "Diego" }: SummaryCardProps) {
           </MessageScroller>
         </MessageScrollerProvider>
       </CardContent>
-      <div className="shrink-0 border-t border-zinc-800 p-4">
+      <div className="shrink-0 border-t border-zinc-800 p-3 pb-2 space-y-2">
+        {messages.length > 0 && (
+          <div className="flex justify-center">
+            <AlertDialog>
+              <AlertDialogTrigger
+                render={
+                  <button
+                    type="button"
+                    className="text-[11px] text-zinc-600 hover:text-zinc-400 transition-colors"
+                  >
+                    Clear conversation
+                  </button>
+                }
+              />
+              <AlertDialogContent size="sm">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Clear conversation?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will delete the entire AI conversation and start a new one.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleClearHistory}>
+                    Clear
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        )}
         <form onSubmit={handleSendMessage} className="flex items-center gap-2">
           <Input
             value={input}
             onChange={(event) => setInput(event.target.value)}
+            onFocus={() => {
+              setTimeout(() => {
+                const form = document.querySelector("[data-slot='message-scroller-viewport']")
+                if (form) form.scrollTop = form.scrollHeight
+              }, 300)
+            }}
             placeholder={`Ask about ${portfolioName}'s profile...`}
             className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500"
             disabled={isResponding}

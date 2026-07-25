@@ -2,7 +2,7 @@ import { render, screen, cleanup } from '@testing-library/react'
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest'
 import { SummaryCard } from './summary-card'
 
-const createThreadResult = vi.hoisted(() => ({ current: Promise.resolve({ threadId: "test" }) as Promise<{ threadId: string }> }))
+const createThreadResult = { current: Promise.resolve({ threadId: "test" }) as Promise<{ threadId: string }> }
 
 vi.mock('convex/react', () => ({
   useQuery: vi.fn(),
