@@ -6,7 +6,7 @@
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": ["dist/**", ".vercel/**", ".output/**", ".next/**"],
-      "env": ["VITE_CONVEX_URL", "VITE_CONVEX_SITE_URL", "OPENAI_API_KEY", "ANTHROPIC_API_KEY"]
+      "env": ["VITE_CONVEX_URL", "VITE_CONVEX_SITE_URL", "NEXT_PUBLIC_CONVEX_URL", "OPENAI_API_KEY", "ANTHROPIC_API_KEY"]
     },
     "lint": {
       "dependsOn": ["^lint"]
