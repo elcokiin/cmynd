@@ -37,10 +37,10 @@ export function TerminalView() {
   const isMobile = useIsMobile();
   const hideNeofetch = searchParams.get("neofetch") === "hidden" || isMobile;
 
-  const profile = useQuery(api["portfolio/queries"].getProfile);
-  const skills = useQuery(api["portfolio/queries"].listPublicSkills, {});
-  const projects = useQuery(api["portfolio/queries"].listPublicProjects);
-  const experience = useQuery(api["portfolio/queries"].listPublicExperience);
+  const profile = useQuery(api.portfolio.queries.getProfile);
+  const skills = useQuery(api.portfolio.queries.listPublicSkills, {});
+  const projects = useQuery(api.portfolio.queries.listPublicProjects);
+  const experience = useQuery(api.portfolio.queries.listPublicExperience, {});
 
   const createThread = useMutation(api.chat.mutations.createThread);
   const sendMessage = useMutation(api.chat.mutations.sendMessage);
