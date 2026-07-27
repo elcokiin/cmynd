@@ -1,15 +1,13 @@
-import * as React from "react";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { Button } from "@elcokiin/ui/button";
+import { ImageDropzone } from "@elcokiin/ui/image-dropzone";
 import { Input } from "@elcokiin/ui/input";
 import { Label } from "@elcokiin/ui/label";
-import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 import { useErrorHandler } from "@/hooks/use-error-handler";
-import { UploadIcon, ImageIcon, XIcon, PlusIcon, FileIcon } from "lucide-react";
-import { cn } from "@elcokiin/ui/lib/utils";
+import { ImageIcon, XIcon, PlusIcon, FileIcon } from "lucide-react";
 import { compressImage } from "@/utils/compress-image";
 
 import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
@@ -110,19 +108,6 @@ export function ProjectImageManager({
     },
     [pendingFiles, onPendingChange],
   );
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop: (acceptedFiles) => {
-      const file = acceptedFiles[0];
-      if (file) handleDrop(file);
-    },
-    accept: { "image/*": [] },
-    maxFiles: 1,
-    noClick: false,
-    noKeyboard: false,
-  });
-  const dropzoneRootProps =
-    getRootProps() as React.HTMLAttributes<HTMLDivElement>;
 
   const handleRemoveSaved = useCallback(
     async (index: number) => {
@@ -282,38 +267,10 @@ export function ProjectImageManager({
           </div>
         )}
 
-        <div
-          {...dropzoneRootProps}
-          className={cn(
-            "relative flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 transition-all duration-200",
-            isDragActive
-              ? "border-primary bg-primary/5 scale-[1.02]"
-              : "border-muted-foreground/25 bg-muted/50 hover:border-muted-foreground/40 hover:bg-muted/70",
-          )}
-        >
-          <input {...getInputProps()} aria-label="Upload project image" />
-          <div
-            className={cn(
-              "rounded-full p-3 shadow-sm transition-all duration-200",
-              isDragActive ? "bg-primary/10 scale-110" : "bg-background",
-            )}
-          >
-            <UploadIcon
-              className={cn(
-                "h-5 w-5 transition-colors duration-200",
-                isDragActive ? "text-primary" : "text-muted-foreground",
-              )}
-            />
-          </div>
-          <div className="text-sm font-medium text-muted-foreground">
-            {isDragActive
-              ? "Drop your image here"
-              : "Drag & drop or click to upload"}
-          </div>
-          <div className="text-xs text-muted-foreground/70">
-            Images are compressed to JPEG, max 10MB
-          </div>
-        </div>
+        <ImageDropzone
+          onDrop={handleDrop}
+          hint="Images are compressed to JPEG, max 10MB"
+        />
 
         <Button
           type="button"
