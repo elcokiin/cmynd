@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import { api } from "@elcokiin/backend/convex/_generated/api";
-import { ProjectsList } from "@/components/portfolio/projects-list";
+import { ProjectsList } from "@/components/portfolio/projects/projects-list";
 
 export const Route = createFileRoute("/_auth/admin/portfolio/projects")({
   component: ProjectsPage,

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import { api } from "@elcokiin/backend/convex/_generated/api";
-import { ExperienceList } from "@/components/portfolio/experience-list";
+import { ExperienceList } from "@/components/portfolio/experience/experience-list";
 
 export const Route = createFileRoute("/_auth/admin/portfolio/experience")({
   component: ExperiencePage,

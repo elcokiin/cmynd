@@ -1,6 +1,6 @@
 import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
 
-import { useEffect } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { z } from "zod";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery } from "convex/react";
@@ -20,6 +20,7 @@ import { UserIcon, ImageIcon, FileTextIcon, CheckIcon, ClockIcon, LoaderIcon } f
 
 import { InputWithIcon, TextareaWithIcon } from "@/components/ui/input-with-icon";
 import { useErrorHandler } from "@/hooks/use-error-handler";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { normalizeOptionalText } from "@/lib/text";
 
 const createAuthorSchema = z.object({
@@ -29,6 +30,35 @@ const createAuthorSchema = z.object({
 });
 
 type CreateAuthorFormValues = z.infer<typeof createAuthorSchema>;
+
+function AvatarPreview({ url }: { url: string }) {
+  const debouncedUrl = useDebouncedValue(url.trim(), 400);
+  const [error, setError] = useState(false);
+
+  const validUrl = useMemo(() => {
+    if (!debouncedUrl) return "";
+    try {
+      const parsed = new URL(debouncedUrl);
+      return parsed.protocol === "http:" || parsed.protocol === "https:" ? debouncedUrl : "";
+    } catch {
+      return "";
+    }
+  }, [debouncedUrl]);
+
+  useEffect(() => { setError(false); }, [debouncedUrl]);
+
+  if (!validUrl || error) return null;
+  return (
+    <div className="relative size-10 shrink-0 overflow-hidden rounded-full border bg-muted">
+      <img
+        src={validUrl}
+        alt="Preview"
+        className="size-full object-cover"
+        onError={() => setError(true)}
+      />
+    </div>
+  );
+}
 
 interface CreateAuthorDialogProps {
   open: boolean;
@@ -134,18 +164,7 @@ export function CreateAuthorDialog({ open, onOpenChange, onSuccess }: CreateAuth
                 <div className="grid gap-2">
                   <Label htmlFor={field.name} className="text-sm font-medium">Avatar</Label>
                   <div className="flex items-center gap-3">
-                    {field.state.value?.trim() && (
-                      <div className="relative size-10 shrink-0 overflow-hidden rounded-full border bg-muted">
-                        <img
-                          src={field.state.value.trim()}
-                          alt="Preview"
-                          className="size-full object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = "none";
-                          }}
-                        />
-                      </div>
-                    )}
+                    <AvatarPreview url={field.state.value} />
                     <InputWithIcon
                       icon={<ImageIcon />}
                       id={field.name}

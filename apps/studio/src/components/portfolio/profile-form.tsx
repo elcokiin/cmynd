@@ -1,14 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { z } from "zod";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "convex/react";
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { Button } from "@elcokiin/ui/button";
 import { Label } from "@elcokiin/ui/label";
+import { Field, FieldLabel, FieldError } from "@elcokiin/ui/field";
 import { Separator } from "@elcokiin/ui/separator";
 import { SaveIcon, ImageIcon, UserIcon, FileTextIcon, LightbulbIcon, TagIcon } from "lucide-react";
 import { InputWithIcon, TextareaWithIcon } from "@/components/ui/input-with-icon";
 import { useErrorHandler } from "@/hooks/use-error-handler";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { normalizeOptionalText } from "@/lib/text";
 import { SocialLinksField } from "./social-links-field";
 import { HobbiesField } from "./hobbies-field";
@@ -61,6 +63,35 @@ function SectionHeader({ label }: { label: string }) {
       <Separator className="flex-1" />
       <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider shrink-0">{label}</span>
       <Separator className="flex-1" />
+    </div>
+  );
+}
+
+function AvatarPreview({ url }: { url: string }) {
+  const debouncedUrl = useDebouncedValue(url.trim(), 400);
+  const [error, setError] = useState(false);
+
+  const validUrl = useMemo(() => {
+    if (!debouncedUrl) return "";
+    try {
+      const parsed = new URL(debouncedUrl);
+      return parsed.protocol === "http:" || parsed.protocol === "https:" ? debouncedUrl : "";
+    } catch {
+      return "";
+    }
+  }, [debouncedUrl]);
+
+  useEffect(() => { setError(false); }, [debouncedUrl]);
+
+  if (!validUrl || error) return null;
+  return (
+    <div className="relative size-10 shrink-0 overflow-hidden rounded-full border bg-muted">
+      <img
+        src={validUrl}
+        alt="Preview"
+        className="size-full object-cover"
+        onError={() => setError(true)}
+      />
     </div>
   );
 }
@@ -137,8 +168,10 @@ export function ProfileForm({ portfolio }: ProfileFormProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <form.Field name="name">
               {(field) => (
-                <div className="grid gap-2.5">
-                  <Label htmlFor={field.name}>Name</Label>
+                <Field>
+                  <FieldLabel htmlFor={field.name}>
+                    Name <span className="text-destructive">*</span>
+                  </FieldLabel>
                   <InputWithIcon
                     icon={<UserIcon />}
                     id={field.name}
@@ -147,12 +180,8 @@ export function ProfileForm({ portfolio }: ProfileFormProps) {
                     placeholder="Your name"
                     required
                   />
-                  {field.state.meta.errors.map((error) => (
-                    <p key={error?.message} className="text-xs text-destructive">
-                      {error?.message}
-                    </p>
-                  ))}
-                </div>
+                  <FieldError errors={field.state.meta.errors} />
+                </Field>
               )}
             </form.Field>
 
@@ -177,18 +206,7 @@ export function ProfileForm({ portfolio }: ProfileFormProps) {
               <div className="grid gap-2.5">
                 <Label htmlFor={field.name}>Avatar URL</Label>
                 <div className="flex items-center gap-3">
-                  {field.state.value?.trim() && (
-                    <div className="relative size-10 shrink-0 overflow-hidden rounded-full border bg-muted">
-                      <img
-                        src={field.state.value.trim()}
-                        alt="Preview"
-                        className="size-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = "none";
-                        }}
-                      />
-                    </div>
-                  )}
+                  <AvatarPreview url={field.state.value} />
                   <InputWithIcon
                     icon={<ImageIcon />}
                     id={field.name}
