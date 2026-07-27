@@ -12,7 +12,7 @@ function ProfilePage() {
   const portfolio = useQuery(api.portfolio.queries.getPortfolioForEdit);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-4xl mx-auto">
       <div>
         <h2 className="text-3xl font-bold mb-2">Profile</h2>
         <p className="text-muted-foreground">
@@ -21,10 +21,10 @@ function ProfilePage() {
       </div>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="hidden">
           <CardTitle>Profile Information</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6 md:p-8">
           {portfolio === undefined ? (
             <div className="py-10 text-center">
               <p className="text-muted-foreground">Loading profile...</p>

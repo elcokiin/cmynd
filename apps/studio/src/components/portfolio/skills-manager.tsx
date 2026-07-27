@@ -126,21 +126,28 @@ export function SkillsManager({ skills }: SkillsManagerProps) {
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="p-6 space-y-4">
           {rows.length === 0 ? (
-            <div className="py-10 text-center">
-              <WrenchIcon className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
-              <p className="text-muted-foreground">No skills yet</p>
+            <div className="py-12 text-center">
+              <div className="inline-flex size-14 items-center justify-center rounded-full bg-muted mb-3">
+                <WrenchIcon className="h-7 w-7 text-muted-foreground" />
+              </div>
+              <p className="text-sm font-medium text-foreground mb-1">No skills yet</p>
+              <p className="text-xs text-muted-foreground mb-4">Add your first skill to get started</p>
+              <Button size="sm" onClick={addRow}>
+                <PlusIcon className="h-4 w-4 mr-1" />
+                Add Skill
+              </Button>
             </div>
           ) : (
             rows.map((row, index) => (
               <div
                 key={index}
-                className="flex items-center gap-4 p-4 border rounded-lg"
+                className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 border rounded-lg hover:bg-muted/30 transition-colors"
               >
-                <div className="flex-1 grid grid-cols-4 gap-3">
-                  <div className="grid gap-1">
-                    <Label className="text-xs">Name</Label>
+                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  <div className="grid gap-1.5">
+                    <Label className="text-xs font-medium">Name</Label>
                     <Input
                       value={row.name}
                       onChange={(e) => updateRow(index, "name", e.target.value)}
@@ -148,8 +155,8 @@ export function SkillsManager({ skills }: SkillsManagerProps) {
                       placeholder="Skill name"
                     />
                   </div>
-                  <div className="grid gap-1">
-                    <Label className="text-xs">Category</Label>
+                  <div className="grid gap-1.5">
+                    <Label className="text-xs font-medium">Category</Label>
                     <Input
                       value={row.category}
                       onChange={(e) => updateRow(index, "category", e.target.value)}
@@ -157,8 +164,8 @@ export function SkillsManager({ skills }: SkillsManagerProps) {
                       placeholder="Category"
                     />
                   </div>
-                  <div className="grid gap-1">
-                    <Label className="text-xs">
+                  <div className="grid gap-1.5">
+                    <Label className="text-xs font-medium">
                       Proficiency: {row.proficiency}
                     </Label>
                     <Slider
@@ -170,7 +177,7 @@ export function SkillsManager({ skills }: SkillsManagerProps) {
                       step={1}
                     />
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 pt-1 sm:pt-0">
                     <Switch
                       checked={row.isVisible}
                       onCheckedChange={(checked) => {
@@ -178,7 +185,7 @@ export function SkillsManager({ skills }: SkillsManagerProps) {
                         handleSave(index);
                       }}
                     />
-                    <Label className="text-xs">Visible</Label>
+                    <Label className="text-xs font-medium">Visible</Label>
                   </div>
                 </div>
                 <Button
@@ -186,7 +193,7 @@ export function SkillsManager({ skills }: SkillsManagerProps) {
                   variant="ghost"
                   size="icon"
                   onClick={() => row._id && setDeleteTarget(row._id)}
-                  className="shrink-0 text-destructive"
+                  className="shrink-0 text-destructive self-end sm:self-center"
                 >
                   <Trash2Icon className="h-4 w-4" />
                 </Button>

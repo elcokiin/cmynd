@@ -11,7 +11,7 @@ function ProjectsPage() {
   const projects = useQuery(api.portfolio.queries.listAllProjects);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-4xl mx-auto">
       <div>
         <h2 className="text-3xl font-bold mb-2">Projects</h2>
         <p className="text-muted-foreground">

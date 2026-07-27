@@ -31,14 +31,17 @@ export function TagsInput({ value, onChange, placeholder, className }: TagsInput
       e.preventDefault();
       addTag(input);
     } else if (e.key === "Backspace" && !input && value.length > 0) {
-      removeTag(value[value.length - 1]!);
+      e.preventDefault();
+      const lastTag = value[value.length - 1]!;
+      onChange(value.slice(0, -1));
+      setInput(lastTag);
     }
   };
 
   return (
     <div
       className={cn(
-        "flex flex-wrap gap-1.5 p-2 rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring",
+        "flex flex-wrap gap-1.5 p-2 rounded-none border border-input bg-background focus-within:ring-1 focus-within:ring-ring",
         className,
       )}
     >

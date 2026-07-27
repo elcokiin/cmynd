@@ -23,18 +23,20 @@ function MobileTabBar({
   onTabChange,
 }: MobileTabBarProps): ReactNode {
   return (
-    <div className="md:hidden border-b flex">
-      {tabs.map((tab) => (
-        <MobileTabButton
-          key={tab.id}
-          active={activeTab === tab.id}
-          onClick={() => onTabChange(tab.id)}
-          icon={tab.icon}
-          label={tab.label}
-          badge={tab.badge}
-          disabled={tab.disabled}
-        />
-      ))}
+    <div className="md:hidden fixed bottom-0 inset-x-0 z-50 border-t bg-background pb-[env(safe-area-inset-bottom)]">
+      <div className="flex">
+        {tabs.map((tab) => (
+          <MobileTabButton
+            key={tab.id}
+            active={activeTab === tab.id}
+            onClick={() => onTabChange(tab.id)}
+            icon={tab.icon}
+            label={tab.label}
+            badge={tab.badge}
+            disabled={tab.disabled}
+          />
+        ))}
+      </div>
     </div>
   );
 }
@@ -62,16 +64,16 @@ function MobileTabButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "flex-1 flex items-center justify-center gap-2 py-3 text-sm transition-colors",
-        active && "border-b-2 border-primary text-primary",
+        "flex-1 flex flex-col items-center gap-1 py-3 text-xs transition-colors",
+        active && "text-primary bg-primary/5",
         !active && "text-muted-foreground hover:text-foreground",
         disabled && "opacity-50 cursor-not-allowed",
       )}
     >
-      <Icon className="h-4 w-4" />
+      <Icon className="h-5 w-5" />
       <span>{label}</span>
       {badge !== undefined && badge > 0 && (
-        <span className="bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded-full">
+        <span className="absolute top-1.5 ml-6 bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 rounded-full">
           {badge}
         </span>
       )}

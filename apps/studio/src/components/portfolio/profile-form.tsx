@@ -4,9 +4,9 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation } from "convex/react";
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { Button } from "@elcokiin/ui/button";
-import { Input } from "@elcokiin/ui/input";
 import { Label } from "@elcokiin/ui/label";
-import { SaveIcon, ImageIcon, UserIcon, FileTextIcon, LightbulbIcon } from "lucide-react";
+import { Separator } from "@elcokiin/ui/separator";
+import { SaveIcon, ImageIcon, UserIcon, FileTextIcon, LightbulbIcon, TagIcon } from "lucide-react";
 import { InputWithIcon, TextareaWithIcon } from "@/components/ui/input-with-icon";
 import { useErrorHandler } from "@/hooks/use-error-handler";
 import { normalizeOptionalText } from "@/lib/text";
@@ -53,6 +53,16 @@ const profileSchema = z.object({
 
 interface ProfileFormProps {
   portfolio: AdminPortfolio | null;
+}
+
+function SectionHeader({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      <Separator className="flex-1" />
+      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider shrink-0">{label}</span>
+      <Separator className="flex-1" />
+    </div>
+  );
 }
 
 export function ProfileForm({ portfolio }: ProfileFormProps) {
@@ -120,136 +130,171 @@ export function ProfileForm({ portfolio }: ProfileFormProps) {
       }}
       onReset={() => form.reset()}
     >
-      <div className="grid gap-6">
-        <form.Field name="name">
-          {(field) => (
-            <div className="grid gap-2">
-              <Label htmlFor={field.name}>Name</Label>
-              <InputWithIcon
-                icon={<UserIcon />}
-                id={field.name}
-                value={field.state.value}
-                onChange={(e) => field.handleChange(e.target.value)}
-                placeholder="Your name"
-                required
-              />
-              {field.state.meta.errors.map((error) => (
-                <p key={error?.message} className="text-xs text-destructive">
-                  {error?.message}
-                </p>
-              ))}
-            </div>
-          )}
-        </form.Field>
+      <div className="grid gap-10">
+        <div className="space-y-6">
+          <SectionHeader label="Basic Information" />
 
-        <form.Field name="headline">
-          {(field) => (
-            <div className="grid gap-2">
-              <Label htmlFor={field.name}>Headline</Label>
-              <Input
-                id={field.name}
-                value={field.state.value}
-                onChange={(e) => field.handleChange(e.target.value)}
-                placeholder="Full-Stack Developer"
-              />
-            </div>
-          )}
-        </form.Field>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <form.Field name="name">
+              {(field) => (
+                <div className="grid gap-2.5">
+                  <Label htmlFor={field.name}>Name</Label>
+                  <InputWithIcon
+                    icon={<UserIcon />}
+                    id={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    placeholder="Your name"
+                    required
+                  />
+                  {field.state.meta.errors.map((error) => (
+                    <p key={error?.message} className="text-xs text-destructive">
+                      {error?.message}
+                    </p>
+                  ))}
+                </div>
+              )}
+            </form.Field>
 
-        <form.Field name="avatarUrl">
-          {(field) => (
-            <div className="grid gap-2">
-              <Label htmlFor={field.name}>Avatar URL</Label>
-              <div className="flex items-center gap-3">
-                {field.state.value?.trim() && (
-                  <div className="relative size-10 shrink-0 overflow-hidden rounded-full border bg-muted">
-                    <img
-                      src={field.state.value.trim()}
-                      alt="Preview"
-                      className="size-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = "none";
-                      }}
-                    />
-                  </div>
-                )}
-                <InputWithIcon
-                  icon={<ImageIcon />}
-                  id={field.name}
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="https://example.com/avatar.jpg"
-                  type="url"
-                  className="flex-1"
-                />
+            <form.Field name="headline">
+              {(field) => (
+                <div className="grid gap-2.5">
+                  <Label htmlFor={field.name}>Headline</Label>
+                  <InputWithIcon
+                    icon={<TagIcon />}
+                    id={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    placeholder="Full-Stack Developer"
+                  />
+                </div>
+              )}
+            </form.Field>
+          </div>
+
+          <form.Field name="avatarUrl">
+            {(field) => (
+              <div className="grid gap-2.5">
+                <Label htmlFor={field.name}>Avatar URL</Label>
+                <div className="flex items-center gap-3">
+                  {field.state.value?.trim() && (
+                    <div className="relative size-10 shrink-0 overflow-hidden rounded-full border bg-muted">
+                      <img
+                        src={field.state.value.trim()}
+                        alt="Preview"
+                        className="size-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                    </div>
+                  )}
+                  <InputWithIcon
+                    icon={<ImageIcon />}
+                    id={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    placeholder="https://example.com/avatar.jpg"
+                    type="url"
+                    className="flex-1"
+                  />
+                </div>
+                {field.state.meta.errors.map((error) => (
+                  <p key={error?.message} className="text-xs text-destructive">
+                    {error?.message}
+                  </p>
+                ))}
               </div>
-              {field.state.meta.errors.map((error) => (
-                <p key={error?.message} className="text-xs text-destructive">
-                  {error?.message}
-                </p>
-              ))}
-            </div>
-          )}
-        </form.Field>
+            )}
+          </form.Field>
+        </div>
 
-        <form.Field name="about">
-          {(field) => (
-            <div className="grid gap-2">
-              <Label htmlFor={field.name}>About (Markdown)</Label>
-              <TextareaWithIcon
-                icon={<FileTextIcon />}
-                id={field.name}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="space-y-6">
+            <SectionHeader label="About" />
+
+            <form.Field name="about">
+              {(field) => (
+                <div className="grid gap-2.5">
+                  <Label htmlFor={field.name}>About (Markdown)</Label>
+                  <TextareaWithIcon
+                    icon={<FileTextIcon />}
+                    id={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    placeholder="Write about yourself..."
+                    rows={5}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Supports Markdown formatting.
+                  </p>
+                </div>
+              )}
+            </form.Field>
+          </div>
+
+          <div className="space-y-6">
+            <SectionHeader label="Philosophy" />
+
+            <form.Field name="philosophy">
+              {(field) => (
+                <div className="grid gap-2.5">
+                  <Label htmlFor={field.name}>Philosophy (Markdown)</Label>
+                  <TextareaWithIcon
+                    icon={<LightbulbIcon />}
+                    id={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    placeholder="Your philosophy..."
+                    rows={5}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Your guiding principles and approach to work.
+                  </p>
+                </div>
+              )}
+            </form.Field>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          <SectionHeader label="Social Links" />
+
+          <form.Field name="socialLinks">
+            {(field) => (
+              <SocialLinksField
                 value={field.state.value}
-                onChange={(e) => field.handleChange(e.target.value)}
-                placeholder="Write about yourself..."
-                rows={5}
+                onChange={field.handleChange}
               />
-            </div>
-          )}
-        </form.Field>
+            )}
+          </form.Field>
+        </div>
 
-        <form.Field name="philosophy">
-          {(field) => (
-            <div className="grid gap-2">
-              <Label htmlFor={field.name}>Philosophy (Markdown)</Label>
-              <TextareaWithIcon
-                icon={<LightbulbIcon />}
-                id={field.name}
+        <div className="space-y-6">
+          <SectionHeader label="Hobbies" />
+
+          <form.Field name="hobbies">
+            {(field) => (
+              <HobbiesField
                 value={field.state.value}
-                onChange={(e) => field.handleChange(e.target.value)}
-                placeholder="Your philosophy..."
-                rows={4}
+                onChange={field.handleChange}
               />
-            </div>
-          )}
-        </form.Field>
+            )}
+          </form.Field>
+        </div>
 
-        <form.Field name="socialLinks">
-          {(field) => (
-            <SocialLinksField
-              value={field.state.value}
-              onChange={field.handleChange}
-            />
-          )}
-        </form.Field>
+        <div className="space-y-6">
+          <SectionHeader label="Playlist" />
 
-        <form.Field name="hobbies">
-          {(field) => (
-            <HobbiesField
-              value={field.state.value}
-              onChange={field.handleChange}
-            />
-          )}
-        </form.Field>
-
-        <form.Field name="playlist">
-          {(field) => (
-            <PlaylistField
-              value={field.state.value}
-              onChange={field.handleChange}
-            />
-          )}
-        </form.Field>
+          <form.Field name="playlist">
+            {(field) => (
+              <PlaylistField
+                value={field.state.value}
+                onChange={field.handleChange}
+              />
+            )}
+          </form.Field>
+        </div>
 
         <form.Subscribe>
           {(state) => (

@@ -20,7 +20,9 @@ export default defineConfig({
     noExternal: [
       "@convex-dev/better-auth",
       "next-themes",
-
+      "@elcokiin/ui",
+      "@elcokiin/errors",
+      "@elcokiin/backend",
     ],
   },
 });
