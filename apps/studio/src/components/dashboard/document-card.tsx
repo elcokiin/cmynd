@@ -6,6 +6,7 @@ import { useQuery } from "convex/react";
 import { formatDate } from "@/lib/format";
 import { DocumentCardMenu } from "./document-card-menu";
 import { documentTypeConfig } from "./document-type-config";
+import { OptimizedImage } from "@elcokiin/ui/optimized-image";
 
 type DocumentCardProps = {
   document: DocumentListItem;
@@ -62,9 +63,10 @@ function DocumentCardWithCover({
     >
       {/* Cover Image */}
       <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
-        <img
+        <OptimizedImage
           src={coverUrl}
           alt=""
+          layout="fullWidth"
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
         {/* Gradient Overlay */}

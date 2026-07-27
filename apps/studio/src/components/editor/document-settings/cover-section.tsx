@@ -6,6 +6,7 @@ import { Textarea } from "@elcokiin/ui/textarea";
 import { cn } from "@elcokiin/ui/lib/utils";
 import { useMutation, useQuery } from "convex/react";
 import { ImageDropzone } from "@elcokiin/ui/image-dropzone";
+import { OptimizedImage } from "@elcokiin/ui/optimized-image";
 import {
   ImageIcon,
   SparklesIcon,
@@ -187,9 +188,10 @@ export function CoverSection({ documentId }: CoverSectionProps) {
         <div className="space-y-4">
           {coverImageUrl ? (
             <div className="relative aspect-video w-full overflow-hidden rounded-lg border bg-muted">
-              <img
+              <OptimizedImage
                 src={coverImageUrl}
                 alt="Cover"
+                layout="fullWidth"
                 className="h-full w-full object-cover"
               />
               <Button

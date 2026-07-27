@@ -17,6 +17,7 @@ import { Button } from "@elcokiin/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@elcokiin/ui/card";
 import { Label } from "@elcokiin/ui/label";
 import { cn } from "@elcokiin/ui/lib/utils";
+import { OptimizedImage } from "@elcokiin/ui/optimized-image";
 
 import { useAsyncAction } from "@/hooks/use-async-action";
 
@@ -145,9 +146,10 @@ export function ReviewSidebar({
           {/* Cover Image */}
           {coverImageUrl ? (
             <div className="relative aspect-video w-full overflow-hidden rounded-md border">
-              <img
+              <OptimizedImage
                 src={coverImageUrl}
                 alt="Document Cover"
+                layout="fullWidth"
                 className="object-cover w-full h-full"
               />
             </div>
