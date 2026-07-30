@@ -39,6 +39,7 @@ export const updateProfile = mutation({
           platform: v.string(),
           url: v.string(),
           label: v.optional(v.string()),
+          image: v.optional(v.string()),
         }),
       ),
     ),

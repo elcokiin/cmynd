@@ -6,6 +6,7 @@ export type SocialLink = {
   platform: string;
   url: string;
   label?: string;
+  image?: string;
 };
 
 export type Hobby = {

@@ -20,9 +20,10 @@ type EmojiItem = {
 type EmojiPickerProps = {
   value: string;
   onChange: (emoji: string) => void;
+  placeholder?: string;
 };
 
-export function EmojiPicker({ value, onChange }: EmojiPickerProps) {
+export function EmojiPicker({ value, onChange, placeholder = "Emoji" }: EmojiPickerProps) {
   const [open, setOpen] = useState(false);
   const [emojis, setEmojis] = useState<EmojiItem[]>([]);
   const [search, setSearch] = useState("");
@@ -81,13 +82,14 @@ export function EmojiPicker({ value, onChange }: EmojiPickerProps) {
           <button
             type="button"
             className={cn(
-              buttonVariants({ variant: "ghost", size: "icon-xs" }),
-              "cursor-pointer text-2xl leading-none",
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "cursor-pointer w-full h-9 gap-1.5",
+              value ? "text-2xl leading-none" : "text-xs text-muted-foreground",
             )}
           />
         }
       >
-        {value}
+        {value || placeholder}
       </PopoverTrigger>
       <PopoverContent className="w-80 border p-3" align="start">
         <Input

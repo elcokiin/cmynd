@@ -23,6 +23,7 @@ const socialLinkSchema = z.object({
   platform: z.string(),
   url: z.string(),
   label: z.string().optional(),
+  image: z.string().optional(),
 });
 
 const hobbySchema = z.object({

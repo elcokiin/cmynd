@@ -1,6 +1,7 @@
-import { PlusIcon, Trash2Icon, HeartIcon } from "lucide-react";
+import { PlusIcon, Trash2Icon } from "lucide-react";
 import { Button } from "@elcokiin/ui/button";
 import { Input } from "@elcokiin/ui/input";
+import { EmojiPicker } from "@elcokiin/ui/emoji-picker";
 import type { Hobby } from "@elcokiin/backend/lib/types/portfolio";
 
 interface HobbiesFieldProps {
@@ -34,13 +35,6 @@ export function HobbiesField({ value, onChange }: HobbiesFieldProps) {
             key={index}
             className="flex items-start gap-3 p-3 border rounded-lg bg-card hover:bg-muted/30 transition-colors"
           >
-            <div className="flex size-8 shrink-0 items-center justify-center rounded-md border bg-muted mt-0.5">
-              {hobby.emoji ? (
-                <span className="text-base leading-none">{hobby.emoji}</span>
-              ) : (
-                <HeartIcon className="h-4 w-4 text-muted-foreground" />
-              )}
-            </div>
             <div className="flex-1 space-y-2">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <Input
@@ -49,11 +43,10 @@ export function HobbiesField({ value, onChange }: HobbiesFieldProps) {
                   onChange={(e) => updateHobby(index, "name", e.target.value)}
                   className="h-9"
                 />
-                <Input
-                  placeholder="Emoji (optional)"
+                <EmojiPicker
                   value={hobby.emoji ?? ""}
-                  onChange={(e) => updateHobby(index, "emoji", e.target.value)}
-                  className="h-9"
+                  onChange={(val) => updateHobby(index, "emoji", val)}
+                  placeholder="Pick emoji"
                 />
               </div>
               <Input

@@ -1,4 +1,4 @@
-import { PlusIcon, Trash2Icon, LinkIcon } from "lucide-react";
+import { PlusIcon, Trash2Icon } from "lucide-react";
 import { Button } from "@elcokiin/ui/button";
 import { Input } from "@elcokiin/ui/input";
 import type { SocialLink } from "@elcokiin/backend/lib/types/portfolio";
@@ -10,7 +10,7 @@ interface SocialLinksFieldProps {
 
 export function SocialLinksField({ value, onChange }: SocialLinksFieldProps) {
   const addLink = () => {
-    onChange([...value, { platform: "", url: "", label: "" }]);
+    onChange([...value, { platform: "", url: "", label: "", image: "" }]);
   };
 
   const removeLink = (index: number) => {
@@ -34,9 +34,6 @@ export function SocialLinksField({ value, onChange }: SocialLinksFieldProps) {
             key={index}
             className="flex items-start gap-3 p-3 border rounded-lg bg-card hover:bg-muted/30 transition-colors"
           >
-            <div className="flex size-8 shrink-0 items-center justify-center rounded-md border bg-muted mt-0.5">
-              <LinkIcon className="h-4 w-4 text-muted-foreground" />
-            </div>
             <div className="flex-1 space-y-2">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <Input
@@ -56,6 +53,12 @@ export function SocialLinksField({ value, onChange }: SocialLinksFieldProps) {
                 placeholder="Label (optional)"
                 value={link.label ?? ""}
                 onChange={(e) => updateLink(index, "label", e.target.value)}
+                className="h-9"
+              />
+              <Input
+                placeholder="Image URL (optional)"
+                value={link.image ?? ""}
+                onChange={(e) => updateLink(index, "image", e.target.value)}
                 className="h-9"
               />
             </div>
