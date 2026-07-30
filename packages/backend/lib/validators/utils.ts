@@ -1,22 +1,10 @@
-import { v, type Validator } from "convex/values";
+import { paginationResultValidator } from "convex/server";
+import type { Validator, Value } from "convex/values";
 
-// Creates paginated validator wrapper for query results
-// Supports Convex v1.31+ pagination fields (pageStatus, splitCursor)
-export function paginatedValidator<T>(itemValidator: Validator<T, any, any>) {
-  return v.object({
-    page: v.array(itemValidator),
-    isDone: v.boolean(),
-    continueCursor: v.string(),
-    // Convex v1.31+ fields for split pagination
-    pageStatus: v.optional(
-      v.union(
-        v.literal("SplitRecommended"),
-        v.literal("SplitRequired"),
-        v.null(),
-      ),
-    ),
-    splitCursor: v.optional(v.union(v.string(), v.null())),
-  });
+export function paginatedValidator<T extends Value>(
+  itemValidator: Validator<T, "required", string>,
+) {
+  return paginationResultValidator(itemValidator);
 }
 
 // Type helper for paginated results

@@ -3,12 +3,15 @@ import { query } from "../_generated/server";
 import { paginationOptsValidator } from "convex/server";
 import { components } from "../_generated/api";
 import { listUIMessages, syncStreams, vStreamArgs } from "@convex-dev/agent";
+import { ErrorCode, throwConvexError } from "@elcokiin/errors";
 
 export const getPortfolioData = query({
   args: {},
   handler: async (ctx) => {
     const portfolio = await ctx.db.query("portfolio").first();
-    if (!portfolio) throw new Error("Portfolio not found");
+    if (!portfolio) {
+      throwConvexError(ErrorCode.PORTFOLIO_NOT_FOUND);
+    }
 
     const skills = await ctx.db
       .query("skills")

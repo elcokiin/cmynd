@@ -1014,16 +1014,25 @@ interface ColorPickerContentProps extends React.ComponentProps<
 }
 
 function ColorPickerContent(props: ColorPickerContentProps) {
-  const { asChild, className, children, ...popoverContentProps } = props;
+  const {
+    asChild,
+    className,
+    children,
+    style,
+    ...popoverContentProps
+  } = props;
   const context = useColorPickerContext("ColorPickerContent");
 
   if (context.inline) {
     const ContentPrimitive = asChild ? SlotPrimitive : "div";
+    const inlineStyle =
+      typeof style === "function" ? undefined : style;
 
     return (
       <ContentPrimitive
         data-slot="color-picker-content"
         {...popoverContentProps}
+        style={inlineStyle}
         className={cn("flex w-[340px] flex-col gap-4 p-4", className)}
       >
         {children}
@@ -1035,6 +1044,7 @@ function ColorPickerContent(props: ColorPickerContentProps) {
     <PopoverContent
       data-slot="color-picker-content"
       {...popoverContentProps}
+      style={style}
       className={cn("flex w-[340px] flex-col gap-4 p-4", className)}
     >
       {children}

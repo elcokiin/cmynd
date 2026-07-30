@@ -9,19 +9,6 @@ export const phraseValidator = v.object({
   context: v.optional(v.string()),
 });
 
-// Schema validator - used by defineTable() in schema.ts
-export const authorValidator = v.object({
-  name: v.string(),
-  avatarUrl: v.optional(v.string()),
-  userId: v.optional(v.string()),
-  createdBy: v.optional(v.string()),
-  bio: v.optional(v.string()),
-  phrases: v.optional(v.array(phraseValidator)),
-  isVerified: v.optional(v.boolean()),
-  createdAt: v.number(),
-  updatedAt: v.number(),
-});
-
 // Query return validators - API responses only, no schema impact
 // Excludes userId field for security
 export const publicAuthorValidator = v.object({

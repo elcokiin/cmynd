@@ -108,8 +108,9 @@ export async function isSkillNameTaken(
 ) {
   const existing = await ctx.db
     .query("skills")
-    .withIndex("by_category", (q) => q.eq("category", category))
-    .filter((q) => q.eq(q.field("name"), name))
+    .withIndex("by_category_and_name", (q) =>
+      q.eq("category", category).eq("name", name),
+    )
     .first();
 
   if (!existing) return false;

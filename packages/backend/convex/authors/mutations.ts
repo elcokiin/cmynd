@@ -44,14 +44,11 @@ export const update = mutation({
     phrases: v.optional(v.array(phraseValidator)),
   },
   handler: async (ctx, args): Promise<void> => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throwConvexError(ErrorCode.UNAUTHENTICATED);
-    }
+    const userId = await Auth.requireAuth(ctx);
 
     const author = await getAuthorById(ctx, args.authorId);
 
-    if (author.userId !== identity.subject) {
+    if (author.userId !== userId) {
       throwConvexError(ErrorCode.AUTHOR_OWNERSHIP);
     }
 
@@ -88,10 +85,7 @@ export const createAuthor = mutation({
     avatarUrl: v.optional(v.string()),
   },
   handler: async (ctx, args): Promise<Id<"authors">> => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throwConvexError(ErrorCode.UNAUTHENTICATED);
-    }
+    const user = await Auth.getCurrentUser(ctx);
 
     if (args.avatarUrl) {
       try {
@@ -107,7 +101,7 @@ export const createAuthor = mutation({
       name: args.name,
       avatarUrl: args.avatarUrl,
       bio: args.bio,
-      createdBy: identity.subject,
+      createdBy: user._id,
       isVerified: admin,
       createdAt: Date.now(),
       updatedAt: Date.now(),

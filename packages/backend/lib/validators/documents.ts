@@ -1,12 +1,6 @@
 import { v } from "convex/values";
 import { paginatedValidator } from "./utils";
 
-// Slug history entry for tracking old slugs (FIFO queue, max 3 entries)
-export const slugHistoryEntryValidator = v.object({
-  slug: v.string(),
-  createdAt: v.number(),
-});
-
 export const coverImageValidator = v.object({
   storageId: v.optional(v.string()),
   prompt: v.optional(v.string()),
@@ -43,30 +37,6 @@ export const inspirationValidator = v.object({
   note: v.optional(v.string()),
   emoji: v.string(),
 });
-
-// Schema validator - used by defineTable() in schema.ts
-export const documentValidator = {
-  title: v.string(),
-  slug: v.string(),
-  content: v.any(),
-  description: v.optional(v.string()),
-  coverImage: v.optional(coverImageValidator),
-  imageStorageIds: v.optional(v.array(v.string())),
-  type: documentTypeValidator,
-  status: documentStatusValidator,
-  authorId: v.id("authors"),
-  reprint: v.optional(reprintDataValidator),
-  inspirations: v.optional(v.array(inspirationValidator)),
-  createdAt: v.number(),
-  updatedAt: v.number(),
-  publishedAt: v.optional(v.number()),
-  estimatedReadTime: v.optional(v.number()),
-  isVisible: v.optional(v.boolean()),
-  submittedAt: v.optional(v.number()),
-  rejectionReason: v.optional(v.string()),
-  submissionHistory: v.optional(v.array(v.number())),
-  slugHistory: v.optional(v.array(slugHistoryEntryValidator)),
-};
 
 // Query return validators - API responses only, no schema impact
 export const publicAuthorValidator = v.object({

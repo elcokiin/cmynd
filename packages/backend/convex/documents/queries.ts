@@ -38,10 +38,7 @@ import { getDocumentStats } from "./stats_helpers";
 export const get = query({
   args: { documentId: v.id("documents") },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throwConvexError(ErrorCode.UNAUTHENTICATED);
-    }
+    const userId = await Auth.requireAuth(ctx);
 
     const document = await ctx.db.get(args.documentId);
     if (!document) {
@@ -49,7 +46,7 @@ export const get = query({
     }
 
     const author = await ctx.db.get(document.authorId);
-    const isAuthor = author?.userId === identity.subject;
+    const isAuthor = author?.userId === userId;
 
     if (!isAuthor && document.status !== "published") {
       throwConvexError(ErrorCode.DOCUMENT_OWNERSHIP);
@@ -275,14 +272,11 @@ export const list = query({
   args: { paginationOpts: paginationOptsValidator },
   returns: paginatedDocumentListValidator,
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throwConvexError(ErrorCode.UNAUTHENTICATED);
-    }
+    const userId = await Auth.requireAuth(ctx);
 
     const author = await ctx.db
       .query("authors")
-      .withIndex("by_user_id", (q) => q.eq("userId", identity.subject))
+      .withIndex("by_user_id", (q) => q.eq("userId", userId))
       .unique();
 
     if (!author) {
@@ -363,10 +357,11 @@ export const listForAdmin = query({
         })
         .paginate(args.paginationOpts);
     } else {
-      if (args.status && args.status !== "all") {
+      const status = args.status;
+      if (status && status !== "all") {
         result = await ctx.db
           .query("documents")
-          .withIndex("by_status", (q) => q.eq("status", args.status as any))
+          .withIndex("by_status", (q) => q.eq("status", status))
           .order("desc")
           .paginate(args.paginationOpts);
       } else {

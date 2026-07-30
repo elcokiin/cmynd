@@ -1,5 +1,5 @@
-import { ErrorCode, throwConvexError } from "@elcokiin/errors";
 import { v } from "convex/values";
+import { paginationOptsValidator } from "convex/server";
 import { query } from "../_generated/server";
 import { getAuthorById } from "./helpers";
 import { toPublicAuthor, toAdminAuthor } from "./projections";
@@ -28,10 +28,7 @@ export const get = query({
  */
 export const list = query({
   args: {
-    paginationOpts: v.object({
-      numItems: v.number(),
-      cursor: v.union(v.string(), v.null()),
-    }),
+    paginationOpts: paginationOptsValidator,
   },
   returns: paginatedAuthorsValidator,
   handler: async (ctx, args) => {
@@ -53,10 +50,7 @@ export const list = query({
  */
 export const listForAdmin = query({
   args: {
-    paginationOpts: v.object({
-      numItems: v.number(),
-      cursor: v.union(v.string(), v.null()),
-    }),
+    paginationOpts: paginationOptsValidator,
     verified: v.optional(v.boolean()),
     search: v.optional(v.string()),
   },
@@ -78,13 +72,20 @@ export const listForAdmin = query({
         })
         .paginate(args.paginationOpts);
     } else {
-      let query = ctx.db.query("authors").order("desc");
-
       if (args.verified !== undefined) {
-        query = query.filter((q) => q.eq(q.field("isVerified"), args.verified));
+        result = await ctx.db
+          .query("authors")
+          .withIndex("by_isVerified", (q) =>
+            q.eq("isVerified", args.verified),
+          )
+          .order("desc")
+          .paginate(args.paginationOpts);
+      } else {
+        result = await ctx.db
+          .query("authors")
+          .order("desc")
+          .paginate(args.paginationOpts);
       }
-
-      result = await query.paginate(args.paginationOpts);
     }
 
     return {
@@ -129,17 +130,11 @@ export const getAuthorCount = query({
  */
 export const listOriginalAuthors = query({
   args: {
-    paginationOpts: v.object({
-      numItems: v.number(),
-      cursor: v.union(v.string(), v.null()),
-    }),
+    paginationOpts: paginationOptsValidator,
   },
   returns: paginatedAuthorsValidator,
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throwConvexError(ErrorCode.UNAUTHENTICATED);
-    }
+    const userId = await Auth.requireAuth(ctx);
 
     const result = await ctx.db
       .query("authors")
@@ -148,7 +143,7 @@ export const listOriginalAuthors = query({
           q.eq(q.field("isVerified"), true),
           q.and(
             q.eq(q.field("userId"), undefined),
-            q.eq(q.field("createdBy"), identity.subject),
+            q.eq(q.field("createdBy"), userId),
           ),
         ),
       )
@@ -161,4 +156,3 @@ export const listOriginalAuthors = query({
     };
   },
 });
-

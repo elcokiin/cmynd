@@ -9,11 +9,7 @@ import sitemap from "@astrojs/sitemap";
 export default defineConfig({
   prefetch: true,
   output: "server",
-  adapter: cloudflare({
-    platformProxy: {
-      enabled: true,
-    },
-  }),
+  adapter: cloudflare(),
   site: "https://blog.elcokiin.my",
 
   vite: {
@@ -38,4 +34,3 @@ export default defineConfig({
 
   integrations: [react({ experimentalDisableStreaming: true }), sitemap()],
 });
-
