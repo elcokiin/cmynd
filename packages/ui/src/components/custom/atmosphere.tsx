@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 
-import { cn } from "../lib/utils";
-import "../styles/atmosphere.css";
+import { cn } from "../../lib/utils";
+import "../../styles/atmosphere.css";
 
 interface AtmosphereProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;
