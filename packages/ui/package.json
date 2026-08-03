@@ -36,6 +36,7 @@
     "./select": "./src/components/select.tsx",
     "./sheet": "./src/components/sheet.tsx",
     "./atmosphere": "./src/components/custom/atmosphere.tsx",
+    "./frost": "./src/components/canvasui/Frost.tsx",
     "./slider": "./src/components/slider.tsx",
     "./switch": "./src/components/switch.tsx",
     "./textarea": "./src/components/textarea.tsx",
