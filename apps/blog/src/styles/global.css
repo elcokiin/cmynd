@@ -995,44 +995,56 @@ html[data-theme="light"] .post-content .prose ul li::marker {
   text-transform: uppercase;
 }
 
-.mobile-theme-toggle {
+.mobile-theme-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0 0.25rem;
+}
+
+.mobile-theme-option {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  width: 100%;
+  justify-content: center;
+  gap: 0.5rem;
   padding: 0.75rem 1rem;
   border-radius: 0.75rem;
   border: 1px solid var(--border);
   background: color-mix(in srgb, var(--card) 60%, transparent);
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
-.mobile-theme-toggle:hover {
+.mobile-theme-option:hover {
   border-color: var(--primary-aquamarine);
   background: color-mix(in srgb, var(--primary-aquamarine) 8%, transparent);
 }
 
-.mobile-theme-toggle-hint {
-  margin-left: auto;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  padding: 0.15rem 0.4rem;
-  border-radius: 0.25rem;
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--card) 50%, transparent);
+.mobile-theme-option.is-active {
+  border-color: var(--primary-aquamarine);
+  background: color-mix(in srgb, var(--primary-aquamarine) 14%, transparent);
+  color: var(--primary-aquamarine);
+}
+
+html[data-theme="light"] .mobile-theme-option.is-active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
 }
 
 /* Staggered link animation */
 .mobile-drawer.is-open .mobile-drawer-link,
-.mobile-drawer.is-open .mobile-theme-toggle {
+.mobile-drawer.is-open .mobile-theme-option {
   animation: drawer-fade-in 0.3s ease both;
 }
 
 .mobile-drawer.is-open .mobile-drawer-nav > :nth-child(1) { animation-delay: 0.05s; }
 .mobile-drawer.is-open .mobile-drawer-nav > :nth-child(2) { animation-delay: 0.1s; }
-.mobile-drawer.is-open .mobile-drawer-section > .mobile-theme-toggle { animation-delay: 0.15s; }
+.mobile-drawer.is-open .mobile-drawer-section > .mobile-theme-option:nth-child(1) { animation-delay: 0.15s; }
+.mobile-drawer.is-open .mobile-drawer-section > .mobile-theme-option:nth-child(2) { animation-delay: 0.2s; }
 
 @keyframes drawer-fade-in {
   from {

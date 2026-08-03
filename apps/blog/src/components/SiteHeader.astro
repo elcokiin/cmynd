@@ -34,7 +34,7 @@ import logo from '../assets/logo.png';
       {/* TODO: Add ToogleTheme and ToogleLanguage components when available */}
     </div>
     {/* Mobile Menu Button */}
-    <button class="w-8 h-8 sm:hidden flex items-center justify-center" aria-label="Menu" id="mobile-menu-btn" style="color: var(--header-text);">
+    <button class="w-8 h-8 sm:hidden flex items-center justify-center" aria-label="Abrir menú" id="mobile-menu-btn" style="color: var(--header-text);">
       <svg id="hamburger-icon" stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 512 512" height="26" width="26" xmlns="http://www.w3.org/2000/svg">
         <path d="M32 96v64h448V96H32zm0 128v64h448v-64H32zm0 128v64h448v-64H32z"></path>
       </svg>
@@ -48,8 +48,8 @@ import logo from '../assets/logo.png';
 {/* Mobile Drawer */}
 <aside id="mobile-drawer" class="mobile-drawer" aria-hidden="true">
   <div class="mobile-drawer-header">
-    <span class="mobile-drawer-title" style="color: var(--text);">Menu</span>
-    <button id="mobile-drawer-close" class="mobile-drawer-close" aria-label="Close menu" style="color: var(--text);">
+    <span class="mobile-drawer-title" style="color: var(--text);">Menú</span>
+    <button id="mobile-drawer-close" class="mobile-drawer-close" aria-label="Cerrar menú" style="color: var(--text);">
       <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" height="22" width="22" xmlns="http://www.w3.org/2000/svg">
         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
       </svg>
@@ -74,17 +74,21 @@ import logo from '../assets/logo.png';
   <div class="mobile-drawer-divider" style="border-color: var(--border);"></div>
 
   <div class="mobile-drawer-section">
-    <span class="mobile-drawer-section-label" style="color: var(--cool-gray);">Appearance</span>
-    <button id="mobile-theme-toggle" class="mobile-theme-toggle" aria-label="Toggle theme">
-      <svg id="theme-icon-sun" stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" height="20" width="20" xmlns="http://www.w3.org/2000/svg" style="display:none;">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
-      </svg>
-      <svg id="theme-icon-moon" stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" height="20" width="20" xmlns="http://www.w3.org/2000/svg" style="display:none;">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-      </svg>
-      <span id="theme-label" style="color: var(--text);">Dark</span>
-      <span class="mobile-theme-toggle-hint" style="color: var(--cool-gray);">D</span>
-    </button>
+    <span class="mobile-drawer-section-label" style="color: var(--cool-gray);">Apariencia</span>
+    <div class="mobile-theme-options">
+      <button id="theme-light-btn" class="mobile-theme-option" data-theme-value="light" aria-label="Tema claro">
+        <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" height="20" width="20" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+        </svg>
+        <span>Claro</span>
+      </button>
+      <button id="theme-dark-btn" class="mobile-theme-option" data-theme-value="dark" aria-label="Tema oscuro">
+        <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" height="20" width="20" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+        </svg>
+        <span>Oscuro</span>
+      </button>
+    </div>
   </div>
 </aside>
 
@@ -97,13 +101,28 @@ import logo from '../assets/logo.png';
 
   function syncThemeUI() {
     const current = (localStorage.getItem("theme") || "dark") as "dark" | "light";
-    const sun = document.getElementById("theme-icon-sun");
-    const moon = document.getElementById("theme-icon-moon");
-    const label = document.getElementById("theme-label");
-    if (sun && moon && label) {
-      sun.style.display = current === "light" ? "block" : "none";
-      moon.style.display = current === "dark" ? "block" : "none";
-      label.textContent = current === "dark" ? "Dark" : "Light";
+    const lightBtn = document.getElementById("theme-light-btn");
+    const darkBtn = document.getElementById("theme-dark-btn");
+    if (lightBtn && darkBtn) {
+      lightBtn.classList.toggle("is-active", current === "light");
+      darkBtn.classList.toggle("is-active", current === "dark");
+    }
+  }
+
+  function setupThemeButtons() {
+    const lightBtn = document.getElementById("theme-light-btn");
+    const darkBtn = document.getElementById("theme-dark-btn");
+    if (lightBtn) {
+      lightBtn.addEventListener("click", () => {
+        applyThemeLocal("light");
+        syncThemeUI();
+      });
+    }
+    if (darkBtn) {
+      darkBtn.addEventListener("click", () => {
+        applyThemeLocal("dark");
+        syncThemeUI();
+      });
     }
   }
 
@@ -112,7 +131,6 @@ import logo from '../assets/logo.png';
     const drawer = document.getElementById("mobile-drawer");
     const overlay = document.getElementById("mobile-drawer-overlay");
     const closeBtn = document.getElementById("mobile-drawer-close");
-    const themeToggle = document.getElementById("mobile-theme-toggle");
 
     if (!btn || !drawer || !overlay || !closeBtn) return;
 
@@ -146,15 +164,6 @@ import logo from '../assets/logo.png';
         closeDrawer();
       }
     });
-
-    if (themeToggle) {
-      themeToggle.addEventListener("click", () => {
-        const current = (localStorage.getItem("theme") || "dark") as "dark" | "light";
-        const next = current === "dark" ? "light" : "dark";
-        applyThemeLocal(next);
-        syncThemeUI();
-      });
-    }
   }
 
   function setupHeaderScroll() {
@@ -182,9 +191,11 @@ import logo from '../assets/logo.png';
   }
 
   setupMobileMenu();
+  setupThemeButtons();
   setupHeaderScroll();
   document.addEventListener('astro:page-load', () => {
     setupMobileMenu();
+    setupThemeButtons();
     setupHeaderScroll();
   });
 </script>

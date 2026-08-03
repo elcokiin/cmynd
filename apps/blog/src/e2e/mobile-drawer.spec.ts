@@ -51,27 +51,42 @@ test.describe("Mobile drawer", () => {
   });
 });
 
-test.describe("Theme toggle", () => {
+test.describe("Theme buttons", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
   });
 
-  test("toggle switches theme and persists to localStorage", async ({ page }) => {
+  test("Claro button sets light theme and persists to localStorage", async ({ page }) => {
     await page.click("#mobile-menu-btn");
 
-    const before = await page.evaluate(() =>
-      document.documentElement.getAttribute("data-theme")
-    );
-    const expectedAfter = before === "dark" ? "light" : "dark";
-
-    await page.click("#mobile-theme-toggle");
+    await page.click("#theme-light-btn");
 
     const after = await page.evaluate(() =>
       document.documentElement.getAttribute("data-theme")
     );
-    expect(after).toBe(expectedAfter);
+    expect(after).toBe("light");
 
     const stored = await page.evaluate(() => localStorage.getItem("theme"));
-    expect(stored).toBe(expectedAfter);
+    expect(stored).toBe("light");
+
+    await expect(page.locator("#theme-light-btn")).toHaveClass(/is-active/);
+    await expect(page.locator("#theme-dark-btn")).not.toHaveClass(/is-active/);
+  });
+
+  test("Oscuro button sets dark theme and persists to localStorage", async ({ page }) => {
+    await page.click("#mobile-menu-btn");
+
+    await page.click("#theme-dark-btn");
+
+    const after = await page.evaluate(() =>
+      document.documentElement.getAttribute("data-theme")
+    );
+    expect(after).toBe("dark");
+
+    const stored = await page.evaluate(() => localStorage.getItem("theme"));
+    expect(stored).toBe("dark");
+
+    await expect(page.locator("#theme-dark-btn")).toHaveClass(/is-active/);
+    await expect(page.locator("#theme-light-btn")).not.toHaveClass(/is-active/);
   });
 });
