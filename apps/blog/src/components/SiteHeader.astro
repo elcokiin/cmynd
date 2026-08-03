@@ -5,7 +5,7 @@ import logo from '../assets/logo.png';
 
 <header 
   id="site-header" 
-  class="z-10 fixed top-0 flex items-center justify-between p-2 w-full sm:p-4 md:px-20 border-b border-transparent transition-all duration-255"
+  class="z-50 fixed top-0 flex items-center justify-between p-2 w-full sm:p-4 md:px-20 border-b border-transparent transition-all duration-255"
   style="background: var(--header-bg); color: var(--header-text);"
 >
   <div class="flex items-center w-32 justify-between sm:w-40">
@@ -13,9 +13,6 @@ import logo from '../assets/logo.png';
       <figure class="w-14 h-14 rounded-full object-cover sm:w-20 sm:h-20 lg:w-14 lg:h-14">
         <Image src={logo} alt="elcokiin logo" class="object-cover rounded-full w-full h-full" />
       </figure>
-    </a>
-    <a href="/" class="font-bold sm:text-2xl" data-astro-prefetch style="color: var(--header-text);">
-      Inicio
     </a>
   </div>
 
@@ -33,12 +30,6 @@ import logo from '../assets/logo.png';
     <div class="hidden sm:flex justify-center items-center gap-4">
       {/* TODO: Add ToogleTheme and ToogleLanguage components when available */}
     </div>
-    {/* Mobile Menu Button */}
-    <button class="w-8 h-8 sm:hidden flex items-center justify-center" aria-label="Abrir menú" id="mobile-menu-btn" style="color: var(--header-text);">
-      <svg id="hamburger-icon" stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 512 512" height="26" width="26" xmlns="http://www.w3.org/2000/svg">
-        <path d="M32 96v64h448V96H32zm0 128v64h448v-64H32zm0 128v64h448v-64H32z"></path>
-      </svg>
-    </button>
   </div>
 </header>
 
@@ -57,12 +48,6 @@ import logo from '../assets/logo.png';
   </div>
 
   <nav class="mobile-drawer-nav">
-    <a href="/" class="mobile-drawer-link" data-astro-prefetch>
-      <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" height="20" width="20" xmlns="http://www.w3.org/2000/svg">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"></path>
-      </svg>
-      Inicio
-    </a>
     <a href="https://elcokiin.my" target="_blank" rel="noopener noreferrer" class="mobile-drawer-link">
       <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" height="20" width="20" xmlns="http://www.w3.org/2000/svg">
         <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
@@ -91,6 +76,20 @@ import logo from '../assets/logo.png';
     </div>
   </div>
 </aside>
+
+{/* Mobile FAB — thumb-friendly bottom-right */}
+<button
+  id="mobile-menu-btn"
+  class="mobile-fab sm:hidden"
+  aria-label="Abrir menú"
+>
+  <svg id="hamburger-icon" stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" height="22" width="22" xmlns="http://www.w3.org/2000/svg">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
+  </svg>
+  <svg id="close-icon" class="hidden" stroke="currentColor" fill="none" stroke-width="2.5" viewBox="0 0 24 24" height="22" width="22" xmlns="http://www.w3.org/2000/svg">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+  </svg>
+</button>
 
 <script>
   function applyThemeLocal(t: "dark" | "light") {
@@ -131,6 +130,8 @@ import logo from '../assets/logo.png';
     const drawer = document.getElementById("mobile-drawer");
     const overlay = document.getElementById("mobile-drawer-overlay");
     const closeBtn = document.getElementById("mobile-drawer-close");
+    const hamburgerIcon = document.getElementById("hamburger-icon");
+    const closeIcon = document.getElementById("close-icon");
 
     if (!btn || !drawer || !overlay || !closeBtn) return;
 
@@ -138,8 +139,11 @@ import logo from '../assets/logo.png';
       drawer!.classList.add("is-open");
       overlay!.classList.add("is-open");
       btn!.setAttribute("aria-expanded", "true");
+      btn!.setAttribute("aria-label", "Cerrar menú");
       drawer!.setAttribute("aria-hidden", "false");
       document.body.style.overflow = "hidden";
+      hamburgerIcon?.classList.add("hidden");
+      closeIcon?.classList.remove("hidden");
       syncThemeUI();
     }
 
@@ -147,8 +151,11 @@ import logo from '../assets/logo.png';
       drawer!.classList.remove("is-open");
       overlay!.classList.remove("is-open");
       btn!.setAttribute("aria-expanded", "false");
+      btn!.setAttribute("aria-label", "Abrir menú");
       drawer!.setAttribute("aria-hidden", "true");
       document.body.style.overflow = "";
+      hamburgerIcon?.classList.remove("hidden");
+      closeIcon?.classList.add("hidden");
     }
 
     btn.addEventListener("click", () => {
@@ -166,36 +173,10 @@ import logo from '../assets/logo.png';
     });
   }
 
-  function setupHeaderScroll() {
-    const header = document.getElementById('site-header');
-    
-    const handleScroll = () => {
-      if (!header) return;
-      
-      const scrolled = window.scrollY;
-      const threshold = window.innerHeight * 0.4;
-      
-      if (scrolled > threshold) {
-        header.classList.add('backdrop-blur-md', 'border-gray-700');
-        header.style.background = `color-mix(in srgb, var(--header-bg) 80%, transparent)`;
-        header.classList.remove('border-transparent');
-      } else {
-        header.classList.remove('backdrop-blur-md');
-        header.style.background = 'var(--header-bg)';
-        header.classList.add('border-transparent');
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    handleScroll();
-  }
-
   setupMobileMenu();
   setupThemeButtons();
-  setupHeaderScroll();
   document.addEventListener('astro:page-load', () => {
     setupMobileMenu();
     setupThemeButtons();
-    setupHeaderScroll();
   });
 </script>

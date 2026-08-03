@@ -9,7 +9,7 @@
   --surface: #0a192f;
   --text: #d7e2f2;
   --card: #0f2138;
-  --border: #274264;
+  --border: #334155;
 
   --color-primary-blue: var(--primary-blue);
   --color-primary-aquamarine: var(--primary-aquamarine);
@@ -1060,7 +1060,46 @@ html[data-theme="light"] .mobile-theme-option.is-active {
 /* Hide on desktop */
 @media (min-width: 640px) {
   .mobile-drawer,
-  .mobile-drawer-overlay {
+  .mobile-drawer-overlay,
+  .mobile-fab {
     display: none !important;
   }
+}
+
+/* ===== MOBILE FAB — Thumb-friendly ===== */
+
+.mobile-fab {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 1rem;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  background: var(--header-bg);
+  color: var(--header-text);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mobile-fab:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 28px rgba(0, 0, 0, 0.18);
+}
+
+.mobile-fab:active {
+  transform: scale(0.95);
+}
+
+html[data-theme="light"] .mobile-fab {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
