@@ -1,5 +1,6 @@
 ---
 import { FrostFooter } from "../components/react/FrostFooter";
+import { Atmosphere } from "@elcokiin/ui/atmosphere";
 
 let year = new Date().getFullYear().toString();
 let lastUpdateDate = "";
@@ -27,7 +28,7 @@ try {
 
 // Texts defaulting to Spanish since this is the primary language used in the site context
 const texts = {
-  subtitle: "Desarrollador Full Stack y Emprendedor Entusiasta",
+  subtitle: "Desarrollador Full Stack",
   tagline: "Just do it",
 };
 
@@ -64,11 +65,12 @@ const socials = [
   style="background: var(--footer-bg); border-top-color: var(--border);"
 >
   {/*
-    Frost as a pure OVERLAY: the content below is real HTML in the normal
-    document flow, so the frost can never shift, overlap or break the layout.
+    Atmosphere provides the starry night sky behind the frost: a cursor
+    stardust trail plus click starbursts, softly frosted by the overlay.
   */}
-  <FrostFooter
-    client:load
+  <Atmosphere client:load transparent className="relative z-0">
+    <FrostFooter
+      client:load
     className="relative z-10 w-full min-h-[520px] md:min-h-[600px]"
     frost={0.08}
     strength={0.7}
@@ -101,7 +103,14 @@ const socials = [
             class="mt-3 text-4xl font-bold tracking-tight md:text-5xl"
             style="color: var(--footer-text);"
           >
-            Diego Tenjo
+            <a
+              href="https://elcokiin.my"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="animated-underline"
+            >
+              Diego Tenjo
+            </a>
           </p>
           <p
             class="mx-auto mt-4 max-w-xs text-base leading-relaxed md:mx-0"
@@ -157,7 +166,7 @@ const socials = [
         {/* Meta */}
         <div class="flex flex-col items-center gap-5 md:items-end">
           <p class="text-sm font-semibold uppercase tracking-[0.25em]" style="color: var(--footer-muted);">
-            Last code update
+            Última actualización
           </p>
           <p class="text-2xl font-bold md:text-3xl" style="color: var(--footer-text);">
             {lastUpdateDate || year}
@@ -173,5 +182,6 @@ const socials = [
         <p>© {year} Diego Tenjo — @elcokiin</p>
       </div>
     </div>
-  </FrostFooter>
+    </FrostFooter>
+  </Atmosphere>
 </footer>

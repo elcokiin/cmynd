@@ -1,12 +1,15 @@
 .stardust-particle {
   position: absolute;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(147,197,253,0.5) 50%, rgba(167,139,250,0) 100%);
+  background: radial-gradient(circle, var(--dust-core) 0%, var(--dust-mid) 50%, var(--dust-fade) 100%);
   pointer-events: none;
   transform: translate(-50%, -50%);
   z-index: 0;
   mix-blend-mode: screen;
   filter: blur(1px);
+  --dust-core: rgba(255, 255, 255, 1);
+  --dust-mid: rgba(147, 197, 253, 0.5);
+  --dust-fade: rgba(167, 139, 250, 0);
 }
 
 .supernova-burst {
@@ -29,6 +32,12 @@
   width: 100%;
   height: 100%;
   pointer-events: none;
+  --star-bright: #fff;
+  --star-mid: rgba(255, 255, 255, 0.8);
+  --star-dim: rgba(255, 255, 255, 0.5);
+  --star-tint: #e0e7ff;
+  --star-tint-soft: rgba(199, 210, 254, 0.6);
+  --star-tint-purple: rgba(221, 214, 254, 0.8);
 }
 
 .stars-layer-1::after {
@@ -37,11 +46,11 @@
   width: 1px;
   height: 1px;
   background: transparent;
-  box-shadow: 
-    10vw 20vh #fff, 30vw 40vh #fff, 50vw 80vh #fff, 80vw 10vh #fff, 90vw 90vh #fff,
-    15vw 60vh rgba(255,255,255,0.8), 45vw 25vh rgba(255,255,255,0.8), 75vw 65vh rgba(255,255,255,0.8),
-    5vw 85vh rgba(255,255,255,0.5), 65vw 15vh rgba(255,255,255,0.5), 95vw 45vh rgba(255,255,255,0.5),
-    25vw 5vh #e0e7ff, 55vw 55vh #e0e7ff, 85vw 35vh #e0e7ff;
+  box-shadow:
+    10vw 20vh var(--star-bright), 30vw 40vh var(--star-bright), 50vw 80vh var(--star-bright), 80vw 10vh var(--star-bright), 90vw 90vh var(--star-bright),
+    15vw 60vh var(--star-mid), 45vw 25vh var(--star-mid), 75vw 65vh var(--star-mid),
+    5vw 85vh var(--star-dim), 65vw 15vh var(--star-dim), 95vw 45vh var(--star-dim),
+    25vw 5vh var(--star-tint), 55vw 55vh var(--star-tint), 85vw 35vh var(--star-tint);
   animation: twinkle 4s infinite alternate;
 }
 
@@ -51,10 +60,10 @@
   width: 2px;
   height: 2px;
   background: transparent;
-  box-shadow: 
-    20vw 30vh #fff, 60vw 70vh #fff, 40vw 10vh #fff, 70vw 90vh #fff,
-    10vw 50vh rgba(255,255,255,0.8), 80vw 40vh rgba(255,255,255,0.8),
-    35vw 85vh rgba(199,210,254,0.6), 90vw 20vh rgba(199,210,254,0.6);
+  box-shadow:
+    20vw 30vh var(--star-bright), 60vw 70vh var(--star-bright), 40vw 10vh var(--star-bright), 70vw 90vh var(--star-bright),
+    10vw 50vh var(--star-mid), 80vw 40vh var(--star-mid),
+    35vw 85vh var(--star-tint-soft), 90vw 20vh var(--star-tint-soft);
   animation: twinkle 6s infinite alternate;
 }
 
@@ -65,9 +74,9 @@
   height: 3px;
   border-radius: 50%;
   background: transparent;
-  box-shadow: 
-    15vw 15vh #fff, 85vw 85vh #fff, 50vw 50vh #fff,
-    75vw 25vh rgba(221,214,254,0.8), 25vw 75vh rgba(221,214,254,0.8);
+  box-shadow:
+    15vw 15vh var(--star-bright), 85vw 85vh var(--star-bright), 50vw 50vh var(--star-bright),
+    75vw 25vh var(--star-tint-purple), 25vw 75vh var(--star-tint-purple);
   animation: twinkle 8s infinite alternate;
   filter: blur(1px);
 }
@@ -75,4 +84,24 @@
 @keyframes twinkle {
   0% { opacity: 0.3; transform: scale(0.8); }
   100% { opacity: 1; transform: scale(1.2); }
+}
+
+/* Light mode: switch the starry dots to black so they stay visible on light backgrounds */
+[data-theme="light"] .stars-layer-1,
+[data-theme="light"] .stars-layer-2,
+[data-theme="light"] .stars-layer-3 {
+  --star-bright: #6b7280;
+  --star-mid: rgba(107, 114, 128, 0.8);
+  --star-dim: rgba(107, 114, 128, 0.5);
+  --star-tint: #9ca3af;
+  --star-tint-soft: rgba(156, 163, 175, 0.6);
+  --star-tint-purple: rgba(156, 163, 175, 0.8);
+}
+
+[data-theme="light"] .stardust-particle {
+  --dust-core: rgba(107, 114, 128, 1);
+  --dust-mid: rgba(107, 114, 128, 0.5);
+  --dust-fade: rgba(107, 114, 128, 0);
+  /* screen blend would make black invisible on light backgrounds */
+  mix-blend-mode: multiply;
 }
