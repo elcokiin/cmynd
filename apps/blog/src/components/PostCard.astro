@@ -1,4 +1,5 @@
 ---
+import { getImage } from "astro:assets";
 import type { BlogPostListItem } from "../lib/types";
 import { formatPublishedDate } from "../lib/utils";
 import Card from "./react/PostCard";
@@ -10,10 +11,36 @@ type Props = {
 
 const { post, type = "grid-medium" } = Astro.props;
 
+const CARD_IMAGE_WIDTHS = {
+  featured: 800,
+  "grid-large": 640,
+  "grid-medium": 480,
+} as const;
+
+let image = post.coverUrl || "";
+if (post.coverUrl) {
+  const width = CARD_IMAGE_WIDTHS[type];
+  try {
+    // Keep the image's natural aspect ratio (only constrain on width) and let
+    // the card's container do the object-cover cropping. Forcing a fixed
+    // width/height + fit:cover here double-cropped the featured image (near-
+    // square box) and made it look zoomed/cut off.
+    const optimized = await getImage({
+      src: post.coverUrl,
+      width,
+      format: "webp",
+      quality: "high",
+    });
+    image = optimized.src;
+  } catch {
+    image = post.coverUrl;
+  }
+}
+
 const cardProps = {
   title: post.title,
   description: post.description || "",
-  image: post.coverUrl || "",
+  image,
   authorName: post.author.name,
   authorAvatarUrl: post.author.avatarUrl,
   date: formatPublishedDate(post.publishedAt),

@@ -20,9 +20,19 @@ export function initCoverImage() {
   const IMAGE_URL = figure.getAttribute('data-cover-url') || '';
   const PROMPT_TEXT = figure.getAttribute('data-prompt-text') || '';
 
-  const img = document.querySelector<HTMLImageElement>('[data-color-thief-target]');
+  const img = figure.querySelector<HTMLImageElement>('img');
   if (img) {
     applyDominantColor(img);
+
+    const markLoaded = () => {
+      figure.classList.add('is-loaded');
+    };
+    if (img.complete && img.naturalWidth > 0) {
+      markLoaded();
+    } else {
+      img.addEventListener('load', markLoaded, { once: true });
+      img.addEventListener('error', markLoaded, { once: true });
+    }
   }
 
   const dimensionsEl = document.querySelector('[data-image-dimensions]');

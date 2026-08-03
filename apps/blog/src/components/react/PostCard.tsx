@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import Author from "./Author";
 
@@ -38,15 +38,33 @@ function Image({
   height: string;
   isHovering: boolean;
 }) {
+  const [loaded, setLoaded] = useState(false);
+  const imgRef = useRef<HTMLImageElement | null>(null);
+
+  // If the image is already in the browser cache (common with throttling or
+  // repeat visits), its `load` event fires before React attaches the `onLoad`
+  // handler, so it would never resolve and the skeleton would stay on top.
+  // Grabbing the cached state after mount covers that case.
+  useEffect(() => {
+    const img = imgRef.current;
+    if (img && img.complete && img.naturalWidth > 0) {
+      setLoaded(true);
+    }
+  }, []);
+
   return (
-    <div className={`w-full ${height} shrink-0`}>
+    <div className={`w-full ${height} shrink-0 relative overflow-hidden`}>
+      {!loaded && <div className="img-skeleton" aria-hidden="true" />}
       <img
-        className={`w-full h-full object-cover transition-all duration-300 ${
-          isHovering ? "brightness-110 scale-105" : "scale-100"
-        }`}
+        ref={imgRef}
+        className={`w-full h-full object-cover transition-all duration-300 relative ${
+          loaded ? "opacity-100" : "opacity-0"
+        } ${isHovering ? "brightness-110 scale-105" : "scale-100"}`}
         src={image}
         alt={`Imagen del artículo: ${title}`}
         loading="lazy"
+        onLoad={() => setLoaded(true)}
+        onError={() => setLoaded(true)}
       />
     </div>
   );

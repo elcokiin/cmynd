@@ -13,7 +13,9 @@ const { reprint, authorName, publishedAt, estimatedReadTime } = Astro.props;
 ---
 
 <div class="reprint-card">
-  <span class="reprint-card__badge">Reimpresión</span>
+  <div class="reprint-card__badge-row">
+    <span class="reprint-card__badge"><span class="reprint-card__badge-leaf" aria-hidden="true">❧</span> Reimpresión</span>
+  </div>
   <div class="reprint-card__body">
     {reprint.originalTitle && (
       <p class="reprint-card__title">
@@ -37,7 +39,7 @@ const { reprint, authorName, publishedAt, estimatedReadTime } = Astro.props;
     <div class="reprint-card__meta">
       {authorName && <span class="reprint-card__field"><span class="reprint-card__label">Publicado por</span> {authorName}</span>}
       <span class="reprint-card__field">{formatPublishedDate(publishedAt)}</span>
-      {estimatedReadTime && <span class="reprint-card__field">{estimatedReadTime} min de lectura</span>}
+      {estimatedReadTime ? <span class="reprint-card__field">{estimatedReadTime} min de lectura</span>: ""}
     </div>
     {reprint.translator && (
       <p class="reprint-card__translator">

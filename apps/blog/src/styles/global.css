@@ -49,10 +49,9 @@
 
   --heading-gradient-from: #f1f5f9;
   --heading-gradient-to: #f87171;
-  --content-bg: linear-gradient(135deg, rgba(30,58,138,0.1), rgba(107,33,168,0.1));
+  --content-bg: color-mix(in srgb, var(--card) 96%, transparent);
   --post-meta-color: #94a3b8;
   --destructive: #ef4444;
-
 }
 
 html[data-theme="light"] {
@@ -74,9 +73,8 @@ html[data-theme="light"] {
 
   --heading-gradient-from: #1e293b;
   --heading-gradient-to: #dc2626;
-  --content-bg: linear-gradient(135deg, rgba(239,246,255,0.3), rgba(250,245,255,0.3));
+  --content-bg: color-mix(in srgb, var(--card) 96%, transparent);
   --post-meta-color: #475569;
-
 }
 
 .prose {
@@ -85,14 +83,14 @@ html[data-theme="light"] {
   --tw-prose-links: var(--primary-aquamarine);
   --tw-prose-bold: #f1f5f9;
   --tw-prose-code: #f1f5f9;
-  --tw-prose-code-bg: rgba(255,255,255,0.06);
-  --tw-prose-pre-bg: rgba(0,0,0,0.35);
+  --tw-prose-code-bg: rgba(255, 255, 255, 0.06);
+  --tw-prose-pre-bg: rgba(0, 0, 0, 0.35);
   --tw-prose-quotes: #94a3b8;
   --tw-prose-quote-borders: var(--primary-aquamarine);
-  --tw-prose-hr: rgba(255,255,255,0.1);
+  --tw-prose-hr: rgba(255, 255, 255, 0.1);
   --tw-prose-captions: #64748b;
-  --tw-prose-th-borders: rgba(255,255,255,0.12);
-  --tw-prose-td-borders: rgba(255,255,255,0.06);
+  --tw-prose-th-borders: rgba(255, 255, 255, 0.12);
+  --tw-prose-td-borders: rgba(255, 255, 255, 0.06);
 }
 
 html[data-theme="light"] .prose {
@@ -101,7 +99,7 @@ html[data-theme="light"] .prose {
   --tw-prose-links: #2563eb;
   --tw-prose-bold: #111827;
   --tw-prose-code: #111827;
-  --tw-prose-code-bg: rgba(0,0,0,0.05);
+  --tw-prose-code-bg: rgba(0, 0, 0, 0.05);
   --tw-prose-pre-bg: #f3f4f6;
   --tw-prose-quotes: #6b7280;
   --tw-prose-quote-borders: #3b82f6;
@@ -275,6 +273,42 @@ html[data-theme="light"] .nav a {
   border-radius: 14px;
 }
 
+/* ===== IMAGE SKELETON ===== */
+.img-skeleton {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--card) 55%, transparent);
+}
+.img-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.14), transparent);
+  animation: img-shimmer 1.4s infinite;
+}
+@keyframes img-shimmer {
+  to { transform: translateX(100%); }
+}
+
+.post-cover .img-skeleton {
+  border-radius: inherit;
+  transition: opacity 0.5s ease;
+}
+.post-cover.is-loaded .img-skeleton {
+  opacity: 0;
+  pointer-events: none;
+}
+.post-cover img {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.post-cover.is-loaded img {
+  opacity: 1;
+}
+/* ===== END IMAGE SKELETON ===== */
+
 .post-prose img {
   max-width: 100%;
   border-radius: 12px;
@@ -342,12 +376,12 @@ html[data-theme="light"] .nav a {
 .reprint-card {
   position: relative;
   margin: 3rem 0;
-  padding: 2rem 2.25rem 1.75rem;
+  padding: 2.25rem 2.25rem 1.75rem;
   border: 1px solid var(--border);
   border-radius: 18px;
   background:
-    radial-gradient(ellipse at 20% 0%, color-mix(in srgb, var(--primary-aquamarine) 4%, transparent) 0%, transparent 60%),
-    color-mix(in srgb, var(--card) 85%, transparent);
+    radial-gradient(ellipse at 90% 0%, color-mix(in srgb, var(--primary-aquamarine) 8%, transparent) 0%, transparent 55%),
+    color-mix(in srgb, var(--card) 96%, transparent);
 }
 
 /* Corner brackets */
@@ -368,33 +402,27 @@ html[data-theme="light"] .reprint-card::after {
     -10px -10px 0 -7px color-mix(in srgb, var(--accent) 25%, transparent);
 }
 
-/* Badge */
-.reprint-card__badge {
+/* Badge row — pins the label to the top-left, away from corner brackets */
+.reprint-card__badge-row {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 1.25rem;
+}
+
+/* Reprint label — simple text, no button look */
+.reprint-card .reprint-card__badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  margin-bottom: 1.25rem;
-  padding: 0.2rem 0;
-  font-family: "Playfair Display", serif;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--primary-aquamarine);
-  border-bottom: 1px solid color-mix(in srgb, var(--primary-aquamarine) 25%, transparent);
-  padding-bottom: 0.35rem;
+  gap: 0.4rem;
+  color: var(--text);
+  font-size: 0.8rem;
+  font-weight: 500;
 }
 
-.reprint-card__badge::before {
-  content: '❧';
-  font-size: 0.9rem;
+.reprint-card .reprint-card__badge-leaf {
+  font-size: 1em;
   line-height: 1;
-  opacity: 0.7;
-}
-
-html[data-theme="light"] .reprint-card__badge {
-  color: var(--accent);
-  border-bottom-color: color-mix(in srgb, var(--accent) 25%, transparent);
+  opacity: 0.8;
 }
 
 /* Inner stack */
@@ -648,7 +676,7 @@ html[data-theme="light"] .post-content__inner::after {
 }
 
 /* Drop cap for first paragraph */
-.post-content .prose > p:first-of-type::first-letter {
+.post-content .prose>p:first-of-type::first-letter {
   float: left;
   font-family: "Playfair Display", serif;
   font-size: 3.8em;
@@ -659,7 +687,7 @@ html[data-theme="light"] .post-content__inner::after {
   color: var(--primary-aquamarine);
 }
 
-html[data-theme="light"] .post-content .prose > p:first-of-type::first-letter {
+html[data-theme="light"] .post-content .prose>p:first-of-type::first-letter {
   color: var(--accent);
 }
 

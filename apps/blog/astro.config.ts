@@ -12,6 +12,13 @@ export default defineConfig({
   adapter: cloudflare(),
   site: "https://blog.elcokiin.my",
 
+  image: {
+    remotePatterns: [
+      { protocol: "https", hostname: "cdn.elcokiin.my" },
+      { protocol: "https", hostname: "cdn-dev.elcokiin.my" },
+    ],
+  },
+
   vite: {
     // Astro 5 currently uses Vite 6 internally.
     // Tailwind Vite plugin types target Vite 7 and require this cast.

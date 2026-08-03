@@ -1,4 +1,6 @@
 ---
+import { Image } from "astro:assets";
+
 type Props = {
   coverUrl: string;
   title: string;
@@ -11,14 +13,18 @@ const hasCoverInfo = !!(coverImagePrompt || description);
 const promptText = coverImagePrompt || description || '';
 ---
 
-<figure class="post-cover group relative overflow-hidden rounded-lg bg-neutral-900" data-color-thief data-cover-url={coverUrl} data-prompt-text={promptText}>
-  <img
+<figure class="post-cover group relative overflow-hidden rounded-lg bg-neutral-900 aspect-video w-full" data-color-thief data-cover-url={coverUrl} data-prompt-text={promptText}>
+  <div class="img-skeleton" aria-hidden="true"></div>
+  <Image
     src={coverUrl}
     alt={title}
-    loading="eager"
-    class="w-full h-full object-contain"
-    crossorigin="anonymous"
-    data-color-thief-target
+    inferSize
+    priority
+    widths={[480, 720, 860, 1200]}
+    sizes="(min-width: 860px) 860px, 100vw"
+    fit="cover"
+    position="center"
+    class="absolute inset-0 w-full h-full object-cover"
   />
   <div class="overlay absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-500 ease-out bg-gradient-to-t from-black/100 via-black/70 to-transparent backdrop-blur-md flex flex-col justify-end">
     <button data-dismiss-overlay class="action-btn absolute top-3 right-3 z-10 dismiss-btn" title="Cerrar">
