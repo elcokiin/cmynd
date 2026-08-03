@@ -878,3 +878,177 @@ html[data-theme="light"] .post-content .prose ul li::marker {
   background: rgba(0, 0, 0, 0.8);
   transform: scale(1.15);
 }
+
+/* ===== MOBILE DRAWER ===== */
+
+.mobile-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(0, 0, 0, 0);
+  pointer-events: none;
+  transition: background 0.3s ease;
+}
+
+.mobile-drawer-overlay.is-open {
+  background: rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+}
+
+.mobile-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 50;
+  width: min(320px, 85vw);
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: color-mix(in srgb, var(--card) 95%, transparent);
+  backdrop-filter: blur(20px);
+  border-left: 1px solid var(--border);
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.2);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.mobile-drawer.is-open {
+  transform: translateX(0);
+}
+
+.mobile-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.mobile-drawer-title {
+  font-family: "Playfair Display", serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.mobile-drawer-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.mobile-drawer-close:hover {
+  background: color-mix(in srgb, var(--border) 30%, transparent);
+  border-color: var(--primary-aquamarine);
+}
+
+.mobile-drawer-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 0.75rem 0.75rem;
+  gap: 0.25rem;
+}
+
+.mobile-drawer-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: none;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.mobile-drawer-link:hover {
+  background: color-mix(in srgb, var(--primary-aquamarine) 10%, transparent);
+  color: var(--primary-aquamarine);
+}
+
+.mobile-drawer-divider {
+  height: 1px;
+  margin: 0.5rem 1.25rem;
+  border-top: 1px solid;
+}
+
+.mobile-drawer-section {
+  padding: 0.5rem 0.75rem 1rem;
+}
+
+.mobile-drawer-section-label {
+  display: block;
+  padding: 0 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mobile-theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--card) 60%, transparent);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.mobile-theme-toggle:hover {
+  border-color: var(--primary-aquamarine);
+  background: color-mix(in srgb, var(--primary-aquamarine) 8%, transparent);
+}
+
+.mobile-theme-toggle-hint {
+  margin-left: auto;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--card) 50%, transparent);
+}
+
+/* Staggered link animation */
+.mobile-drawer.is-open .mobile-drawer-link,
+.mobile-drawer.is-open .mobile-theme-toggle {
+  animation: drawer-fade-in 0.3s ease both;
+}
+
+.mobile-drawer.is-open .mobile-drawer-nav > :nth-child(1) { animation-delay: 0.05s; }
+.mobile-drawer.is-open .mobile-drawer-nav > :nth-child(2) { animation-delay: 0.1s; }
+.mobile-drawer.is-open .mobile-drawer-section > .mobile-theme-toggle { animation-delay: 0.15s; }
+
+@keyframes drawer-fade-in {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Hide on desktop */
+@media (min-width: 640px) {
+  .mobile-drawer,
+  .mobile-drawer-overlay {
+    display: none !important;
+  }
+}

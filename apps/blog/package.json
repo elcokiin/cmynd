@@ -7,6 +7,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "check-types": "astro check",
+    "test:e2e": "playwright test",
     "deploy": "astro build && wrangler deploy --var CONVEX_URL:https://useful-lemming-995.convex.cloud"
   },
   "dependencies": {
@@ -32,6 +33,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
+    "@playwright/test": "^1.62.1",
     "typescript": "catalog:"
   }
 }
