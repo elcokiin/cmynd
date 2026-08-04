@@ -50,7 +50,15 @@
     10vw 20vh var(--star-bright), 30vw 40vh var(--star-bright), 50vw 80vh var(--star-bright), 80vw 10vh var(--star-bright), 90vw 90vh var(--star-bright),
     15vw 60vh var(--star-mid), 45vw 25vh var(--star-mid), 75vw 65vh var(--star-mid),
     5vw 85vh var(--star-dim), 65vw 15vh var(--star-dim), 95vw 45vh var(--star-dim),
-    25vw 5vh var(--star-tint), 55vw 55vh var(--star-tint), 85vw 35vh var(--star-tint);
+    25vw 5vh var(--star-tint), 55vw 55vh var(--star-tint), 85vw 35vh var(--star-tint),
+    3vw 12vh var(--star-bright), 18vw 78vh var(--star-bright), 42vw 52vh var(--star-bright),
+    62vw 32vh var(--star-bright), 78vw 68vh var(--star-bright), 92vw 22vh var(--star-bright),
+    8vw 48vh var(--star-mid), 33vw 88vh var(--star-mid), 58vw 8vh var(--star-mid),
+    73vw 58vh var(--star-mid), 88vw 78vh var(--star-mid),
+    2vw 72vh var(--star-dim), 22vw 18vh var(--star-dim), 48vw 38vh var(--star-dim),
+    68vw 82vh var(--star-dim), 82vw 48vh var(--star-dim), 97vw 62vh var(--star-dim),
+    7vw 35vh var(--star-tint), 37vw 68vh var(--star-tint), 67vw 28vh var(--star-tint),
+    87vw 52vh var(--star-tint), 52vw 12vh var(--star-tint), 12vw 92vh var(--star-tint);
   animation: twinkle 4s infinite alternate;
 }
 
@@ -63,7 +71,13 @@
   box-shadow:
     20vw 30vh var(--star-bright), 60vw 70vh var(--star-bright), 40vw 10vh var(--star-bright), 70vw 90vh var(--star-bright),
     10vw 50vh var(--star-mid), 80vw 40vh var(--star-mid),
-    35vw 85vh var(--star-tint-soft), 90vw 20vh var(--star-tint-soft);
+    35vw 85vh var(--star-tint-soft), 90vw 20vh var(--star-tint-soft),
+    5vw 15vh var(--star-bright), 25vw 55vh var(--star-bright), 45vw 75vh var(--star-bright),
+    55vw 45vh var(--star-bright), 75vw 15vh var(--star-bright), 95vw 65vh var(--star-bright),
+    15vw 35vh var(--star-mid), 30vw 65vh var(--star-mid), 50vw 5vh var(--star-mid),
+    65vw 85vh var(--star-mid), 85vw 55vh var(--star-mid),
+    8vw 70vh var(--star-tint-soft), 28vw 40vh var(--star-tint-soft), 48vw 20vh var(--star-tint-soft),
+    68vw 60vh var(--star-tint-soft), 88vw 30vh var(--star-tint-soft);
   animation: twinkle 6s infinite alternate;
 }
 
@@ -76,7 +90,12 @@
   background: transparent;
   box-shadow:
     15vw 15vh var(--star-bright), 85vw 85vh var(--star-bright), 50vw 50vh var(--star-bright),
-    75vw 25vh var(--star-tint-purple), 25vw 75vh var(--star-tint-purple);
+    75vw 25vh var(--star-tint-purple), 25vw 75vh var(--star-tint-purple),
+    5vw 45vh var(--star-bright), 35vw 95vh var(--star-bright), 65vw 5vh var(--star-bright),
+    95vw 35vh var(--star-bright), 55vw 65vh var(--star-bright),
+    10vw 80vh var(--star-tint-purple), 30vw 20vh var(--star-tint-purple),
+    70vw 40vh var(--star-tint-purple), 90vw 70vh var(--star-tint-purple),
+    40vw 55vh var(--star-tint-purple), 60vw 90vh var(--star-tint-purple);
   animation: twinkle 8s infinite alternate;
   filter: blur(1px);
 }

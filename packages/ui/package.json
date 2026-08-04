@@ -49,7 +49,9 @@
     "./bubble": "./src/components/bubble.tsx",
     "./message-scroller": "./src/components/message-scroller.tsx",
     "./marker": "./src/components/marker.tsx",
-    "./optimized-image": "./src/components/custom/optimized-image.tsx"
+    "./optimized-image": "./src/components/custom/optimized-image.tsx",
+    "./flame-wrap": "./src/components/canvasui/FlameWrap.tsx",
+    "./logo": "./src/components/custom/logo.tsx"
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",

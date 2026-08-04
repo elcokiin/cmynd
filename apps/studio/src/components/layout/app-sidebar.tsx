@@ -1,5 +1,6 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { ThemeToggle } from "@elcokiin/ui/theme-toggle";
+import { Logo } from "@elcokiin/ui/logo";
 import { UserMenu } from "@/components/user-menu";
 import { useTheme } from "next-themes";
 import {
@@ -76,13 +77,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <Link to="/" className="flex items-center gap-2 font-semibold">
-          <img
-            src={LogoStudio}
-            alt="Studio logo"
-            width={32}
-            height={32}
-            className="rounded-full object-cover"
-          />
+          <Logo src={LogoStudio} alt="Studio logo" className="w-8 h-8" flame={false} width={32} height={32} />
         </Link>
       </SidebarHeader>
 

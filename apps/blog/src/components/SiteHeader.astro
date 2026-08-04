@@ -1,22 +1,27 @@
 ---
-import { Image } from 'astro:assets';
+import { Logo } from '@elcokiin/ui/logo';
+import { Atmosphere } from '@elcokiin/ui/atmosphere';
 import logo from '../assets/logo.png';
 ---
 
 <header 
   id="site-header" 
-  class="z-50 fixed top-0 flex items-center justify-between p-2 w-full sm:p-4 md:px-20 border-b border-transparent transition-all duration-255"
-  style="background: var(--header-bg); color: var(--header-text);"
+  class="z-50 fixed top-0 flex items-center justify-between p-2 w-full sm:p-4 md:px-20 border-b border-transparent transition-all duration-255 backdrop-blur-md"
+  style="color: var(--header-text);"
 >
-  <div class="flex items-center w-32 justify-between sm:w-40">
+  <Atmosphere client:load transparent className="absolute inset-0 pointer-events-none overflow-hidden">
+    <div class="absolute inset-0" />
+  </Atmosphere>
+
+  <div class="flex items-center w-32 justify-between sm:w-40 relative z-10">
     <a href="/" data-astro-prefetch>
-      <figure class="w-14 h-14 rounded-full object-cover sm:w-20 sm:h-20 lg:w-14 lg:h-14">
-        <Image src={logo} alt="elcokiin logo" class="object-cover rounded-full w-full h-full" />
+      <figure class="w-14 h-14 sm:w-20 sm:h-20 lg:w-14 lg:h-14">
+        <Logo src={logo.src} alt="elcokiin logo" className="w-full h-full" client:load />
       </figure>
     </a>
   </div>
 
-  <div class="flex items-center gap-4">
+  <div class="flex items-center gap-4 relative z-10">
     <a 
       href="https://elcokiin.my" 
       target="_blank"
@@ -27,9 +32,6 @@ import logo from '../assets/logo.png';
     >
       Diego Tenjo
     </a>
-    <div class="hidden sm:flex justify-center items-center gap-4">
-      {/* TODO: Add ToogleTheme and ToogleLanguage components when available */}
-    </div>
   </div>
 </header>
 

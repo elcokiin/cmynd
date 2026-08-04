@@ -6,9 +6,9 @@ import { getRandomPhrase } from "../lib/phrases";
 const { phrase, author } = getRandomPhrase();
 ---
 
-<Atmosphere client:load className="relative flex flex-col items-center justify-center min-h-[60vh] py-10 sm:py-24 sm:px-8 md:py-32 overflow-hidden">
+<Atmosphere client:load className="relative flex flex-col items-center justify-center min-h-[45vh] py-8 sm:py-16 sm:px-8 md:py-20 overflow-hidden">
   <div class="relative z-10 flex flex-col items-center">
-    <h2 class="hero-title cursor-pointer font-bold text-4xl sm:text-6xl lg:text-5xl mb-6" style="color: var(--hero-title-color)">
+    <h2 class="hero-title cursor-pointer font-bold text-2xl sm:text-4xl lg:text-3xl mb-6" style="color: var(--hero-title-color)">
       <a href="https://elcokiin.my" target="_blank" rel="noopener noreferrer" class="animated-underline">
         Diego Tenjo
       </a>
@@ -66,8 +66,8 @@ const { phrase, author } = getRandomPhrase();
       gsap.to(titleLink, {
         scrollTrigger: {
           trigger: titleLink,
-          start: "top top+=175",
-          end: "+=250",
+          start: "top top+=100",
+          end: "+=200",
           scrub: 1,
           pin: true,
           pinSpacing: false,
@@ -93,7 +93,6 @@ const { phrase, author } = getRandomPhrase();
             const targetRect = headerAuthorName.getBoundingClientRect();
             return targetRect.right - titleRect.right;
           }
-          // Fallback si no está el header
           const rect = titleLink.getBoundingClientRect();
           return (window.innerWidth - 90) - rect.right;
         },

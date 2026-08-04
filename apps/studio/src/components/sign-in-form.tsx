@@ -1,6 +1,7 @@
 import { authClient } from "@/lib/auth-client";
 import { ArrowRight } from "lucide-react";
 import { Atmosphere } from "@elcokiin/ui/atmosphere";
+import { Logo } from "@elcokiin/ui/logo";
 import LogoStudio from "@/assets/images/logo.png";
 
 export function SignInForm(): React.ReactNode {
@@ -12,13 +13,7 @@ export function SignInForm(): React.ReactNode {
     >
       {/* Top Left Branding */}
       <div className="absolute top-6 left-6 sm:top-8 sm:left-8 flex items-center gap-3 z-20">
-        <img
-          src={LogoStudio}
-          alt="elcokiin logo"
-          width={32}
-          height={32}
-          className="rounded-full object-cover shadow-sm shadow-primary/20"
-        />
+        <Logo src={LogoStudio} alt="elcokiin logo" className="w-8 h-8 shadow-sm shadow-primary/20" flame={false} width={32} height={32} />
         <span className="font-bold text-sm tracking-tight text-foreground">
           ELCOKIIN-STUDIO.
         </span>
