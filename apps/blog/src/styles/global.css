@@ -77,6 +77,12 @@ html[data-theme="light"] {
   --post-meta-color: #475569;
 }
 
+html[data-theme="dark"] {
+  --accent: var(--primary-aquamarine);
+  --text-hover: var(--primary-aquamarine);
+  --hero-title-color: var(--primary-aquamarine);
+}
+
 .prose {
   --tw-prose-body: #cbd5e1;
   --tw-prose-headings: #f1f5f9;
