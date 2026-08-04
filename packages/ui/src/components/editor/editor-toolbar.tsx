@@ -22,6 +22,7 @@ import { InsertTable } from "src/components/editor/plugins/toolbar/block-insert/
 import { InsertImage } from "src/components/editor/plugins/toolbar/block-insert/insert-image";
 import { InsertEmbeds } from "src/components/editor/plugins/toolbar/block-insert/insert-embeds";
 import { InsertColumnsLayout } from "src/components/editor/plugins/toolbar/block-insert/insert-columns-layout";
+import { SaveStatusToolbarPlugin } from "src/components/editor/plugins/toolbar/save-status-toolbar-plugin";
 import { Separator } from "src/components/separator";
 
 export function EditorToolbar({
@@ -30,7 +31,7 @@ export function EditorToolbar({
   setIsLinkEditMode: (isEditMode: boolean) => void;
 }) {
   return (
-    <div className="flex items-center gap-1 overflow-x-auto border-b px-2 py-1.5 [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-track]:bg-transparent">
+    <div className="sticky top-4 bg-background z-5 flex items-center gap-1 overflow-x-auto border-b px-2 py-1.5 [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:rounded-full">
       <ToolbarPlugin>
         {() => (
           <>
@@ -82,6 +83,8 @@ export function EditorToolbar({
               <InsertEmbeds />
               <InsertColumnsLayout />
             </BlockInsertPlugin>
+
+            <SaveStatusToolbarPlugin className="ml-2" />
           </>
         )}
       </ToolbarPlugin>

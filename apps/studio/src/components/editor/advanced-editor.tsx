@@ -4,11 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
 import { Editor, type UploadFn } from "@elcokiin/ui/editor";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@elcokiin/ui/tooltip";
+import { SaveStatusProvider } from "@elcokiin/ui/editor/context/save-status-context";
 import { cn } from "@elcokiin/ui/lib/utils";
 
 export type AdvancedEditorProps = {
@@ -80,39 +76,17 @@ export function AdvancedEditor({
 
   return (
     <div className={cn("relative w-full", className)}>
-      {onSave && (
-        <div className="absolute top-2 right-2 z-10">
-          <Tooltip>
-            <TooltipTrigger>
-              <span
-                className={cn(
-                  "inline-block size-2.5 rounded-full transition-colors",
-                  saveStatus === "saved" && "bg-green-500",
-                  saveStatus === "saving" && "bg-yellow-500",
-                  saveStatus === "unsaved" && "bg-orange-500",
-                  saveStatus === "error" && "bg-red-500",
-                )}
-              />
-            </TooltipTrigger>
-            <TooltipContent>
-              {saveStatus === "saved" && "Saved"}
-              {saveStatus === "saving" && "Saving..."}
-              {saveStatus === "unsaved" && "Unsaved changes"}
-              {saveStatus === "error" && "Error saving"}
-            </TooltipContent>
-          </Tooltip>
-        </div>
-      )}
-
-      <Editor
-        initialContent={initialContent}
-        onChange={handleChange}
-        editable={editable}
-        variant={variant}
-        uploadFn={uploadFn}
-        maxLength={maxLength}
-        disableMaxLength={disableMaxLength}
-      />
+      <SaveStatusProvider value={onSave ? saveStatus : "saved"}>
+        <Editor
+          initialContent={initialContent}
+          onChange={handleChange}
+          editable={editable}
+          variant={variant}
+          uploadFn={uploadFn}
+          maxLength={maxLength}
+          disableMaxLength={disableMaxLength}
+        />
+      </SaveStatusProvider>
     </div>
   );
 }

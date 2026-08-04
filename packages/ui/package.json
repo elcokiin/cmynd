@@ -16,6 +16,7 @@
     "./dropdown-menu": "./src/components/dropdown-menu.tsx",
     "./empty": "./src/components/empty.tsx",
     "./editor": "./src/components/editor/index.tsx",
+    "./editor/context/save-status-context": "./src/components/editor/context/save-status-context.tsx",
     "./editor/render": "./src/components/editor/render.ts",
     "./emoji-list": "./src/components/editor/utils/emoji-list.ts",
     "./input": "./src/components/input.tsx",
