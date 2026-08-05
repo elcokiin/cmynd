@@ -1,5 +1,6 @@
 "use client";
 
+import { api } from "@elcokiin/backend/convex/_generated/api";
 import type { DocumentType } from "@elcokiin/backend/lib/types/documents";
 import { Button } from "@elcokiin/ui/button";
 import {
@@ -23,6 +24,7 @@ import {
   HoverCardTrigger,
 } from "@elcokiin/ui/hover-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@elcokiin/ui/tabs";
+import { useQuery } from "convex/react";
 import { CalendarDaysIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -49,6 +51,8 @@ const TYPE_COLOR: Record<DocumentType, string> = {
   inspiration: "var(--color-chart-4)",
 };
 
+const CREATION_DAY_COLOR = "var(--color-chart-5)";
+
 const MONTHS = [
   "Jan",
   "Feb",
@@ -69,71 +73,11 @@ function formatDayLabel(dateKey: string): string {
   return `${MONTHS[(month ?? 1) - 1]} ${day}, ${year}`;
 }
 
-function generateMockData(): ActivityDay[] {
-  const now = new Date();
-  const YEAR = 365 * 24 * 60 * 60 * 1000;
-  const DAY = 24 * 60 * 60 * 1000;
-
-  let seed = 42;
-  const rand = () => {
-    seed = (seed * 1664525 + 1013904223) & 0xffffffff;
-    return (seed >>> 0) / 0xffffffff;
-  };
-
-  const TYPE_POOL: DocumentType[] = ["own", "own", "own", "own", "reprint", "inspiration"];
-  const docCounts: Record<DocumentType, number> = { own: 0, reprint: 0, inspiration: 0 };
-
-  const start = new Date(now.getTime() - 4 * YEAR);
-  const data: ActivityDay[] = [];
-  let streakLength = 0;
-
-  for (let i = 0; i < 4 * 365; i++) {
-    const d = new Date(start.getTime() + i * DAY);
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    const dateKey = `${y}-${m}-${day}`;
-
-    const dow = d.getDay();
-    const yearIndex = Math.floor(i / 365);
-    const recencyBoost = 0.05 * yearIndex;
-    const inStreak = streakLength > 0 && rand() < 0.72;
-    const weekendChance = (dow === 0 || dow === 6 ? 0.3 : 0.8) + recencyBoost;
-    const active = inStreak || rand() < weekendChance;
-
-    if (!active) {
-      streakLength = 0;
-      data.push({ date: dateKey, value: 0 });
-      continue;
-    }
-    streakLength++;
-
-    const isBurst = rand() < 0.07;
-    const words = isBurst
-      ? Math.floor(rand() * 500 + 100) + Math.floor(rand() * 900 + 400)
-      : Math.floor(rand() * 500 + 100);
-
-    const published: PublishedEntry[] | undefined =
-      rand() < 0.035
-        ? (() => {
-            const type = TYPE_POOL[Math.floor(rand() * TYPE_POOL.length)]!;
-            docCounts[type]++;
-            return [
-              {
-                type,
-                documentId: `seed-${type}-${docCounts[type]}`,
-              },
-            ];
-          })()
-        : undefined;
-
-    data.push({ date: dateKey, value: words, publishedWithType: published });
-  }
-
-  return data;
+function wordLabel(count: number): string {
+  return `${count} ${count === 1 ? "word" : "words"}`;
 }
 
-function groupByYear(data: ActivityDay[]): Map<number, ActivityDay[]> {
+export function groupByYear(data: ActivityDay[]): Map<number, ActivityDay[]> {
   const existing = new Map<number, Map<string, ActivityDay>>();
   for (const day of data) {
     const year = Number(day.date.split("-")[0]);
@@ -188,7 +132,19 @@ function ActivityHeatmap({
 }: {
   onClose: () => void;
 }): React.ReactNode {
-  const data = useMemo<ActivityDay[]>(() => generateMockData(), []);
+  const raw = useQuery(api.streaks.queries.getActivity);
+
+  const authorCreatedAt = raw?.authorCreatedAt;
+
+  const data = useMemo<ActivityDay[]>(() => {
+    if (!raw) return [];
+    return raw.days.map((row) => ({
+      date: row.date,
+      value: row.words,
+      publishedWithType: row.publishedWithType,
+    }));
+  }, [raw]);
+
   const byYear = useMemo(() => groupByYear(data), [data]);
   const years = useMemo(() => Array.from(byYear.keys()).sort((a, b) => a - b), [byYear]);
 
@@ -198,6 +154,22 @@ function ActivityHeatmap({
   );
 
   const [activeYear, setActiveYear] = useState(() => years.at(-1) ?? new Date().getFullYear());
+
+  if (raw === undefined) {
+    return (
+      <div className="flex h-48 items-center justify-center text-muted-foreground">
+        Loading activity...
+      </div>
+    );
+  }
+
+  if (years.length === 0) {
+    return (
+      <div className="flex h-48 items-center justify-center text-muted-foreground">
+        No writing activity yet.
+      </div>
+    );
+  }
 
   return (
     <div className="relative">
@@ -219,7 +191,12 @@ function ActivityHeatmap({
                     const meta = act as unknown as AugmentedActivity;
                     const published = meta.publishedWithType ?? [];
                     const type = published[0]?.type;
-                    const fill = type ? TYPE_COLOR[type] : undefined;
+                    const isCreationDay = authorCreatedAt === meta.date;
+                    const fill = isCreationDay
+                      ? CREATION_DAY_COLOR
+                      : type
+                        ? TYPE_COLOR[type]
+                        : undefined;
                     const dayData = metaByDate.get(meta.date);
 
                     return (
@@ -239,8 +216,13 @@ function ActivityHeatmap({
                             <div className="font-medium text-foreground">
                               {formatDayLabel(dayData.date)}
                             </div>
+                            {isCreationDay && (
+                              <div className="text-xs font-medium" style={{ color: CREATION_DAY_COLOR }}>
+                                First document created
+                              </div>
+                            )}
                             <div className="text-muted-foreground">
-                              {dayData.value} words written
+                              {wordLabel(dayData.value)} written
                             </div>
                             {dayData.publishedWithType &&
                               dayData.publishedWithType.length > 0 && (
@@ -270,8 +252,13 @@ function ActivityHeatmap({
                 <CalendarHeatmapFooter>
                   <CalendarHeatmapStat
                     compute={(d) => d.reduce((s, a) => s + a.value, 0)}
-                    label="{{value}} words in {{year}}"
-                  />
+                  >
+                    {({ value, year }) => (
+                      <span className="text-muted-foreground tabular-nums">
+                        {wordLabel(value as number)} in {year}
+                      </span>
+                    )}
+                  </CalendarHeatmapStat>
                   <TypeLegend />
                 </CalendarHeatmapFooter>
               </CalendarHeatmap>

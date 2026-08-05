@@ -9,6 +9,11 @@ export type WritingActivityDay = {
   publishedWithType?: { type: DocumentType; documentId: string }[];
 };
 
+export type WritingActivityResponse = {
+  days: WritingActivityDay[];
+  authorCreatedAt: string;
+};
+
 /**
  * Number of years of historical activity returned, mirroring the GitHub-style
  * "one year per row" heatmap.
@@ -25,7 +30,7 @@ const MAX_YEARS = 5;
  */
 export const getActivity = query({
   args: {},
-  handler: async (ctx): Promise<WritingActivityDay[]> => {
+  handler: async (ctx): Promise<WritingActivityResponse> => {
     const userId = await Auth.requireAuth(ctx);
 
     const author = await ctx.db
@@ -34,7 +39,7 @@ export const getActivity = query({
       .unique();
 
     if (!author) {
-      return [];
+      return { days: [], authorCreatedAt: getLocalDay(Date.now()) };
     }
 
     const cutoff = getLocalDay(Date.now() - MAX_YEARS * 365 * 24 * 60 * 60 * 1000);
@@ -46,10 +51,13 @@ export const getActivity = query({
       .filter((q) => q.gte(q.field("date"), cutoff))
       .collect();
 
-    return rows.map((row) => ({
-      date: row.date,
-      words: row.words,
-      publishedWithType: row.publishedWithType,
-    }));
+    return {
+      days: rows.map((row) => ({
+        date: row.date,
+        words: row.words,
+        publishedWithType: row.publishedWithType,
+      })),
+      authorCreatedAt: getLocalDay(author.createdAt),
+    };
   },
 });
