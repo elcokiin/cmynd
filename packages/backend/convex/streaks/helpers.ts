@@ -57,14 +57,17 @@ export function countWords(content: unknown): number {
     .filter(Boolean).length;
 }
 
-type UpsertActivity =
-  | { words: number }
-  | { publishType: DocumentType; documentId: Id<"documents"> };
+type UpsertActivity = {
+  words?: number;
+  publishType?: DocumentType;
+  documentId?: Id<"documents">;
+};
 
 /**
  * Insert-or-increment the writing activity row for an author on the current day.
- * - `words`: accumulates the number of words typed that day.
- * - `publishType`: appends the published document to that day's type list.
+ * - `words`: accumulates the number of words written that day.
+ * - `publishType` + `documentId`: appends the published document to that day's
+ *   type list so the heatmap can color the cell by publish type.
  */
 export async function upsertActivity(
   ctx: MutationCtx,
@@ -84,9 +87,9 @@ export async function upsertActivity(
     await ctx.db.insert("writingActivity", {
       authorId,
       date,
-      words: "words" in update ? update.words : 0,
+      words: update.words ?? 0,
       publishedWithType:
-        "publishType" in update
+        update.publishType && update.documentId
           ? [{ type: update.publishType, documentId: update.documentId }]
           : undefined,
     });
@@ -95,11 +98,11 @@ export async function upsertActivity(
 
   const updates: Record<string, unknown> = {};
 
-  if ("words" in update) {
+  if (update.words !== undefined) {
     updates.words = existing.words + update.words;
   }
 
-  if ("publishType" in update) {
+  if (update.publishType && update.documentId) {
     const current = existing.publishedWithType ?? [];
     if (!current.some((entry) => entry.documentId === update.documentId)) {
       updates.publishedWithType = [

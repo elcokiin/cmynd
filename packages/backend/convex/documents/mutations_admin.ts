@@ -4,6 +4,7 @@ import { ErrorCode, throwConvexError } from "@elcokiin/errors";
 import * as Auth from "../_lib/auth";
 import { computePublishMetadata } from "./helpers";
 import { updateStatusCount } from "./stats_helpers";
+import { countWords, upsertActivity } from "../streaks/helpers";
 
 /**
  * Approve a document (admin only).
@@ -40,6 +41,13 @@ export const approve = mutation({
 
     // Update status counts (pending -> published)
     await updateStatusCount(ctx, "pending", "published");
+
+    // Tag the publish day with the document's word count and type for the heatmap.
+    await upsertActivity(ctx, document.authorId, {
+      words: countWords(document.content),
+      publishType: document.type,
+      documentId: document._id,
+    });
   },
 });
 

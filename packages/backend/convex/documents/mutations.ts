@@ -368,8 +368,9 @@ export const publish = mutation({
 
     await updateStatusCount(ctx, document.status, "published");
 
-    // Tag the current day with the published document type for the heatmap.
+    // Tag the publish day with the document's word count and type for the heatmap.
     await upsertActivity(ctx, document.authorId, {
+      words: countWords(document.content),
       publishType: document.type,
       documentId: document._id,
     });
