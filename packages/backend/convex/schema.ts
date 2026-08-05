@@ -141,6 +141,21 @@ export default defineSchema({
     updatedAt: v.number(),
   }),
 
+  writingActivity: defineTable({
+    authorId: v.id("authors"),
+    date: v.string(),
+    words: v.number(),
+    publishedWithType: v.optional(
+      v.array(
+        v.object({
+          type: documentType,
+          documentId: v.id("documents"),
+        }),
+      ),
+    ),
+  })
+    .index("by_author_date", ["authorId", "date"]),
+
   portfolio: defineTable({
     name: v.string(),
     headline: v.string(),

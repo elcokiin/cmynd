@@ -9,10 +9,10 @@
   /* Light Mode - Professional High-Contrast Base */
   --background: oklch(0.99 0.01 258);
   --foreground: oklch(0.21 0.05 258); /* Navy Blue */
-  
+
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.21 0.05 258);
-  
+
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.21 0.05 258);
 
@@ -61,9 +61,9 @@
   --font-sans: "Inter", sans-serif;
   --font-serif: "Source Serif 4", serif;
   --font-mono: "JetBrains Mono", monospace;
-  
+
   --radius: 0.6rem; /* Slightly rounder for the "Dreamy" feel */
-  
+
   --shadow-color: oklch(0.21 0.05 258 / 0.1);
   --spacing: 0.25rem;
 }

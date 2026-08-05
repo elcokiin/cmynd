@@ -5,6 +5,7 @@ import { usePaginatedQuery } from "convex/react";
 import { useCallback } from "react";
 
 import {
+  ActivityHeatmapButton,
   CreateDocumentButton,
   DashboardSkeleton,
   DocumentCard,
@@ -48,6 +49,7 @@ function DashboardRoute() {
           </p>
         </div>
         <div className="flex items-center gap-4">
+          <ActivityHeatmapButton />
           <CreateDocumentButton />
         </div>
       </div>

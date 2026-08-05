@@ -42,6 +42,8 @@ import type * as portfolio_queries from "../portfolio/queries.js";
 import type * as portfolio_seed from "../portfolio/seed.js";
 import type * as r2 from "../r2.js";
 import type * as storage from "../storage.js";
+import type * as streaks_helpers from "../streaks/helpers.js";
+import type * as streaks_queries from "../streaks/queries.js";
 
 import type {
   ApiFromModules,
@@ -84,6 +86,8 @@ declare const fullApi: ApiFromModules<{
   "portfolio/seed": typeof portfolio_seed;
   r2: typeof r2;
   storage: typeof storage;
+  "streaks/helpers": typeof streaks_helpers;
+  "streaks/queries": typeof streaks_queries;
 }>;
 
 /**

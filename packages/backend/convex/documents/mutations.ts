@@ -31,6 +31,7 @@ import {
   updateStatusCount,
 } from "./stats_helpers";
 import { r2 } from "../r2";
+import { countWords, upsertActivity } from "../streaks/helpers";
 
 /**
  * Create a new document.
@@ -296,6 +297,12 @@ export const updateContent = mutation({
     }
 
     await ctx.db.patch(args.documentId, updates);
+
+    // Track words written today for the writing-activity heatmap.
+    const delta = Math.max(0, countWords(args.content) - countWords(document.content));
+    if (delta > 0) {
+      await upsertActivity(ctx, document.authorId, { words: delta });
+    }
   },
 });
 
@@ -360,6 +367,12 @@ export const publish = mutation({
     });
 
     await updateStatusCount(ctx, document.status, "published");
+
+    // Tag the current day with the published document type for the heatmap.
+    await upsertActivity(ctx, document.authorId, {
+      publishType: document.type,
+      documentId: document._id,
+    });
   },
 });
 
