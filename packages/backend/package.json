@@ -25,7 +25,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "deploy": "convex deploy --cmd \"bun turbo build --filter=studio\""
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.30",
