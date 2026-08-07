@@ -36,6 +36,46 @@ export type ProjectImage = {
 
 export type ExperienceType = "work" | "education" | "certification";
 
+// ── Skill level & evidence ────────────────────────────────────────────
+
+export type SkillLevel = "beginner" | "intermediate" | "advanced" | "expert";
+
+export type SkillEvidence = {
+  projectsCount: number;
+  experiencesCount: number;
+  totalHours: number;
+  yearsSinceFirstUse: number | null;
+};
+
+/**
+ * Summary of a skill embedded in a project/experience response.
+ * Server-hydrated from the junction tables.
+ */
+export type SkillReference = {
+  _id: Id<"skills">;
+  name: string;
+  category: string;
+  level?: SkillLevel;
+  icon?: string;
+};
+
+/**
+ * Skill summary embedded in admin project responses; includes the role
+ * the skill plays in that specific project.
+ */
+export type AdminSkillReference = SkillReference & {
+  role?: "core" | "secondary";
+};
+
+export type SkillLink = {
+  skillId: Id<"skills">;
+  role?: "core" | "secondary";
+};
+
+export type SkillWithEvidence = AdminSkill & {
+  evidence: SkillEvidence;
+};
+
 // ── Raw database types ────────────────────────────────────────────────
 
 export type Portfolio = Doc<"portfolio">;
@@ -63,7 +103,7 @@ export type PublicSkill = {
   _id: Id<"skills">;
   name: string;
   category: string;
-  proficiency?: number;
+  level?: SkillLevel;
   icon?: string;
 };
 
@@ -77,7 +117,7 @@ export type PublicProject = {
   keyFeatures?: string[];
   url?: string;
   githubUrl?: string;
-  technologies?: string[];
+  skills?: SkillReference[];
   images?: ProjectImage[];
   order: number;
 };
@@ -94,7 +134,7 @@ export type PublicExperience = {
   durationHours?: number;
   credentialId?: string;
   credentialUrl?: string;
-  technologies?: string[];
+  skills?: SkillReference[];
   order: number;
 };
 
@@ -108,7 +148,8 @@ export type AdminSkill = {
   _id: Id<"skills">;
   name: string;
   category: string;
-  proficiency?: number;
+  level?: SkillLevel;
+  firstUsedAt?: number;
   isVisible?: boolean;
   icon?: string;
   createdBy?: string;
@@ -126,7 +167,7 @@ export type AdminProject = {
   keyFeatures?: string[];
   url?: string;
   githubUrl?: string;
-  technologies?: string[];
+  skills?: AdminSkillReference[];
   images?: ProjectImage[];
   order: number;
   isVisible?: boolean;
@@ -147,7 +188,7 @@ export type AdminExperience = {
   durationHours?: number;
   credentialId?: string;
   credentialUrl?: string;
-  technologies?: string[];
+  skills?: SkillReference[];
   order: number;
   createdBy?: string;
   createdAt: number;

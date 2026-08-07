@@ -85,6 +85,18 @@ const experienceType = v.union(
   v.literal("certification"),
 );
 
+const skillLevel = v.union(
+  v.literal("beginner"),
+  v.literal("intermediate"),
+  v.literal("advanced"),
+  v.literal("expert"),
+);
+
+const projectSkillRole = v.union(
+  v.literal("core"),
+  v.literal("secondary"),
+);
+
 export default defineSchema({
   authors: defineTable({
     name: v.string(),
@@ -173,7 +185,8 @@ export default defineSchema({
   skills: defineTable({
     name: v.string(),
     category: v.string(),
-    proficiency: v.optional(v.number()),
+    level: v.optional(skillLevel),
+    firstUsedAt: v.optional(v.number()),
     isVisible: v.optional(v.boolean()),
     icon: v.optional(v.string()),
     createdBy: v.optional(v.string()),
@@ -194,7 +207,6 @@ export default defineSchema({
     keyFeatures: v.optional(v.array(v.string())),
     url: v.optional(v.string()),
     githubUrl: v.optional(v.string()),
-    technologies: v.optional(v.array(v.string())),
     images: v.optional(v.array(projectImage)),
     order: v.number(),
     isVisible: v.optional(v.boolean()),
@@ -217,7 +229,6 @@ export default defineSchema({
     durationHours: v.optional(v.number()),
     credentialId: v.optional(v.string()),
     credentialUrl: v.optional(v.string()),
-    technologies: v.optional(v.array(v.string())),
     order: v.number(),
     createdBy: v.optional(v.string()),
     createdAt: v.number(),
@@ -225,4 +236,21 @@ export default defineSchema({
   })
     .index("by_type", ["type"])
     .index("by_order", ["order"]),
+
+  projectSkills: defineTable({
+    projectId: v.id("projects"),
+    skillId: v.id("skills"),
+    role: v.optional(projectSkillRole),
+  })
+    .index("by_project", ["projectId"])
+    .index("by_skill", ["skillId"])
+    .index("by_project_and_skill", ["projectId", "skillId"]),
+
+  experienceSkills: defineTable({
+    experienceId: v.id("experience"),
+    skillId: v.id("skills"),
+  })
+    .index("by_experience", ["experienceId"])
+    .index("by_skill", ["skillId"])
+    .index("by_experience_and_skill", ["experienceId", "skillId"]),
 });

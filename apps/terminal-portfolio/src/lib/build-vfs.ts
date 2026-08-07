@@ -49,7 +49,7 @@ function buildExperienceChildren(
       .map((e) => {
         const dur = e.isCurrent ? "Present" : e.endDate ?? "Present";
         const range = e.startDate ? `${e.startDate} - ${dur}` : "";
-        return `# ${e.title}\n${e.organization}${range ? `\n${range}` : ""}${e.description ? `\n\n${e.description}` : ""}${e.technologies?.length ? `\n\nTech: ${e.technologies.join(", ")}` : ""}`;
+        return `# ${e.title}\n${e.organization}${range ? `\n${range}` : ""}${e.description ? `\n\n${e.description}` : ""}${e.skills?.length ? `\n\nSkills: ${e.skills.map((s) => s.name).join(", ")}` : ""}`;
       })
       .join("\n\n---\n\n");
     children["work.md"] = fileNode("work.md", content, "md");
@@ -78,7 +78,7 @@ function buildProjectsChildren(
     const lines: string[] = [`# ${project.title}`];
     if (project.description) lines.push(project.description);
     if (project.philosophy) lines.push(`\n## Philosophy\n${project.philosophy}`);
-    if (project.technologies?.length) lines.push(`\nTech: ${project.technologies.join(", ")}`);
+    if (project.skills?.length) lines.push(`\nSkills: ${project.skills.map((s) => s.name).join(", ")}`);
     if (project.keyFeatures?.length) {
       lines.push("\n## Key Features");
       project.keyFeatures.forEach((f) => lines.push(`- ${f}`));
@@ -106,7 +106,7 @@ function buildStackChildren(
     const data = catSkills.map((s) => ({
       name: s.name,
       icon: s.icon,
-      proficiency: s.proficiency,
+      level: s.level,
     }));
     children[`${category}.json`] = fileNode(
       `${category}.json`,

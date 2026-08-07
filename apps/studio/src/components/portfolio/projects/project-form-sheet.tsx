@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useConvex } from "convex/react";
+import { useMutation, useQuery, useConvex } from "convex/react";
 import { useUploadFile } from "@convex-dev/r2/react";
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { Button } from "@elcokiin/ui/button";
@@ -23,6 +23,7 @@ import {
   ProjectImageManager,
   type PendingFileEntry,
 } from "@/components/portfolio/projects/project-image-manager";
+import { SkillPicker } from "@/components/portfolio/skill-picker";
 import {
   FileTextIcon,
   LightbulbIcon,
@@ -61,6 +62,7 @@ export function ProjectFormSheet({ open, onOpenChange, editingProject }: Project
   const updateProject = useMutation(api.portfolio.mutations.updateProject);
   const deleteFile = useMutation(api.storage.deleteFile);
   const uploadFile = useUploadFile(api.r2);
+  const allSkills = useQuery(api.portfolio.queries.listAllSkills);
 
   const [pendingFiles, setPendingFiles] = useState<PendingFileEntry[]>([]);
   const [removedStorageIds, setRemovedStorageIds] = useState<string[]>([]);
@@ -109,7 +111,7 @@ export function ProjectFormSheet({ open, onOpenChange, editingProject }: Project
           keyFeatures: value.keyFeatures.length > 0 ? value.keyFeatures : undefined,
           url: normalizeOptionalText(value.url ?? ""),
           githubUrl: normalizeOptionalText(value.githubUrl ?? ""),
-          technologies: value.technologies.length > 0 ? value.technologies : undefined,
+          skillLinks: value.skillLinks.length > 0 ? value.skillLinks : undefined,
           images: allImages.length > 0 ? allImages : undefined,
           order: value.order,
           isVisible: value.isVisible,
@@ -290,18 +292,22 @@ export function ProjectFormSheet({ open, onOpenChange, editingProject }: Project
             )}
           </form.Field>
 
-          <form.Field name="technologies">
+          <form.Field name="skillLinks">
             {(field) => (
               <div className="grid gap-3">
                 <div className="flex items-center gap-1.5">
                   <PuzzleIcon className="h-4 w-4 text-muted-foreground" />
-                  <Label>Technologies</Label>
+                  <Label>Skills</Label>
                 </div>
-                <TagsInput
+                <SkillPicker
+                  skills={allSkills}
                   value={field.state.value}
                   onChange={field.handleChange}
-                  placeholder="e.g. React, Rust, PostgreSQL"
+                  withRole
                 />
+                <p className="text-xs text-muted-foreground">
+                  Pick the skills this project demonstrates and mark which ones are core.
+                </p>
               </div>
             )}
           </form.Field>

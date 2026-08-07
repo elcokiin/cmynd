@@ -20,6 +20,11 @@ import {
   getExperienceById,
   isSlugTaken,
   isSkillNameTaken,
+  syncProjectSkills,
+  syncExperienceSkills,
+  deleteProjectSkillLinks,
+  deleteExperienceSkillLinks,
+  deleteSkillLinks,
 } from "./helpers";
 
 // ═════════════════════════════════════════════════════════════════════
@@ -115,7 +120,8 @@ export const upsertSkill = mutation({
       await ctx.db.patch(args._id, {
         name: args.name,
         category: args.category,
-        proficiency: args.proficiency,
+        level: args.level,
+        firstUsedAt: args.firstUsedAt,
         isVisible: args.isVisible,
         icon: args.icon,
         updatedAt: now,
@@ -124,7 +130,8 @@ export const upsertSkill = mutation({
       await ctx.db.insert("skills", {
         name: args.name,
         category: args.category,
-        proficiency: args.proficiency,
+        level: args.level,
+        firstUsedAt: args.firstUsedAt,
         isVisible: args.isVisible ?? true,
         icon: args.icon,
         createdBy: user._id,
@@ -140,6 +147,7 @@ export const removeSkill = mutation({
   handler: async (ctx, args) => {
     await Auth.requireAdmin(ctx);
     await getSkillById(ctx, args._id);
+    await deleteSkillLinks(ctx, args._id);
     await ctx.db.delete(args._id);
   },
 });
@@ -159,7 +167,7 @@ export const createProject = mutation({
     }
 
     const now = Date.now();
-    await ctx.db.insert("projects", {
+    const projectId = await ctx.db.insert("projects", {
       title: args.title,
       slug: args.slug,
       description: args.description,
@@ -168,7 +176,6 @@ export const createProject = mutation({
       keyFeatures: args.keyFeatures,
       url: args.url,
       githubUrl: args.githubUrl,
-      technologies: args.technologies,
       images: args.images,
       order: args.order,
       isVisible: args.isVisible ?? true,
@@ -176,6 +183,10 @@ export const createProject = mutation({
       createdAt: now,
       updatedAt: now,
     });
+
+    if (args.skillLinks?.length) {
+      await syncProjectSkills(ctx, projectId, args.skillLinks);
+    }
   },
 });
 
@@ -205,12 +216,15 @@ export const updateProject = mutation({
     if (args.keyFeatures !== undefined) updates.keyFeatures = args.keyFeatures;
     if (args.url !== undefined) updates.url = args.url;
     if (args.githubUrl !== undefined) updates.githubUrl = args.githubUrl;
-    if (args.technologies !== undefined) updates.technologies = args.technologies;
     if (args.images !== undefined) updates.images = args.images;
     if (args.order !== undefined) updates.order = args.order;
     if (args.isVisible !== undefined) updates.isVisible = args.isVisible;
 
     await ctx.db.patch(args._id, updates);
+
+    if (args.skillLinks !== undefined) {
+      await syncProjectSkills(ctx, args._id, args.skillLinks);
+    }
   },
 });
 
@@ -219,6 +233,7 @@ export const removeProject = mutation({
   handler: async (ctx, args) => {
     await Auth.requireAdmin(ctx);
     await getProjectById(ctx, args._id);
+    await deleteProjectSkillLinks(ctx, args._id);
     await ctx.db.delete(args._id);
   },
 });
@@ -273,7 +288,7 @@ export const createExperience = mutation({
     const user = await Auth.requireAdmin(ctx);
 
     const now = Date.now();
-    await ctx.db.insert("experience", {
+    const experienceId = await ctx.db.insert("experience", {
       type: args.type,
       title: args.title,
       organization: args.organization,
@@ -284,12 +299,15 @@ export const createExperience = mutation({
       durationHours: args.durationHours,
       credentialId: args.credentialId,
       credentialUrl: args.credentialUrl,
-      technologies: args.technologies,
       order: args.order,
       createdBy: user._id,
       createdAt: now,
       updatedAt: now,
     });
+
+    if (args.skillIds?.length) {
+      await syncExperienceSkills(ctx, experienceId, args.skillIds);
+    }
   },
 });
 
@@ -314,10 +332,13 @@ export const updateExperience = mutation({
     if (args.durationHours !== undefined) updates.durationHours = args.durationHours;
     if (args.credentialId !== undefined) updates.credentialId = args.credentialId;
     if (args.credentialUrl !== undefined) updates.credentialUrl = args.credentialUrl;
-    if (args.technologies !== undefined) updates.technologies = args.technologies;
     if (args.order !== undefined) updates.order = args.order;
 
     await ctx.db.patch(args._id, updates);
+
+    if (args.skillIds !== undefined) {
+      await syncExperienceSkills(ctx, args._id, args.skillIds);
+    }
   },
 });
 
@@ -326,6 +347,7 @@ export const removeExperience = mutation({
   handler: async (ctx, args) => {
     await Auth.requireAdmin(ctx);
     await getExperienceById(ctx, args._id);
+    await deleteExperienceSkillLinks(ctx, args._id);
     await ctx.db.delete(args._id);
   },
 });

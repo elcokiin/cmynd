@@ -144,11 +144,11 @@ export function ExperienceList({ experience }: ExperienceListProps) {
                       </Badge>
                     )}
                   </div>
-                  {entry.technologies && entry.technologies.length > 0 && (
+                  {entry.skills && entry.skills.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2">
-                      {entry.technologies.map((tech) => (
-                        <Badge key={tech} variant="outline" className="text-xs">
-                          {tech}
+                      {entry.skills.map((skill) => (
+                        <Badge key={skill._id} variant="outline" className="text-xs">
+                          {skill.name}
                         </Badge>
                       ))}
                     </div>

@@ -18,6 +18,12 @@ export type {
   Playlist,
   ProjectImage,
   ExperienceType,
+  SkillLevel,
+  SkillReference,
+  AdminSkillReference,
+  SkillEvidence,
+  SkillLink,
+  SkillWithEvidence,
 } from "./portfolio";
 
 /**

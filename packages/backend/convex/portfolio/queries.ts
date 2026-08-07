@@ -1,24 +1,35 @@
 import { v } from "convex/values";
-import { query } from "../_generated/server";
+import { query, type QueryCtx } from "../_generated/server";
 import { env } from "@elcokiin/env/backend";
 
 import {
   publicPortfolioValidator,
   publicProjectValidator,
   adminPortfolioValidator,
+  skillWithEvidenceValidator,
 } from "../../lib/validators/portfolio";
 import type {
   PublicPortfolio,
   PublicSkill,
   PublicProject,
   PublicExperience,
+  SkillWithEvidence,
+  AdminSkillReference,
   ProjectImage,
+  SkillReference,
 } from "../../lib/types/portfolio";
+import type { Id } from "../_generated/dataModel";
 import * as Auth from "../_lib/auth";
 import { getCdnUrl } from "../../lib/utils/cdn";
 import {
   getPortfolio,
   getProjectBySlug,
+  getSkillById,
+  listProjectSkillLinks,
+  listSkillsForProject,
+  listSkillsForExperience,
+  listProjectIdsForSkill,
+  listExperienceIdsForSkill,
 } from "./helpers";
 import {
   toPublicSkill,
@@ -27,6 +38,7 @@ import {
   toAdminProject,
   toPublicExperience,
   toAdminExperience,
+  toSkillReference,
 } from "./projections";
 
 async function resolveProjectImages(
@@ -60,6 +72,52 @@ async function resolveSingleProject<T extends { images?: ProjectImage[] }>(
     ...project,
     images: await resolveProjectImages(project.images),
   };
+}
+
+async function hydrateProjectsWithSkills<T extends { _id: Id<"projects"> }>(
+  ctx: QueryCtx,
+  projects: T[],
+): Promise<Array<T & { skills?: SkillReference[] }>> {
+  return Promise.all(
+    projects.map(async (project) => ({
+      ...project,
+      skills: (await listSkillsForProject(ctx, project._id)).map(toSkillReference),
+    })),
+  );
+}
+
+async function hydrateExperienceWithSkills<T extends { _id: Id<"experience"> }>(
+  ctx: QueryCtx,
+  experience: T[],
+): Promise<Array<T & { skills?: SkillReference[] }>> {
+  return Promise.all(
+    experience.map(async (entry) => ({
+      ...entry,
+      skills: (await listSkillsForExperience(ctx, entry._id)).map(toSkillReference),
+    })),
+  );
+}
+
+async function hydrateAdminProjectsWithSkills<
+  T extends { _id: Id<"projects"> },
+>(
+  ctx: QueryCtx,
+  projects: T[],
+): Promise<Array<T & { skills?: AdminSkillReference[] }>> {
+  return Promise.all(
+    projects.map(async (project) => {
+      const links = await listProjectSkillLinks(ctx, project._id);
+      const roles = new Map(links.map((link) => [link.skillId, link.role]));
+      const skills = await listSkillsForProject(ctx, project._id);
+      return {
+        ...project,
+        skills: skills.map((skill) => ({
+          ...toSkillReference(skill),
+          role: roles.get(skill._id),
+        })),
+      };
+    }),
+  );
 }
 
 // ═════════════════════════════════════════════════════════════════════
@@ -136,7 +194,7 @@ export const listCategories = query({
 });
 
 /**
- * List visible projects ordered by `order`.
+ * List visible projects ordered by `order`, each with its linked skills.
  */
 export const listPublicProjects = query({
   args: {},
@@ -147,12 +205,13 @@ export const listPublicProjects = query({
       .order("asc")
       .collect();
 
-    return resolveProjects(projects.map(toPublicProject));
+    const withImages = await resolveProjects(projects.map(toPublicProject));
+    return hydrateProjectsWithSkills(ctx, withImages);
   },
 });
 
 /**
- * Get a single project by its slug.
+ * Get a single project by its slug, including its linked skills.
  */
 export const getProjectBySlugQuery = query({
   args: { slug: v.string() },
@@ -160,12 +219,16 @@ export const getProjectBySlugQuery = query({
   handler: async (ctx, args): Promise<PublicProject | null> => {
     const project = await getProjectBySlug(ctx, args.slug);
     if (!project || !project.isVisible) return null;
-    return resolveSingleProject(toPublicProject(project));
+    const withImages = await resolveSingleProject(toPublicProject(project));
+    const [skills] = await Promise.all([
+      listSkillsForProject(ctx, project._id),
+    ]);
+    return { ...withImages, skills: skills.map(toSkillReference) };
   },
 });
 
 /**
- * List all experience entries ordered by `order`.
+ * List all experience entries ordered by `order`, each with its linked skills.
  */
 export const listPublicExperience = query({
   args: {
@@ -186,13 +249,54 @@ export const listPublicExperience = query({
         .collect();
     }
 
-    return experience.map(toPublicExperience);
+    return hydrateExperienceWithSkills(ctx, experience.map(toPublicExperience));
   },
 });
 
 // ═════════════════════════════════════════════════════════════════════
 // Admin queries
 // ═════════════════════════════════════════════════════════════════════
+
+/**
+ * Get a single skill with computed evidence derived from its real
+ * relationships. `yearsSinceFirstUse` is intentionally `null` — queries
+ * must not read the wall clock (stale + cache-hostile); compute it on
+ * the client from `firstUsedAt`.
+ */
+export const getSkillWithEvidence = query({
+  args: { skillId: v.id("skills") },
+  returns: v.union(skillWithEvidenceValidator, v.null()),
+  handler: async (ctx, args): Promise<SkillWithEvidence | null> => {
+    await Auth.requireAdmin(ctx);
+    const skill = await getSkillById(ctx, args.skillId);
+
+    const projectIds = await listProjectIdsForSkill(ctx, args.skillId);
+    const experienceIds = await listExperienceIdsForSkill(ctx, args.skillId);
+
+    const projects = (
+      await Promise.all(projectIds.map((id) => ctx.db.get("projects", id)))
+    ).filter((p) => p !== null);
+
+    const experiences = (
+      await Promise.all(experienceIds.map((id) => ctx.db.get("experience", id)))
+    ).filter((e) => e !== null);
+
+    const totalHours = experiences.reduce(
+      (sum, entry) => sum + (entry.durationHours ?? 0),
+      0,
+    );
+
+    return {
+      ...toAdminSkill(skill),
+      evidence: {
+        projectsCount: projects.length,
+        experiencesCount: experiences.length,
+        totalHours,
+        yearsSinceFirstUse: null,
+      },
+    };
+  },
+});
 
 /**
  * Get portfolio for editing (admin only). Returns null if no portfolio exists yet.
@@ -235,25 +339,26 @@ export const listAllSkills = query({
 });
 
 /**
- * List all projects (admin only).
+ * List all projects (admin only), each with its linked skills.
  */
 export const listAllProjects = query({
   args: {},
   handler: async (ctx) => {
     await Auth.requireAdmin(ctx);
     const projects = await ctx.db.query("projects").order("asc").collect();
-    return resolveProjects(projects.map(toAdminProject));
+    const withImages = await resolveProjects(projects.map(toAdminProject));
+    return hydrateAdminProjectsWithSkills(ctx, withImages);
   },
 });
 
 /**
- * List all experience (admin only).
+ * List all experience (admin only), each with its linked skills.
  */
 export const listAllExperience = query({
   args: {},
   handler: async (ctx) => {
     await Auth.requireAdmin(ctx);
     const experience = await ctx.db.query("experience").order("asc").collect();
-    return experience.map(toAdminExperience);
+    return hydrateExperienceWithSkills(ctx, experience.map(toAdminExperience));
   },
 });

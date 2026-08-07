@@ -15,8 +15,8 @@ const mockProfile: PublicPortfolio = {
 };
 
 const mockSkills: PublicSkill[] = [
-  { _id: 's1' as any, name: 'TypeScript', category: 'languages', icon: 'ts' },
-  { _id: 's2' as any, name: 'React', category: 'frameworks', icon: 'react' },
+  { _id: 's1' as any, name: 'TypeScript', category: 'languages', level: 'advanced', icon: 'ts' },
+  { _id: 's2' as any, name: 'React', category: 'frameworks', level: 'expert', icon: 'react' },
 ];
 
 const mockProjects: PublicProject[] = [
@@ -25,7 +25,10 @@ const mockProjects: PublicProject[] = [
     title: 'Test Project',
     slug: 'test-project',
     description: 'A test project',
-    technologies: ['TypeScript', 'React'],
+    skills: [
+      { _id: 's1' as any, name: 'TypeScript', category: 'languages' },
+      { _id: 's2' as any, name: 'React', category: 'frameworks' },
+    ],
     order: 1,
   },
 ];

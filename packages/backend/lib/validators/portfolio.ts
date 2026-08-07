@@ -40,6 +40,40 @@ export const experienceTypeValidator = v.union(
   v.literal("certification"),
 );
 
+// ── Skill level / relationship primitives ─────────────────────────────
+
+export const skillLevelValidator = v.union(
+  v.literal("beginner"),
+  v.literal("intermediate"),
+  v.literal("advanced"),
+  v.literal("expert"),
+);
+
+export const projectSkillRoleValidator = v.union(
+  v.literal("core"),
+  v.literal("secondary"),
+);
+
+export const skillReferenceValidator = v.object({
+  _id: v.id("skills"),
+  name: v.string(),
+  category: v.string(),
+  level: v.optional(skillLevelValidator),
+  icon: v.optional(v.string()),
+});
+
+export const skillEvidenceValidator = v.object({
+  projectsCount: v.number(),
+  experiencesCount: v.number(),
+  totalHours: v.number(),
+  yearsSinceFirstUse: v.optional(v.union(v.number(), v.null())),
+});
+
+export const skillLinkValidator = v.object({
+  skillId: v.id("skills"),
+  role: v.optional(projectSkillRoleValidator),
+});
+
 // ── Query return validators (public) ──────────────────────────────────
 
 export const publicPortfolioValidator = v.object({
@@ -60,7 +94,7 @@ export const publicSkillValidator = v.object({
   _id: v.id("skills"),
   name: v.string(),
   category: v.string(),
-  proficiency: v.optional(v.number()),
+  level: v.optional(skillLevelValidator),
   icon: v.optional(v.string()),
 });
 
@@ -74,7 +108,7 @@ export const publicProjectValidator = v.object({
   keyFeatures: v.optional(v.array(v.string())),
   url: v.optional(v.string()),
   githubUrl: v.optional(v.string()),
-  technologies: v.optional(v.array(v.string())),
+  skills: v.optional(v.array(skillReferenceValidator)),
   images: v.optional(v.array(projectImageValidator)),
   order: v.number(),
 });
@@ -91,7 +125,7 @@ export const publicExperienceValidator = v.object({
   durationHours: v.optional(v.number()),
   credentialId: v.optional(v.string()),
   credentialUrl: v.optional(v.string()),
-  technologies: v.optional(v.array(v.string())),
+  skills: v.optional(v.array(skillReferenceValidator)),
   order: v.number(),
 });
 
@@ -116,7 +150,8 @@ export const adminSkillValidator = v.object({
   _id: v.id("skills"),
   name: v.string(),
   category: v.string(),
-  proficiency: v.optional(v.number()),
+  level: v.optional(skillLevelValidator),
+  firstUsedAt: v.optional(v.number()),
   isVisible: v.optional(v.boolean()),
   icon: v.optional(v.string()),
   createdBy: v.optional(v.string()),
@@ -134,7 +169,7 @@ export const adminProjectValidator = v.object({
   keyFeatures: v.optional(v.array(v.string())),
   url: v.optional(v.string()),
   githubUrl: v.optional(v.string()),
-  technologies: v.optional(v.array(v.string())),
+  skills: v.optional(v.array(skillReferenceValidator)),
   images: v.optional(v.array(projectImageValidator)),
   order: v.number(),
   isVisible: v.optional(v.boolean()),
@@ -155,11 +190,15 @@ export const adminExperienceValidator = v.object({
   durationHours: v.optional(v.number()),
   credentialId: v.optional(v.string()),
   credentialUrl: v.optional(v.string()),
-  technologies: v.optional(v.array(v.string())),
+  skills: v.optional(v.array(skillReferenceValidator)),
   order: v.number(),
   createdBy: v.optional(v.string()),
   createdAt: v.number(),
   updatedAt: v.number(),
+});
+
+export const skillWithEvidenceValidator = adminSkillValidator.extend({
+  evidence: skillEvidenceValidator,
 });
 
 // ── Mutation arg validators ───────────────────────────────────────────
@@ -168,7 +207,8 @@ export const upsertSkillArgsValidator = v.object({
   _id: v.optional(v.id("skills")),
   name: v.string(),
   category: v.string(),
-  proficiency: v.optional(v.number()),
+  level: v.optional(skillLevelValidator),
+  firstUsedAt: v.optional(v.number()),
   isVisible: v.optional(v.boolean()),
   icon: v.optional(v.string()),
 });
@@ -182,7 +222,7 @@ export const createProjectArgsValidator = v.object({
   keyFeatures: v.optional(v.array(v.string())),
   url: v.optional(v.string()),
   githubUrl: v.optional(v.string()),
-  technologies: v.optional(v.array(v.string())),
+  skillLinks: v.optional(v.array(skillLinkValidator)),
   images: v.optional(v.array(projectImageValidator)),
   order: v.number(),
   isVisible: v.optional(v.boolean()),
@@ -198,7 +238,7 @@ export const updateProjectArgsValidator = v.object({
   keyFeatures: v.optional(v.array(v.string())),
   url: v.optional(v.string()),
   githubUrl: v.optional(v.string()),
-  technologies: v.optional(v.array(v.string())),
+  skillLinks: v.optional(v.array(skillLinkValidator)),
   images: v.optional(v.array(projectImageValidator)),
   order: v.optional(v.number()),
   isVisible: v.optional(v.boolean()),
@@ -215,7 +255,7 @@ export const createExperienceArgsValidator = v.object({
   durationHours: v.optional(v.number()),
   credentialId: v.optional(v.string()),
   credentialUrl: v.optional(v.string()),
-  technologies: v.optional(v.array(v.string())),
+  skillIds: v.optional(v.array(v.id("skills"))),
   order: v.number(),
 });
 
@@ -231,6 +271,6 @@ export const updateExperienceArgsValidator = v.object({
   durationHours: v.optional(v.number()),
   credentialId: v.optional(v.string()),
   credentialUrl: v.optional(v.string()),
-  technologies: v.optional(v.array(v.string())),
+  skillIds: v.optional(v.array(v.id("skills"))),
   order: v.optional(v.number()),
 });

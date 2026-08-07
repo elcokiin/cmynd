@@ -5,7 +5,13 @@ import { Button } from "@elcokiin/ui/button";
 import { Input } from "@elcokiin/ui/input";
 import { Switch } from "@elcokiin/ui/switch";
 import { Label } from "@elcokiin/ui/label";
-import { Slider } from "@elcokiin/ui/slider";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@elcokiin/ui/select";
 import {
   Card,
   CardContent,
@@ -25,17 +31,27 @@ import { PlusIcon, Trash2Icon, WrenchIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
-import type { AdminSkill } from "@elcokiin/backend/lib/types/portfolio";
+import type {
+  AdminSkill,
+  SkillLevel,
+} from "@elcokiin/backend/lib/types/portfolio";
 
 interface SkillsManagerProps {
   skills: AdminSkill[] | undefined;
 }
 
+const levelOptions: { value: SkillLevel; label: string }[] = [
+  { value: "beginner", label: "Beginner" },
+  { value: "intermediate", label: "Intermediate" },
+  { value: "advanced", label: "Advanced" },
+  { value: "expert", label: "Expert" },
+];
+
 interface SkillRow {
   _id?: Id<"skills">;
   name: string;
   category: string;
-  proficiency: number;
+  level: SkillLevel;
   isVisible: boolean;
 }
 
@@ -56,7 +72,7 @@ export function SkillsManager({ skills }: SkillsManagerProps) {
           _id: s._id,
           name: s.name,
           category: s.category,
-          proficiency: s.proficiency ?? 0,
+          level: s.level ?? "intermediate",
           isVisible: s.isVisible ?? true,
         })),
       );
@@ -77,7 +93,7 @@ export function SkillsManager({ skills }: SkillsManagerProps) {
         _id: row._id,
         name: row.name,
         category: row.category,
-        proficiency: row.proficiency,
+        level: row.level,
         isVisible: row.isVisible,
       });
       toast.success(row._id ? "Skill updated" : "Skill created");
@@ -100,7 +116,7 @@ export function SkillsManager({ skills }: SkillsManagerProps) {
   const addRow = () => {
     setRows((prev) => [
       ...prev,
-      { name: "", category: "", proficiency: 50, isVisible: true },
+      { name: "", category: "", level: "intermediate", isVisible: true },
     ]);
   };
 
@@ -165,17 +181,25 @@ export function SkillsManager({ skills }: SkillsManagerProps) {
                     />
                   </div>
                   <div className="grid gap-1.5">
-                    <Label className="text-xs font-medium">
-                      Proficiency: {row.proficiency}
-                    </Label>
-                    <Slider
-                      value={[row.proficiency]}
-                      onValueChange={([v]) => updateRow(index, "proficiency", v ?? 0)}
-                      onValueCommit={() => handleSave(index)}
-                      min={0}
-                      max={100}
-                      step={1}
-                    />
+                    <Label className="text-xs font-medium">Level</Label>
+                    <Select
+                      value={row.level}
+                      onValueChange={(value) => {
+                        updateRow(index, "level", value as SkillLevel);
+                        handleSave(index);
+                      }}
+                    >
+                      <SelectTrigger className="h-9">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {levelOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="flex items-center gap-2 pt-1 sm:pt-0">
                     <Switch

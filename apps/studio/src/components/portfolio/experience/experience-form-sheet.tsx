@@ -1,6 +1,6 @@
 import { useRef, useEffect } from "react";
 import { useForm } from "@tanstack/react-form";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { Button } from "@elcokiin/ui/button";
 import { Field, FieldLabel, FieldError } from "@elcokiin/ui/field";
@@ -9,7 +9,6 @@ import { Label } from "@elcokiin/ui/label";
 import { MonthPicker } from "@elcokiin/ui/month-picker";
 import { Switch } from "@elcokiin/ui/switch";
 import { TextareaWithIcon } from "@/components/ui/input-with-icon";
-import { TagsInput } from "@/components/ui/tags-input";
 import {
   SheetHeader,
   SheetTitle,
@@ -34,6 +33,7 @@ import {
 import { toast } from "sonner";
 import { normalizeOptionalText } from "@/lib/text";
 import { experienceSchema, defaultFormValues } from "./experience-schema";
+import { SkillPicker } from "@/components/portfolio/skill-picker";
 import type { AdminExperience, ExperienceType } from "@elcokiin/backend/lib/types/portfolio";
 
 interface ExperienceFormSheetProps {
@@ -56,6 +56,7 @@ export function ExperienceFormSheet({ open, onOpenChange, editingEntry }: Experi
   const { handleError } = useErrorHandler();
   const createExperience = useMutation(api.portfolio.mutations.createExperience);
   const updateExperience = useMutation(api.portfolio.mutations.updateExperience);
+  const allSkills = useQuery(api.portfolio.queries.listAllSkills);
   const previousEndDateRef = useRef("");
   const wasOpen = useRef(open);
 
@@ -82,7 +83,7 @@ export function ExperienceFormSheet({ open, onOpenChange, editingEntry }: Experi
           durationHours: value.durationHours || undefined,
           credentialId: normalizeOptionalText(value.credentialId ?? ""),
           credentialUrl: normalizeOptionalText(value.credentialUrl ?? ""),
-          technologies: value.technologies.length > 0 ? value.technologies : undefined,
+          skillIds: value.skillIds.length > 0 ? value.skillIds : undefined,
           order: value.order,
         };
 
@@ -262,20 +263,22 @@ export function ExperienceFormSheet({ open, onOpenChange, editingEntry }: Experi
           </div>
         </div>
 
-        <form.Field name="technologies">
+        <form.Field name="skillIds">
           {(field) => (
             <div className="space-y-5">
               <div className="space-y-5">
-                <SectionHeader label="Technologies" />
+                <SectionHeader label="Skills" />
                 <div className="grid gap-3">
                   <div className="flex items-center gap-1.5">
                     <PuzzleIcon className="h-4 w-4 text-muted-foreground" />
-                    <Label>Technologies Used</Label>
+                    <Label>Skills Used</Label>
                   </div>
-                  <TagsInput
-                    value={field.state.value}
-                    onChange={field.handleChange}
-                    placeholder="e.g. React, Python, AWS"
+                  <SkillPicker
+                    skills={allSkills}
+                    value={field.state.value.map((skillId) => ({ skillId }))}
+                    onChange={(links) =>
+                      field.handleChange(links.map((link) => link.skillId))
+                    }
                   />
                 </div>
               </div>

@@ -4,6 +4,10 @@ import { paginationOptsValidator } from "convex/server";
 import { components } from "../_generated/api";
 import { listUIMessages, syncStreams, vStreamArgs } from "@convex-dev/agent";
 import { ErrorCode, throwConvexError } from "@elcokiin/errors";
+import {
+  listSkillsForProject,
+  listSkillsForExperience,
+} from "../portfolio/helpers";
 
 export const getPortfolioData = query({
   args: {},
@@ -30,6 +34,26 @@ export const getPortfolioData = query({
       .order("asc")
       .collect();
 
+    const projectsWithSkills = await Promise.all(
+      projects.map(async (p) => ({
+        title: p.title,
+        description: p.description,
+        skills: (await listSkillsForProject(ctx, p._id)).map((s) => s.name),
+      })),
+    );
+
+    const experienceWithSkills = await Promise.all(
+      experience.map(async (e) => ({
+        title: e.title,
+        organization: e.organization,
+        startDate: e.startDate,
+        endDate: e.endDate,
+        isCurrent: e.isCurrent,
+        description: e.description,
+        skills: (await listSkillsForExperience(ctx, e._id)).map((s) => s.name),
+      })),
+    );
+
     return {
       profile: {
         name: portfolio.name,
@@ -39,21 +63,10 @@ export const getPortfolioData = query({
       skills: skills.map((s) => ({
         name: s.name,
         category: s.category,
-        proficiency: s.proficiency,
+        level: s.level,
       })),
-      projects: projects.map((p) => ({
-        title: p.title,
-        description: p.description,
-        technologies: p.technologies,
-      })),
-      experience: experience.map((e) => ({
-        title: e.title,
-        organization: e.organization,
-        startDate: e.startDate,
-        endDate: e.endDate,
-        isCurrent: e.isCurrent,
-        description: e.description,
-      })),
+      projects: projectsWithSkills,
+      experience: experienceWithSkills,
     };
   },
 });

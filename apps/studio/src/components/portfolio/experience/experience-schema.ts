@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
 import type { AdminExperience } from "@elcokiin/backend/lib/types/portfolio";
 
 export const experienceSchema = z.object({
@@ -12,7 +13,7 @@ export const experienceSchema = z.object({
   durationHours: z.number().min(0).optional(),
   credentialId: z.string().optional(),
   credentialUrl: z.string().optional(),
-  technologies: z.array(z.string()).optional().default([]),
+  skillIds: z.array(z.custom<Id<"skills">>()).optional().default([]),
   order: z.number().min(0),
 });
 
@@ -30,7 +31,7 @@ export function defaultFormValues(
     durationHours: entry?.durationHours ?? 0,
     credentialId: entry?.credentialId ?? "",
     credentialUrl: entry?.credentialUrl ?? "",
-    technologies: entry?.technologies ?? [],
+    skillIds: entry?.skills?.map((skill) => skill._id) ?? [],
     order: entry?.order ?? 0,
   };
 }

@@ -6,16 +6,27 @@ import type {
   AdminSkill,
   AdminProject,
   AdminExperience,
+  SkillReference,
 } from "../../lib/types/portfolio";
 
 // ── Skill projections ─────────────────────────────────────────────────
+
+export function toSkillReference(skill: Doc<"skills">): SkillReference {
+  return {
+    _id: skill._id,
+    name: skill.name,
+    category: skill.category,
+    level: skill.level,
+    icon: skill.icon,
+  };
+}
 
 export function toPublicSkill(skill: Doc<"skills">): PublicSkill {
   return {
     _id: skill._id,
     name: skill.name,
     category: skill.category,
-    proficiency: skill.proficiency,
+    level: skill.level,
     icon: skill.icon,
   };
 }
@@ -25,7 +36,8 @@ export function toAdminSkill(skill: Doc<"skills">): AdminSkill {
     _id: skill._id,
     name: skill.name,
     category: skill.category,
-    proficiency: skill.proficiency,
+    level: skill.level,
+    firstUsedAt: skill.firstUsedAt,
     isVisible: skill.isVisible,
     icon: skill.icon,
     createdBy: skill.createdBy,
@@ -47,7 +59,6 @@ export function toPublicProject(project: Doc<"projects">): PublicProject {
     keyFeatures: project.keyFeatures,
     url: project.url,
     githubUrl: project.githubUrl,
-    technologies: project.technologies,
     images: project.images,
     order: project.order,
   };
@@ -64,7 +75,6 @@ export function toAdminProject(project: Doc<"projects">): AdminProject {
     keyFeatures: project.keyFeatures,
     url: project.url,
     githubUrl: project.githubUrl,
-    technologies: project.technologies,
     images: project.images,
     order: project.order,
     isVisible: project.isVisible,
@@ -91,7 +101,6 @@ export function toPublicExperience(
     durationHours: experience.durationHours,
     credentialId: experience.credentialId,
     credentialUrl: experience.credentialUrl,
-    technologies: experience.technologies,
     order: experience.order,
   };
 }
@@ -111,7 +120,6 @@ export function toAdminExperience(
     durationHours: experience.durationHours,
     credentialId: experience.credentialId,
     credentialUrl: experience.credentialUrl,
-    technologies: experience.technologies,
     order: experience.order,
     createdBy: experience.createdBy,
     createdAt: experience.createdAt,

@@ -126,11 +126,12 @@ export function ProjectsList({ projects }: ProjectsListProps) {
                   <p className="text-sm text-muted-foreground mt-1">
                     /{project.slug}
                   </p>
-                  {project.technologies && project.technologies.length > 0 && (
+                  {project.skills && project.skills.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2">
-                      {project.technologies.map((tech) => (
-                        <Badge key={tech} variant="outline" className="text-xs">
-                          {tech}
+                      {project.skills.map((skill) => (
+                        <Badge key={skill._id} variant="outline" className="text-xs">
+                          {skill.name}
+                          {skill.role ? ` · ${skill.role}` : ""}
                         </Badge>
                       ))}
                     </div>
