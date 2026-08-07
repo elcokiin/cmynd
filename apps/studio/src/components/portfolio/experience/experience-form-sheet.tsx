@@ -3,7 +3,6 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { Button } from "@elcokiin/ui/button";
-import { Field, FieldLabel, FieldError } from "@elcokiin/ui/field";
 import { Input } from "@elcokiin/ui/input";
 import { Label } from "@elcokiin/ui/label";
 import { MonthPicker } from "@elcokiin/ui/month-picker";
@@ -34,6 +33,10 @@ import { toast } from "sonner";
 import { normalizeOptionalText } from "@/lib/text";
 import { experienceSchema, defaultFormValues } from "./experience-schema";
 import { SkillPicker } from "@/components/portfolio/skill-picker";
+import {
+  PortfolioField,
+  getPortfolioFieldState,
+} from "@/components/portfolio/portfolio-field";
 import type { AdminExperience, ExperienceType } from "@elcokiin/backend/lib/types/portfolio";
 
 interface ExperienceFormSheetProps {
@@ -69,7 +72,10 @@ export function ExperienceFormSheet({ open, onOpenChange, editingEntry }: Experi
 
   const form = useForm({
     defaultValues: defaultFormValues(editingEntry),
-    validators: { onSubmit: experienceSchema as any },
+    validators: {
+      onChange: experienceSchema as any,
+      onSubmit: experienceSchema as any,
+    },
     onSubmit: async ({ value }) => {
       try {
         const payload = {
@@ -126,69 +132,110 @@ export function ExperienceFormSheet({ open, onOpenChange, editingEntry }: Experi
         <div className="space-y-5">
           <SectionHeader label="Basic Information" />
 
-          <form.Field name="type">
-            {(field) => (
-              <div className="grid gap-3">
-                <Label>Type</Label>
-                <Select
-                  value={field.state.value}
-                  onValueChange={(v) => {
-                    field.handleChange(v as ExperienceType);
-                    if (v !== "certification") {
-                      field.form.setFieldValue("credentialId", "");
-                      field.form.setFieldValue("credentialUrl", "");
-                      field.form.setFieldValue("durationHours", 0);
-                    }
-                  }}
+          <form.Field
+            name="type"
+            validators={{
+              onChange: experienceSchema.shape.type,
+              onBlur: experienceSchema.shape.type,
+            }}
+          >
+            {(field) => {
+              const { errors, invalid, showErrors } = getPortfolioFieldState(field);
+              return (
+                <PortfolioField
+                  label="Type"
+                  htmlFor={field.name}
+                  required
+                  description="What kind of entry this is."
+                  errors={errors}
+                  showErrors={showErrors}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="work">Work</SelectItem>
-                    <SelectItem value="education">Education</SelectItem>
-                    <SelectItem value="certification">Certification</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+                  <Select
+                    value={field.state.value}
+                    onValueChange={(v) => {
+                      field.handleChange(v as ExperienceType);
+                      if (v !== "certification") {
+                        field.form.setFieldValue("credentialId", "");
+                        field.form.setFieldValue("credentialUrl", "");
+                        field.form.setFieldValue("durationHours", 0);
+                      }
+                    }}
+                  >
+                    <SelectTrigger id={field.name} aria-invalid={invalid || undefined}>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="work">Work</SelectItem>
+                      <SelectItem value="education">Education</SelectItem>
+                      <SelectItem value="certification">Certification</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </PortfolioField>
+              );
+            }}
           </form.Field>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <form.Field name="title">
-              {(field) => (
-                <Field>
-                  <FieldLabel htmlFor={field.name}>
-                    Title <span className="text-destructive">*</span>
-                  </FieldLabel>
-                  <Input
-                    id={field.name}
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    placeholder="Job title / Degree"
+            <form.Field
+              name="title"
+              validators={{
+                onChange: experienceSchema.shape.title,
+                onBlur: experienceSchema.shape.title,
+              }}
+            >
+              {(field) => {
+                const { errors, invalid, showErrors } = getPortfolioFieldState(field);
+                return (
+                  <PortfolioField
+                    label="Title"
+                    htmlFor={field.name}
                     required
-                  />
-                  <FieldError errors={field.state.meta.errors} />
-                </Field>
-              )}
+                    errors={errors}
+                    showErrors={showErrors}
+                  >
+                    <Input
+                      id={field.name}
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      onBlur={field.handleBlur}
+                      placeholder="Job title / Degree"
+                      aria-invalid={invalid || undefined}
+                      required
+                    />
+                  </PortfolioField>
+                );
+              }}
             </form.Field>
 
-            <form.Field name="organization">
-              {(field) => (
-                <Field>
-                  <FieldLabel htmlFor={field.name}>
-                    Organization <span className="text-destructive">*</span>
-                  </FieldLabel>
-                  <Input
-                    id={field.name}
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    placeholder="Company / School"
+            <form.Field
+              name="organization"
+              validators={{
+                onChange: experienceSchema.shape.organization,
+                onBlur: experienceSchema.shape.organization,
+              }}
+            >
+              {(field) => {
+                const { errors, invalid, showErrors } = getPortfolioFieldState(field);
+                return (
+                  <PortfolioField
+                    label="Organization"
+                    htmlFor={field.name}
                     required
-                  />
-                  <FieldError errors={field.state.meta.errors} />
-                </Field>
-              )}
+                    errors={errors}
+                    showErrors={showErrors}
+                  >
+                    <Input
+                      id={field.name}
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      onBlur={field.handleBlur}
+                      placeholder="Company / School"
+                      aria-invalid={invalid || undefined}
+                      required
+                    />
+                  </PortfolioField>
+                );
+              }}
             </form.Field>
           </div>
         </div>
@@ -196,19 +243,36 @@ export function ExperienceFormSheet({ open, onOpenChange, editingEntry }: Experi
         <div className="space-y-5">
           <SectionHeader label="Description" />
 
-          <form.Field name="description">
-            {(field) => (
-              <div className="grid gap-3">
-                <Label>Description</Label>
-                <TextareaWithIcon
-                  icon={<FileTextIcon />}
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="Describe your role, responsibilities, or achievements"
-                  rows={3}
-                />
-              </div>
-            )}
+          <form.Field
+            name="description"
+            validators={{
+              onChange: experienceSchema.shape.description,
+              onBlur: experienceSchema.shape.description,
+            }}
+          >
+            {(field) => {
+              const { errors, invalid, showErrors } = getPortfolioFieldState(field);
+              return (
+                <PortfolioField
+                  label="Description"
+                  htmlFor={field.name}
+                  description="Describe your role, responsibilities, or achievements."
+                  errors={errors}
+                  showErrors={showErrors}
+                >
+                  <TextareaWithIcon
+                    icon={<FileTextIcon />}
+                    id={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                    placeholder="Describe your role, responsibilities, or achievements"
+                    aria-invalid={invalid || undefined}
+                    rows={3}
+                  />
+                </PortfolioField>
+              );
+            }}
           </form.Field>
         </div>
 
@@ -216,29 +280,57 @@ export function ExperienceFormSheet({ open, onOpenChange, editingEntry }: Experi
           <SectionHeader label="Period" />
 
           <div className="flex flex-wrap items-end gap-3">
-            <form.Field name="startDate">
-              {(field) => (
-                <div className="grid gap-2">
-                  <Label>Start Date</Label>
-                  <MonthPicker
-                    value={field.state.value}
-                    onChange={field.handleChange}
-                  />
-                </div>
-              )}
+            <form.Field
+              name="startDate"
+              validators={{
+                onChange: experienceSchema.shape.startDate,
+                onBlur: experienceSchema.shape.startDate,
+              }}
+            >
+              {(field) => {
+                const { errors, showErrors } = getPortfolioFieldState(field);
+                return (
+                  <PortfolioField
+                    label="Start Date"
+                    htmlFor={field.name}
+                    optional
+                    errors={errors}
+                    showErrors={showErrors}
+                  >
+                    <MonthPicker
+                      value={field.state.value}
+                      onChange={field.handleChange}
+                    />
+                  </PortfolioField>
+                );
+              }}
             </form.Field>
 
-            <form.Field name="endDate">
-              {(field) => (
-                <div className="grid gap-2">
-                  <Label>End Date</Label>
-                  <MonthPicker
-                    value={field.state.value}
-                    onChange={field.handleChange}
-                    disabled={field.form.getFieldValue("isCurrent")}
-                  />
-                </div>
-              )}
+            <form.Field
+              name="endDate"
+              validators={{
+                onChange: experienceSchema.shape.endDate,
+                onBlur: experienceSchema.shape.endDate,
+              }}
+            >
+              {(field) => {
+                const { errors, showErrors } = getPortfolioFieldState(field);
+                return (
+                  <PortfolioField
+                    label="End Date"
+                    htmlFor={field.name}
+                    optional
+                    errors={errors}
+                    showErrors={showErrors}
+                  >
+                    <MonthPicker
+                      value={field.state.value}
+                      onChange={field.handleChange}
+                      disabled={field.form.getFieldValue("isCurrent")}
+                    />
+                  </PortfolioField>
+                );
+              }}
             </form.Field>
 
             <form.Field name="isCurrent">
@@ -294,53 +386,108 @@ export function ExperienceFormSheet({ open, onOpenChange, editingEntry }: Experi
               <div className="space-y-5">
                 <SectionHeader label="Certification Details" />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <form.Field name="credentialId">
-                    {(field) => (
-                      <div className="grid gap-3">
-                        <div className="flex items-center gap-1.5">
-                          <BadgeCheckIcon className="h-4 w-4 text-muted-foreground" />
-                          <Label>Credential ID</Label>
-                        </div>
-                        <Input
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          placeholder="e.g. ABC-123"
-                        />
-                      </div>
-                    )}
+                  <form.Field
+                    name="credentialId"
+                    validators={{
+                      onChange: experienceSchema.shape.credentialId,
+                      onBlur: experienceSchema.shape.credentialId,
+                    }}
+                  >
+                    {(field) => {
+                      const { errors, invalid, showErrors } = getPortfolioFieldState(field);
+                      return (
+                        <PortfolioField
+                          label={
+                            <>
+                              <BadgeCheckIcon className="h-4 w-4 text-muted-foreground" />
+                              Credential ID
+                            </>
+                          }
+                          htmlFor={field.name}
+                          optional
+                          errors={errors}
+                          showErrors={showErrors}
+                        >
+                          <Input
+                            id={field.name}
+                            value={field.state.value}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            onBlur={field.handleBlur}
+                            placeholder="e.g. ABC-123"
+                            aria-invalid={invalid || undefined}
+                          />
+                        </PortfolioField>
+                      );
+                    }}
                   </form.Field>
 
-                  <form.Field name="credentialUrl">
-                    {(field) => (
-                      <div className="grid gap-3">
-                        <Label>Credential URL</Label>
-                        <Input
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          placeholder="https://..."
-                          type="url"
-                        />
-                      </div>
-                    )}
+                  <form.Field
+                    name="credentialUrl"
+                    validators={{
+                      onChange: experienceSchema.shape.credentialUrl,
+                      onBlur: experienceSchema.shape.credentialUrl,
+                    }}
+                  >
+                    {(field) => {
+                      const { errors, invalid, showErrors } = getPortfolioFieldState(field);
+                      return (
+                        <PortfolioField
+                          label="Credential URL"
+                          htmlFor={field.name}
+                          optional
+                          errors={errors}
+                          showErrors={showErrors}
+                        >
+                          <Input
+                            id={field.name}
+                            value={field.state.value}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            onBlur={field.handleBlur}
+                            placeholder="https://..."
+                            type="url"
+                            aria-invalid={invalid || undefined}
+                          />
+                        </PortfolioField>
+                      );
+                    }}
                   </form.Field>
                 </div>
 
-                <form.Field name="durationHours">
-                  {(field) => (
-                    <div className="grid gap-3">
-                      <div className="flex items-center gap-1.5">
-                        <ClockIcon className="h-4 w-4 text-muted-foreground" />
-                        <Label>Duration (hours)</Label>
-                      </div>
-                      <Input
-                        type="number"
-                        value={field.state.value}
-                        onChange={(e) => field.handleChange(Number(e.target.value))}
-                        min={0}
-                        placeholder="e.g. 40"
-                      />
-                    </div>
-                  )}
+                <form.Field
+                  name="durationHours"
+                  validators={{
+                    onChange: experienceSchema.shape.durationHours,
+                    onBlur: experienceSchema.shape.durationHours,
+                  }}
+                >
+                  {(field) => {
+                    const { errors, invalid, showErrors } = getPortfolioFieldState(field);
+                    return (
+                      <PortfolioField
+                        label={
+                          <>
+                            <ClockIcon className="h-4 w-4 text-muted-foreground" />
+                            Duration (hours)
+                          </>
+                        }
+                        htmlFor={field.name}
+                        optional
+                        errors={errors}
+                        showErrors={showErrors}
+                      >
+                        <Input
+                          id={field.name}
+                          type="number"
+                          value={field.state.value}
+                          onChange={(e) => field.handleChange(Number(e.target.value))}
+                          onBlur={field.handleBlur}
+                          min={0}
+                          placeholder="e.g. 40"
+                          aria-invalid={invalid || undefined}
+                        />
+                      </PortfolioField>
+                    );
+                  }}
                 </form.Field>
               </div>
             );
@@ -350,19 +497,35 @@ export function ExperienceFormSheet({ open, onOpenChange, editingEntry }: Experi
         <div className="space-y-5">
           <SectionHeader label="Settings" />
 
-          <form.Field name="order">
-            {(field) => (
-              <div className="grid gap-3">
-                <Label>Order</Label>
-                <Input
-                  type="number"
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(Number(e.target.value))}
-                  min={0}
-                />
-                <p className="text-xs text-muted-foreground">Lower numbers appear first.</p>
-              </div>
-            )}
+          <form.Field
+            name="order"
+            validators={{
+              onChange: experienceSchema.shape.order,
+              onBlur: experienceSchema.shape.order,
+            }}
+          >
+            {(field) => {
+              const { errors, invalid, showErrors } = getPortfolioFieldState(field);
+              return (
+                <PortfolioField
+                  label="Order"
+                  htmlFor={field.name}
+                  description="Lower numbers appear first."
+                  errors={errors}
+                  showErrors={showErrors}
+                >
+                  <Input
+                    id={field.name}
+                    type="number"
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(Number(e.target.value))}
+                    onBlur={field.handleBlur}
+                    aria-invalid={invalid || undefined}
+                    min={0}
+                  />
+                </PortfolioField>
+              );
+            }}
           </form.Field>
         </div>
       </div>

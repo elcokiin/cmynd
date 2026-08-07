@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { cn } from "@elcokiin/ui/lib/utils";
 import { Badge } from "@elcokiin/ui/badge";
 import { Button } from "@elcokiin/ui/button";
@@ -9,6 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@elcokiin/ui/select";
+import { PlusIcon } from "lucide-react";
+import { SkillCreateDialog } from "@/components/portfolio/skill-create-dialog";
 import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
 import type { AdminSkill } from "@elcokiin/backend/lib/types/portfolio";
 
@@ -35,6 +37,7 @@ export function SkillPicker({
   onChange,
   withRole = false,
 }: SkillPickerProps) {
+  const [createOpen, setCreateOpen] = useState(false);
   const selectedIds = useMemo(
     () => new Set(value.map((link) => link.skillId)),
     [value],
@@ -72,14 +75,43 @@ export function SkillPicker({
 
   if (skills.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground">
-        No skills yet. Add skills first in the Skills section.
-      </p>
+      <div className="space-y-3">
+        <p className="text-sm text-muted-foreground">
+          No skills yet. Add your first skill.
+        </p>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setCreateOpen(true)}
+        >
+          <PlusIcon className="h-4 w-4 mr-1" />
+          New Skill
+        </Button>
+        <SkillCreateDialog
+          open={createOpen}
+          onOpenChange={setCreateOpen}
+          onCreated={(skillId) =>
+            onChange([...value, { skillId, role: withRole ? "core" : undefined }])
+          }
+        />
+      </div>
     );
   }
 
   return (
     <div className="space-y-4">
+      <div className="flex items-center justify-end">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setCreateOpen(true)}
+        >
+          <PlusIcon className="h-4 w-4 mr-1" />
+          New Skill
+        </Button>
+      </div>
       {grouped.map(([category, catSkills]) => (
         <div key={category}>
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
@@ -132,6 +164,13 @@ export function SkillPicker({
           </div>
         </div>
       ))}
+      <SkillCreateDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={(skillId) =>
+          onChange([...value, { skillId, role: withRole ? "core" : undefined }])
+        }
+      />
     </div>
   );
 }

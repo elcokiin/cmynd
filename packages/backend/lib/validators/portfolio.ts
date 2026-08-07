@@ -136,6 +136,7 @@ export const adminPortfolioValidator = v.object({
   name: v.string(),
   headline: v.string(),
   avatarUrl: v.optional(v.string()),
+  avatarStorageId: v.optional(v.string()),
   about: v.optional(v.string()),
   philosophy: v.optional(v.string()),
   socialLinks: v.optional(v.array(socialLinkValidator)),

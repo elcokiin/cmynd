@@ -4,13 +4,16 @@ import { useMutation, useQuery, useConvex } from "convex/react";
 import { useUploadFile } from "@convex-dev/r2/react";
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { Button } from "@elcokiin/ui/button";
-import { Field, FieldLabel, FieldError } from "@elcokiin/ui/field";
 import { Input } from "@elcokiin/ui/input";
 import { Label } from "@elcokiin/ui/label";
 import { Switch } from "@elcokiin/ui/switch";
 import { Badge } from "@elcokiin/ui/badge";
 import { TextareaWithIcon } from "@/components/ui/input-with-icon";
 import { TagsInput } from "@/components/ui/tags-input";
+import {
+  PortfolioField,
+  getPortfolioFieldState,
+} from "@/components/portfolio/portfolio-field";
 import {
   SheetHeader,
   SheetTitle,
@@ -93,7 +96,10 @@ export function ProjectFormSheet({ open, onOpenChange, editingProject }: Project
 
   const form = useForm({
     defaultValues: defaultFormValues(editingProject),
-    validators: { onSubmit: projectSchema as any },
+    validators: {
+      onChange: projectSchema as any,
+      onSubmit: projectSchema as any,
+    },
     onSubmit: async ({ value }) => {
       try {
         const uploadedImages = await uploadPendingFiles();
@@ -161,93 +167,154 @@ export function ProjectFormSheet({ open, onOpenChange, editingProject }: Project
           <SectionHeader label="Basic Information" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <form.Field name="title">
-              {(field) => (
-                <Field>
-                  <FieldLabel htmlFor={field.name}>
-                    Title <span className="text-destructive">*</span>
-                  </FieldLabel>
-                  <Input
-                    id={field.name}
-                    value={field.state.value}
-                    onChange={(e) => {
-                      field.handleChange(e.target.value);
-                      if (!slugManuallyEdited.current && !editingProject) {
-                        const slug = generateSlug(e.target.value);
-                        form.setFieldValue("slug", slug);
-                      }
-                    }}
-                    placeholder="Project title"
+            <form.Field
+              name="title"
+              validators={{
+                onChange: projectSchema.shape.title,
+                onBlur: projectSchema.shape.title,
+              }}
+            >
+              {(field) => {
+                const { errors, invalid, showErrors } = getPortfolioFieldState(field);
+                return (
+                  <PortfolioField
+                    label="Title"
+                    htmlFor={field.name}
                     required
-                  />
-                  <FieldError errors={field.state.meta.errors} />
-                </Field>
-              )}
+                    errors={errors}
+                    showErrors={showErrors}
+                  >
+                    <Input
+                      id={field.name}
+                      value={field.state.value}
+                      onChange={(e) => {
+                        field.handleChange(e.target.value);
+                        if (!slugManuallyEdited.current && !editingProject) {
+                          const slug = generateSlug(e.target.value);
+                          form.setFieldValue("slug", slug);
+                        }
+                      }}
+                      onBlur={field.handleBlur}
+                      placeholder="Project title"
+                      aria-invalid={invalid || undefined}
+                      required
+                    />
+                  </PortfolioField>
+                );
+              }}
             </form.Field>
 
-            <form.Field name="slug">
-              {(field) => (
-                <Field>
-                  <FieldLabel htmlFor={field.name}>
-                    Slug <span className="text-destructive">*</span>
-                    {!slugManuallyEdited.current && !editingProject && field.state.value && (
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-normal text-muted-foreground">
-                        <SparklesIcon className="h-2.5 w-2.5 mr-0.5" />
-                        Auto
-                      </Badge>
-                    )}
-                  </FieldLabel>
-                  <Input
-                    id={field.name}
-                    value={field.state.value}
-                    onChange={(e) => {
-                      slugManuallyEdited.current = true;
-                      field.handleChange(e.target.value);
-                    }}
-                    placeholder="project-slug"
+            <form.Field
+              name="slug"
+              validators={{
+                onChange: projectSchema.shape.slug,
+                onBlur: projectSchema.shape.slug,
+              }}
+            >
+              {(field) => {
+                const { errors, invalid, showErrors } = getPortfolioFieldState(field);
+                return (
+                  <PortfolioField
+                    label={
+                      <>
+                        Slug
+                        {!slugManuallyEdited.current && !editingProject && field.state.value && (
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-normal text-muted-foreground">
+                            <SparklesIcon className="h-2.5 w-2.5 mr-0.5" />
+                            Auto
+                          </Badge>
+                        )}
+                      </>
+                    }
+                    htmlFor={field.name}
                     required
-                  />
-                  <FieldError errors={field.state.meta.errors} />
-                </Field>
-              )}
+                    errors={errors}
+                    showErrors={showErrors}
+                  >
+                    <Input
+                      id={field.name}
+                      value={field.state.value}
+                      onChange={(e) => {
+                        slugManuallyEdited.current = true;
+                        field.handleChange(e.target.value);
+                      }}
+                      onBlur={field.handleBlur}
+                      placeholder="project-slug"
+                      aria-invalid={invalid || undefined}
+                      required
+                    />
+                  </PortfolioField>
+                );
+              }}
             </form.Field>
           </div>
 
-          <form.Field name="description">
-            {(field) => (
-              <div className="grid gap-3">
-                <Label>Description</Label>
-                <TextareaWithIcon
-                  icon={<FileTextIcon />}
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="Project description"
-                  rows={3}
-                />
-              </div>
-            )}
+          <form.Field
+            name="description"
+            validators={{
+              onChange: projectSchema.shape.description,
+              onBlur: projectSchema.shape.description,
+            }}
+          >
+            {(field) => {
+              const { errors, invalid, showErrors } = getPortfolioFieldState(field);
+              return (
+                <PortfolioField
+                  label="Description"
+                  htmlFor={field.name}
+                  description="A short summary of what the project is and does."
+                  errors={errors}
+                  showErrors={showErrors}
+                >
+                  <TextareaWithIcon
+                    icon={<FileTextIcon />}
+                    id={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                    placeholder="Project description"
+                    aria-invalid={invalid || undefined}
+                    rows={3}
+                  />
+                </PortfolioField>
+              );
+            }}
           </form.Field>
         </div>
 
         <div className="space-y-5">
           <SectionHeader label="Narrative" />
 
-          <form.Field name="philosophy">
-            {(field) => (
-              <div className="grid gap-3">
-                <Label>Philosophy</Label>
-                <TextareaWithIcon
-                  icon={<LightbulbIcon />}
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="The thinking behind this project"
-                  rows={3}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Share the motivation, design decisions, or guiding principles.
-                </p>
-              </div>
-            )}
+          <form.Field
+            name="philosophy"
+            validators={{
+              onChange: projectSchema.shape.philosophy,
+              onBlur: projectSchema.shape.philosophy,
+            }}
+          >
+            {(field) => {
+              const { errors, invalid, showErrors } = getPortfolioFieldState(field);
+              return (
+                <PortfolioField
+                  label="Philosophy"
+                  htmlFor={field.name}
+                  description="Share the motivation, design decisions, or guiding principles."
+                  errors={errors}
+                  showErrors={showErrors}
+                >
+                  <TextareaWithIcon
+                    icon={<LightbulbIcon />}
+                    id={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                    placeholder="The thinking behind this project"
+                    aria-invalid={invalid || undefined}
+                    rows={3}
+                  />
+                </PortfolioField>
+              );
+            }}
           </form.Field>
         </div>
 
@@ -334,36 +401,72 @@ export function ProjectFormSheet({ open, onOpenChange, editingProject }: Project
           <SectionHeader label="Links" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <form.Field name="url">
-              {(field) => (
-                <div className="grid gap-3">
-                  <Label>Live URL</Label>
-                  <div className="relative">
-                    <GlobeIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                    <Input
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      placeholder="https://..."
-                      type="url"
-                      className="pl-8"
-                    />
-                  </div>
-                </div>
-              )}
+            <form.Field
+              name="url"
+              validators={{
+                onChange: projectSchema.shape.url,
+                onBlur: projectSchema.shape.url,
+              }}
+            >
+              {(field) => {
+                const { errors, invalid, showErrors } = getPortfolioFieldState(field);
+                return (
+                  <PortfolioField
+                    label="Live URL"
+                    htmlFor={field.name}
+                    optional
+                    description="Where visitors can try the project."
+                    errors={errors}
+                    showErrors={showErrors}
+                  >
+                    <div className="relative">
+                      <GlobeIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                      <Input
+                        id={field.name}
+                        value={field.state.value}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        onBlur={field.handleBlur}
+                        placeholder="https://..."
+                        type="url"
+                        aria-invalid={invalid || undefined}
+                        className="pl-8"
+                      />
+                    </div>
+                  </PortfolioField>
+                );
+              }}
             </form.Field>
 
-            <form.Field name="githubUrl">
-              {(field) => (
-                <div className="grid gap-3">
-                  <Label>GitHub URL</Label>
-                  <Input
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    placeholder="https://github.com/..."
-                    type="url"
-                  />
-                </div>
-              )}
+            <form.Field
+              name="githubUrl"
+              validators={{
+                onChange: projectSchema.shape.githubUrl,
+                onBlur: projectSchema.shape.githubUrl,
+              }}
+            >
+              {(field) => {
+                const { errors, invalid, showErrors } = getPortfolioFieldState(field);
+                return (
+                  <PortfolioField
+                    label="GitHub URL"
+                    htmlFor={field.name}
+                    optional
+                    description="Link to the source code."
+                    errors={errors}
+                    showErrors={showErrors}
+                  >
+                    <Input
+                      id={field.name}
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      onBlur={field.handleBlur}
+                      placeholder="https://github.com/..."
+                      type="url"
+                      aria-invalid={invalid || undefined}
+                    />
+                  </PortfolioField>
+                );
+              }}
             </form.Field>
           </div>
         </div>
@@ -372,19 +475,35 @@ export function ProjectFormSheet({ open, onOpenChange, editingProject }: Project
           <SectionHeader label="Settings" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <form.Field name="order">
-              {(field) => (
-                <div className="grid gap-3">
-                  <Label>Order</Label>
-                  <Input
-                    type="number"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(Number(e.target.value))}
-                    min={0}
-                  />
-                  <p className="text-xs text-muted-foreground">Lower numbers appear first.</p>
-                </div>
-              )}
+            <form.Field
+              name="order"
+              validators={{
+                onChange: projectSchema.shape.order,
+                onBlur: projectSchema.shape.order,
+              }}
+            >
+              {(field) => {
+                const { errors, invalid, showErrors } = getPortfolioFieldState(field);
+                return (
+                  <PortfolioField
+                    label="Order"
+                    htmlFor={field.name}
+                    description="Lower numbers appear first."
+                    errors={errors}
+                    showErrors={showErrors}
+                  >
+                    <Input
+                      id={field.name}
+                      type="number"
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(Number(e.target.value))}
+                      onBlur={field.handleBlur}
+                      aria-invalid={invalid || undefined}
+                      min={0}
+                    />
+                  </PortfolioField>
+                );
+              }}
             </form.Field>
 
             <form.Field name="isVisible">

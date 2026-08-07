@@ -314,6 +314,7 @@ export const getPortfolioForEdit = query({
       name: portfolio.name,
       headline: portfolio.headline,
       avatarUrl: portfolio.avatarUrl,
+      avatarStorageId: portfolio.avatarStorageId,
       about: portfolio.about,
       philosophy: portfolio.philosophy,
       socialLinks: portfolio.socialLinks,

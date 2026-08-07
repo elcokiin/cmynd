@@ -141,6 +141,7 @@ export type PublicExperience = {
 // ── Admin types (includes management fields) ──────────────────────────
 
 export type AdminPortfolio = PublicPortfolio & {
+  avatarStorageId?: string;
   createdBy?: string;
 };
 

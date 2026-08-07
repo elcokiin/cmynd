@@ -1,20 +1,22 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "convex/react";
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { Button } from "@elcokiin/ui/button";
-import { Label } from "@elcokiin/ui/label";
-import { Field, FieldLabel, FieldError } from "@elcokiin/ui/field";
 import { Separator } from "@elcokiin/ui/separator";
-import { SaveIcon, ImageIcon, UserIcon, FileTextIcon, LightbulbIcon, TagIcon } from "lucide-react";
+import { SaveIcon, UserIcon, FileTextIcon, LightbulbIcon, TagIcon } from "lucide-react";
 import { InputWithIcon, TextareaWithIcon } from "@/components/ui/input-with-icon";
 import { useErrorHandler } from "@/hooks/use-error-handler";
-import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { normalizeOptionalText } from "@/lib/text";
+import { AvatarField } from "./avatar-field";
 import { SocialLinksField } from "./social-links-field";
 import { HobbiesField } from "./hobbies-field";
 import { PlaylistField } from "./playlist-field";
+import {
+  PortfolioField,
+  getPortfolioFieldState,
+} from "./portfolio-field";
 import { toast } from "sonner";
 
 import type { AdminPortfolio } from "@elcokiin/backend/lib/types/portfolio";
@@ -43,10 +45,22 @@ const playlistSchema = z.object({
   songs: z.array(songSchema).optional(),
 });
 
+const optionalUrl = z
+  .string()
+  .trim()
+  .refine((value) => value === "" || /^https?:\/\/.+\..+/.test(value), {
+    message: "Enter a valid URL starting with http:// or https://",
+  });
+
 const profileSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  headline: z.string().optional(),
-  avatarUrl: z.string().optional(),
+  name: z
+    .string()
+    .trim()
+    .min(1, "Name is required")
+    .max(80, "Name must be under 80 characters"),
+  headline: z.string().max(160, "Headline must be under 160 characters").optional(),
+  avatarUrl: optionalUrl.optional(),
+  avatarStorageId: z.string().optional(),
   about: z.string().optional(),
   philosophy: z.string().optional(),
   socialLinks: z.array(socialLinkSchema).optional().default([]),
@@ -68,35 +82,6 @@ function SectionHeader({ label }: { label: string }) {
   );
 }
 
-function AvatarPreview({ url }: { url: string }) {
-  const debouncedUrl = useDebouncedValue(url.trim(), 400);
-  const [error, setError] = useState(false);
-
-  const validUrl = useMemo(() => {
-    if (!debouncedUrl) return "";
-    try {
-      const parsed = new URL(debouncedUrl);
-      return parsed.protocol === "http:" || parsed.protocol === "https:" ? debouncedUrl : "";
-    } catch {
-      return "";
-    }
-  }, [debouncedUrl]);
-
-  useEffect(() => { setError(false); }, [debouncedUrl]);
-
-  if (!validUrl || error) return null;
-  return (
-    <div className="relative size-10 shrink-0 overflow-hidden rounded-full border bg-muted">
-      <img
-        src={validUrl}
-        alt="Preview"
-        className="size-full object-cover"
-        onError={() => setError(true)}
-      />
-    </div>
-  );
-}
-
 export function ProfileForm({ portfolio }: ProfileFormProps) {
   const { handleError } = useErrorHandler();
   const updateProfile = useMutation(api.portfolio.mutations.updateProfile);
@@ -106,6 +91,7 @@ export function ProfileForm({ portfolio }: ProfileFormProps) {
       name: portfolio?.name ?? "",
       headline: portfolio?.headline ?? "",
       avatarUrl: portfolio?.avatarUrl ?? "",
+      avatarStorageId: portfolio?.avatarStorageId ?? "",
       about: portfolio?.about ?? "",
       philosophy: portfolio?.philosophy ?? "",
       socialLinks: portfolio?.socialLinks ?? [],
@@ -113,6 +99,7 @@ export function ProfileForm({ portfolio }: ProfileFormProps) {
       playlist: portfolio?.playlist ?? { spotifyPlaylistId: "", songs: [] },
     },
     validators: {
+      onChange: profileSchema as any,
       onSubmit: profileSchema as any,
     },
     onSubmit: async ({ value }) => {
@@ -121,6 +108,10 @@ export function ProfileForm({ portfolio }: ProfileFormProps) {
           name: value.name,
           headline: value.headline || undefined,
           avatarUrl: normalizeOptionalText(value.avatarUrl ?? ""),
+          avatarStorageId:
+            value.avatarStorageId && value.avatarUrl?.trim()
+              ? value.avatarStorageId
+              : undefined,
           about: normalizeOptionalText(value.about ?? ""),
           philosophy: normalizeOptionalText(value.philosophy ?? ""),
           socialLinks: value.socialLinks && value.socialLinks.length > 0
@@ -167,64 +158,99 @@ export function ProfileForm({ portfolio }: ProfileFormProps) {
           <SectionHeader label="Basic Information" />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <form.Field name="name">
-              {(field) => (
-                <Field>
-                  <FieldLabel htmlFor={field.name}>
-                    Name <span className="text-destructive">*</span>
-                  </FieldLabel>
-                  <InputWithIcon
-                    icon={<UserIcon />}
-                    id={field.name}
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    placeholder="Your name"
+            <form.Field
+              name="name"
+              validators={{
+                onChange: profileSchema.shape.name,
+                onBlur: profileSchema.shape.name,
+              }}
+            >
+              {(field) => {
+                const { errors, invalid, showErrors } = getPortfolioFieldState(field);
+                return (
+                  <PortfolioField
+                    label="Name"
+                    htmlFor={field.name}
                     required
-                  />
-                  <FieldError errors={field.state.meta.errors} />
-                </Field>
-              )}
+                    errors={errors}
+                    showErrors={showErrors}
+                  >
+                    <InputWithIcon
+                      icon={<UserIcon />}
+                      id={field.name}
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      onBlur={field.handleBlur}
+                      placeholder="Your name"
+                      aria-invalid={invalid || undefined}
+                      required
+                    />
+                  </PortfolioField>
+                );
+              }}
             </form.Field>
 
-            <form.Field name="headline">
-              {(field) => (
-                <div className="grid gap-2.5">
-                  <Label htmlFor={field.name}>Headline</Label>
-                  <InputWithIcon
-                    icon={<TagIcon />}
-                    id={field.name}
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    placeholder="Full-Stack Developer"
-                  />
-                </div>
-              )}
+            <form.Field
+              name="headline"
+              validators={{
+                onChange: profileSchema.shape.headline.unwrap(),
+                onBlur: profileSchema.shape.headline.unwrap(),
+              }}
+            >
+              {(field) => {
+                const { errors, invalid, showErrors } = getPortfolioFieldState(field);
+                return (
+                  <PortfolioField
+                    label="Headline"
+                    htmlFor={field.name}
+                    optional
+                    errors={errors}
+                    showErrors={showErrors}
+                  >
+                    <InputWithIcon
+                      icon={<TagIcon />}
+                      id={field.name}
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      onBlur={field.handleBlur}
+                      placeholder="Full-Stack Developer"
+                      aria-invalid={invalid || undefined}
+                    />
+                  </PortfolioField>
+                );
+              }}
             </form.Field>
           </div>
 
-          <form.Field name="avatarUrl">
-            {(field) => (
-              <div className="grid gap-2.5">
-                <Label htmlFor={field.name}>Avatar URL</Label>
-                <div className="flex items-center gap-3">
-                  <AvatarPreview url={field.state.value} />
-                  <InputWithIcon
-                    icon={<ImageIcon />}
-                    id={field.name}
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    placeholder="https://example.com/avatar.jpg"
-                    type="url"
-                    className="flex-1"
+          <form.Field
+            name="avatarUrl"
+            validators={{
+              onChange: profileSchema.shape.avatarUrl.unwrap(),
+              onBlur: profileSchema.shape.avatarUrl.unwrap(),
+            }}
+          >
+            {(field) => {
+              const { errors, showErrors } = getPortfolioFieldState(field);
+              return (
+                <div className="grid gap-2.5">
+                  <AvatarField
+                    value={{
+                      url: field.state.value,
+                      storageId: field.form.getFieldValue("avatarStorageId") ?? undefined,
+                    }}
+                    onChange={(avatar) => {
+                      field.handleChange(avatar.url);
+                      field.form.setFieldValue("avatarStorageId", avatar.storageId ?? "");
+                    }}
                   />
+                  {showErrors && (errors ?? []).map((error) => (
+                    <p key={error?.message} className="text-xs text-destructive">
+                      {error?.message}
+                    </p>
+                  ))}
                 </div>
-                {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-xs text-destructive">
-                    {error?.message}
-                  </p>
-                ))}
-              </div>
-            )}
+              );
+            }}
           </form.Field>
         </div>
 
@@ -234,8 +260,11 @@ export function ProfileForm({ portfolio }: ProfileFormProps) {
 
             <form.Field name="about">
               {(field) => (
-                <div className="grid gap-2.5">
-                  <Label htmlFor={field.name}>About (Markdown)</Label>
+                <PortfolioField
+                  label="About (Markdown)"
+                  htmlFor={field.name}
+                  description="Supports Markdown formatting."
+                >
                   <TextareaWithIcon
                     icon={<FileTextIcon />}
                     id={field.name}
@@ -244,10 +273,7 @@ export function ProfileForm({ portfolio }: ProfileFormProps) {
                     placeholder="Write about yourself..."
                     rows={5}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Supports Markdown formatting.
-                  </p>
-                </div>
+                </PortfolioField>
               )}
             </form.Field>
           </div>
@@ -257,8 +283,11 @@ export function ProfileForm({ portfolio }: ProfileFormProps) {
 
             <form.Field name="philosophy">
               {(field) => (
-                <div className="grid gap-2.5">
-                  <Label htmlFor={field.name}>Philosophy (Markdown)</Label>
+                <PortfolioField
+                  label="Philosophy (Markdown)"
+                  htmlFor={field.name}
+                  description="Your guiding principles and approach to work."
+                >
                   <TextareaWithIcon
                     icon={<LightbulbIcon />}
                     id={field.name}
@@ -267,10 +296,7 @@ export function ProfileForm({ portfolio }: ProfileFormProps) {
                     placeholder="Your philosophy..."
                     rows={5}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Your guiding principles and approach to work.
-                  </p>
-                </div>
+                </PortfolioField>
               )}
             </form.Field>
           </div>

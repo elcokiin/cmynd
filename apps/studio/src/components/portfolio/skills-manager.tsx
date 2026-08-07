@@ -55,12 +55,25 @@ interface SkillRow {
   isVisible: boolean;
 }
 
+interface SkillRowErrors {
+  name?: string;
+  category?: string;
+}
+
+function validateRow(row: SkillRow): SkillRowErrors {
+  return {
+    name: row.name.trim() ? undefined : "Name is required",
+    category: row.category.trim() ? undefined : "Category is required",
+  };
+}
+
 export function SkillsManager({ skills }: SkillsManagerProps) {
   const { handleError } = useErrorHandler();
   const upsertSkill = useMutation(api.portfolio.mutations.upsertSkill);
   const removeSkill = useMutation(api.portfolio.mutations.removeSkill);
 
   const [rows, setRows] = useState<SkillRow[]>([]);
+  const [rowErrors, setRowErrors] = useState<Record<number, SkillRowErrors>>({});
   const [deleteTarget, setDeleteTarget] = useState<Id<"skills"> | null>(null);
 
   const isLoading = skills === undefined;
@@ -76,18 +89,33 @@ export function SkillsManager({ skills }: SkillsManagerProps) {
           isVisible: s.isVisible ?? true,
         })),
       );
+      setRowErrors({});
     }
   }, [skills]);
 
   const updateRow = (index: number, field: keyof SkillRow, value: unknown) => {
-    setRows((prev) =>
-      prev.map((row, i) => (i === index ? { ...row, [field]: value } : row)),
-    );
+    setRows((prev) => {
+      const updated = prev.map((row, i) =>
+        i === index ? { ...row, [field]: value } : row,
+      );
+      if (field === "name" || field === "category") {
+        setRowErrors((errs) => ({
+          ...errs,
+          [index]: validateRow(updated[index]),
+        }));
+      }
+      return updated;
+    });
   };
 
   const handleSave = async (index: number) => {
     const row = rows[index];
     if (!row) return;
+    const errors = validateRow(row);
+    if (errors.name || errors.category) {
+      setRowErrors((prev) => ({ ...prev, [index]: errors }));
+      return;
+    }
     try {
       await upsertSkill({
         _id: row._id,
@@ -156,29 +184,43 @@ export function SkillsManager({ skills }: SkillsManagerProps) {
               </Button>
             </div>
           ) : (
-            rows.map((row, index) => (
-              <div
-                key={index}
-                className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 border rounded-lg hover:bg-muted/30 transition-colors"
-              >
+            rows.map((row, index) => {
+              const errors = rowErrors[index];
+              return (
+                <div
+                  key={index}
+                  className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 border rounded-lg hover:bg-muted/30 transition-colors"
+                >
                 <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   <div className="grid gap-1.5">
-                    <Label className="text-xs font-medium">Name</Label>
+                    <Label className="text-xs font-medium">
+                      Name <span className="text-destructive">*</span>
+                    </Label>
                     <Input
                       value={row.name}
                       onChange={(e) => updateRow(index, "name", e.target.value)}
                       onBlur={() => handleSave(index)}
                       placeholder="Skill name"
+                      aria-invalid={!!errors?.name || undefined}
                     />
+                    {errors?.name && (
+                      <p className="text-xs text-destructive">{errors.name}</p>
+                    )}
                   </div>
                   <div className="grid gap-1.5">
-                    <Label className="text-xs font-medium">Category</Label>
+                    <Label className="text-xs font-medium">
+                      Category <span className="text-destructive">*</span>
+                    </Label>
                     <Input
                       value={row.category}
                       onChange={(e) => updateRow(index, "category", e.target.value)}
                       onBlur={() => handleSave(index)}
                       placeholder="Category"
+                      aria-invalid={!!errors?.category || undefined}
                     />
+                    {errors?.category && (
+                      <p className="text-xs text-destructive">{errors.category}</p>
+                    )}
                   </div>
                   <div className="grid gap-1.5">
                     <Label className="text-xs font-medium">Level</Label>
@@ -222,7 +264,8 @@ export function SkillsManager({ skills }: SkillsManagerProps) {
                   <Trash2Icon className="h-4 w-4" />
                 </Button>
               </div>
-            ))
+              );
+            })
           )}
         </CardContent>
       </Card>

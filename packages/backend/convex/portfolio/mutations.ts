@@ -36,6 +36,7 @@ export const updateProfile = mutation({
     name: v.optional(v.string()),
     headline: v.optional(v.string()),
     avatarUrl: v.optional(v.string()),
+    avatarStorageId: v.optional(v.string()),
     about: v.optional(v.string()),
     philosophy: v.optional(v.string()),
     socialLinks: v.optional(
@@ -83,12 +84,17 @@ export const updateProfile = mutation({
 
     if (args.name !== undefined) updates.name = args.name;
     if (args.headline !== undefined) updates.headline = args.headline;
-    if (args.avatarUrl !== undefined) updates.avatarUrl = args.avatarUrl;
     if (args.about !== undefined) updates.about = args.about;
     if (args.philosophy !== undefined) updates.philosophy = args.philosophy;
     if (args.socialLinks !== undefined) updates.socialLinks = args.socialLinks;
     if (args.hobbies !== undefined) updates.hobbies = args.hobbies;
     if (args.playlist !== undefined) updates.playlist = args.playlist;
+
+    // Avatar is an atomic pair: URL + optional R2 storage key.
+    if (args.avatarUrl !== undefined) updates.avatarUrl = args.avatarUrl;
+    if (args.avatarUrl !== undefined) {
+      updates.avatarStorageId = args.avatarStorageId;
+    }
 
     const existing = await ctx.db.get(portfolioId);
     if (!existing?.createdBy) {
@@ -96,6 +102,13 @@ export const updateProfile = mutation({
     }
 
     await ctx.db.patch(portfolioId, updates);
+
+    // Clean up the previous R2 object when the avatar is replaced or removed.
+    const oldStorageId = existing?.avatarStorageId;
+    const newStorageId = args.avatarUrl !== undefined ? args.avatarStorageId : undefined;
+    if (oldStorageId && oldStorageId !== newStorageId) {
+      await r2.deleteObject(ctx, oldStorageId);
+    }
   },
 });
 
@@ -126,8 +139,9 @@ export const upsertSkill = mutation({
         icon: args.icon,
         updatedAt: now,
       });
+      return args._id;
     } else {
-      await ctx.db.insert("skills", {
+      const skillId = await ctx.db.insert("skills", {
         name: args.name,
         category: args.category,
         level: args.level,
@@ -138,6 +152,7 @@ export const upsertSkill = mutation({
         createdAt: now,
         updatedAt: now,
       });
+      return skillId;
     }
   },
 });
