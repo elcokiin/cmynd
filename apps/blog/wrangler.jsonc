@@ -11,7 +11,7 @@
 	},
 	"routes": [
 		{
-			"pattern": "blog.elcokiin.my",
+			"pattern": "blog.elcokiin.me",
 			"custom_domain": true
 		}
 	],

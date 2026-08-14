@@ -66,12 +66,12 @@ export function SignInForm(): React.ReactNode {
             <p>
               Or visit the blog you'll be collaborating on:{" "}
               <a
-                href="https://blog.elcokiin.my/"
+                href="https://blog.elcokiin.me/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary hover:text-primary/80 underline underline-offset-4 transition-colors font-medium"
               >
-                blog.elcokiin.my
+                blog.elcokiin.me
               </a>
             </p>
           </div>

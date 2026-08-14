@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://blog.elcokiin.my/sitemap-index.xml
+Sitemap: https://blog.elcokiin.me/sitemap-index.xml

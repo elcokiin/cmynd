@@ -10,12 +10,12 @@ export default defineConfig({
   prefetch: true,
   output: "server",
   adapter: cloudflare(),
-  site: "https://blog.elcokiin.my",
+  site: "https://blog.elcokiin.me",
 
   image: {
     remotePatterns: [
-      { protocol: "https", hostname: "cdn.elcokiin.my" },
-      { protocol: "https", hostname: "cdn-dev.elcokiin.my" },
+      { protocol: "https", hostname: "cdn.elcokiin.me" },
+      { protocol: "https", hostname: "cdn-dev.elcokiin.me" },
     ],
   },
 
