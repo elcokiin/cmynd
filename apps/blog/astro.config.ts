@@ -12,6 +12,10 @@ export default defineConfig({
   adapter: cloudflare(),
   site: "https://blog.elcokiin.me",
 
+  redirects: {
+    "/posts/[slug]": "/[slug]",
+  },
+
   image: {
     remotePatterns: [
       { protocol: "https", hostname: "cdn.elcokiin.me" },

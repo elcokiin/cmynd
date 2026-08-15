@@ -49,6 +49,6 @@ const cardProps = {
 };
 ---
 
-<a class="group block h-full w-full" href={`/posts/${post.slug}/`} data-astro-prefetch="hover">
+<a class="group block h-full w-full" href={`/${post.slug}/`} data-astro-prefetch="hover">
   <Card client:load {...cardProps} />
 </a>

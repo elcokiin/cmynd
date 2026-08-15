@@ -14,7 +14,7 @@ export async function GET() {
       title: post.title,
       description: `${post.author.name} · ${post.type}`,
       pubDate: new Date(post.publishedAt),
-      link: `/posts/${post.slug}/`,
+      link: `/${post.slug}/`,
     })),
     customData: `<language>${SITE.locale}</language>`,
     stylesheet: false,

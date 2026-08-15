@@ -38,7 +38,7 @@ test.describe("Cover image copy/download (CORS regression)", () => {
   async function gotoPostWithCover(page: import("@playwright/test").Page) {
     await page.goto("/");
     const links = await page
-      .locator('a[href^="/posts/"]')
+      .locator('a.group[href^="/"]')
       .evaluateAll((els) => els.map((el) => el.getAttribute("href")!));
     const unique = [...new Set(links)];
 
