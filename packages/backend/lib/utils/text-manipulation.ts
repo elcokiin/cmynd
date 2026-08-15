@@ -1,6 +1,8 @@
 import type { JSONContent } from "./title";
 
 export function extractTextFromNode(node: JSONContent): string {
+  if (!node) return "";
+
   let text = "";
 
   if (node.text) {
@@ -9,9 +11,20 @@ export function extractTextFromNode(node: JSONContent): string {
     text += " ";
   }
 
-  if (node.content && node.content.length > 0) {
-    for (const child of node.content) {
-      text += extractTextFromNode(child);
+  // Support both TipTap (content) and Lexical (children/root.children) formats
+  const nodeRecord = node as Record<string, unknown>;
+  const children = node.content || nodeRecord.children || nodeRecord.root;
+  if (Array.isArray(children) && children.length > 0) {
+    for (const child of children) {
+      text += extractTextFromNode(child as JSONContent);
+    }
+  } else if (children && typeof children === "object" && "children" in (children as Record<string, unknown>)) {
+    // Handle Lexical root object: { root: { children: [...] } }
+    const rootChildren = (children as Record<string, unknown>).children;
+    if (Array.isArray(rootChildren)) {
+      for (const child of rootChildren) {
+        text += extractTextFromNode(child as JSONContent);
+      }
     }
   }
 

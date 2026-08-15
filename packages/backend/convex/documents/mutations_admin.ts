@@ -27,6 +27,10 @@ export const approve = mutation({
       );
     }
 
+    if (!document.coverImage?.storageId) {
+      throwConvexError(ErrorCode.DOCUMENT_COVER_REQUIRED);
+    }
+
     const { estimatedReadTime, description } =
       computePublishMetadata(document);
 

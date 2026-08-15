@@ -153,7 +153,7 @@ export const listPublished = query({
   handler: async (ctx, args) => {
     const result = await ctx.db
       .query("documents")
-      .withIndex("by_status", (q) => q.eq("status", "published"))
+      .withIndex("by_published", (q) => q.eq("status", "published"))
       .order("desc")
       .paginate(args.paginationOpts);
 
@@ -406,7 +406,7 @@ export const listPublishedForAdmin = query({
     } else {
       result = await ctx.db
         .query("documents")
-        .withIndex("by_status", (q) => q.eq("status", "published"))
+        .withIndex("by_published", (q) => q.eq("status", "published"))
         .order("desc")
         .paginate(args.paginationOpts);
     }

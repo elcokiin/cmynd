@@ -7,9 +7,10 @@ import {
   BookOpenIcon,
   ImageIcon,
   LinkIcon,
+  TextIcon,
 } from "lucide-react";
 
-export type NavigationSection = "cover" | "reprint" | "inspirations";
+export type NavigationSection = "cover" | "description" | "reprint" | "inspirations";
 
 type SettingsSidebarProps = {
   activeSection: NavigationSection;
@@ -23,6 +24,7 @@ const navItems: {
   icon: React.ComponentType<{ className?: string }>;
 }[] = [
   { id: "cover", label: "Cover", icon: ImageIcon },
+  { id: "description", label: "Description", icon: TextIcon },
   { id: "reprint", label: "Reprint", icon: BookOpenIcon },
   { id: "inspirations", label: "Inspirations", icon: LinkIcon },
 ];

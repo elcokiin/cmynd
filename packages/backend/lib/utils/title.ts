@@ -93,7 +93,30 @@ function extractTextFromNode(node: JSONContent): string {
  */
 export function extractFirstHeading(content: JSONContent): string | null {
   // Handle empty or invalid content
-  if (!content || !content.content || content.content.length === 0) {
+  if (!content) {
+    return null;
+  }
+
+  // Support both TipTap (content) and Lexical (children/root.children) formats
+  const getChildren = (node: JSONContent): JSONContent[] | null => {
+    const nodeRecord = node as Record<string, unknown>;
+    if (node.content && Array.isArray(node.content) && node.content.length > 0) {
+      return node.content;
+    }
+    if (nodeRecord.children && Array.isArray(nodeRecord.children) && nodeRecord.children.length > 0) {
+      return nodeRecord.children as JSONContent[];
+    }
+    if (nodeRecord.root && typeof nodeRecord.root === "object" && "children" in (nodeRecord.root as Record<string, unknown>)) {
+      const rootChildren = (nodeRecord.root as Record<string, unknown>).children;
+      if (Array.isArray(rootChildren) && rootChildren.length > 0) {
+        return rootChildren as JSONContent[];
+      }
+    }
+    return null;
+  };
+
+  const children = getChildren(content);
+  if (!children) {
     return null;
   }
 
@@ -114,8 +137,9 @@ export function extractFirstHeading(content: JSONContent): string | null {
     }
 
     // Recursively search child nodes
-    if (node.content && node.content.length > 0) {
-      for (const child of node.content) {
+    const nodeChildren = getChildren(node);
+    if (nodeChildren) {
+      for (const child of nodeChildren) {
         const result = findHeading(child);
         if (result) {
           return result;
@@ -126,7 +150,14 @@ export function extractFirstHeading(content: JSONContent): string | null {
     return null;
   }
 
-  return findHeading(content);
+  for (const child of children) {
+    const result = findHeading(child);
+    if (result) {
+      return result;
+    }
+  }
+
+  return null;
 }
 
 /**
@@ -156,6 +187,24 @@ export function hasContent(content: JSONContent): boolean {
     return false;
   }
 
+  // Support both TipTap (content) and Lexical (children/root.children) formats
+  const getChildren = (node: JSONContent): JSONContent[] | null => {
+    const nodeRecord = node as Record<string, unknown>;
+    if (node.content && Array.isArray(node.content) && node.content.length > 0) {
+      return node.content;
+    }
+    if (nodeRecord.children && Array.isArray(nodeRecord.children) && nodeRecord.children.length > 0) {
+      return nodeRecord.children as JSONContent[];
+    }
+    if (nodeRecord.root && typeof nodeRecord.root === "object" && "children" in (nodeRecord.root as Record<string, unknown>)) {
+      const rootChildren = (nodeRecord.root as Record<string, unknown>).children;
+      if (Array.isArray(rootChildren) && rootChildren.length > 0) {
+        return rootChildren as JSONContent[];
+      }
+    }
+    return null;
+  };
+
   // Recursively check for text content
   function hasTextContent(node: JSONContent): boolean {
     // If this node has non-empty text, return true
@@ -164,8 +213,9 @@ export function hasContent(content: JSONContent): boolean {
     }
 
     // Recursively check child nodes
-    if (node.content && node.content.length > 0) {
-      for (const child of node.content) {
+    const children = getChildren(node);
+    if (children) {
+      for (const child of children) {
         if (hasTextContent(child)) {
           return true;
         }

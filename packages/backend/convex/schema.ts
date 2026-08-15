@@ -140,6 +140,7 @@ export default defineSchema({
   })
     .index("by_author", ["authorId"])
     .index("by_status", ["status", "createdAt"])
+    .index("by_published", ["status", "publishedAt"])
     .index("by_slug", ["slug"])
     .searchIndex("search_title", {
       searchField: "title",

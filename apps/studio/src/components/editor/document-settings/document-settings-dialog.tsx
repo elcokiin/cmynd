@@ -6,6 +6,7 @@ import { useQuery } from "convex/react";
 import { useState } from "react";
 
 import { CoverSection } from "./cover-section";
+import { DescriptionSection } from "./description-section";
 import { InspirationsSection } from "./inspirations-section";
 import { ReprintSection } from "./reprint-section";
 import { SettingsSidebar, type NavigationSection } from "./settings-sidebar";
@@ -39,6 +40,9 @@ export function DocumentSettingsDialog({
           <div className="flex-1 p-6 overflow-y-auto min-h-0 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-primary/50 [&::-webkit-scrollbar-thumb]:hover:bg-primary/70">
             {activeSection === "cover" && (
               <CoverSection documentId={documentId} />
+            )}
+            {activeSection === "description" && (
+              <DescriptionSection documentId={documentId} />
             )}
             {activeSection === "reprint" && (
               <ReprintSection documentId={documentId} />

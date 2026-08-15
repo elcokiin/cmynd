@@ -10,7 +10,6 @@ import { OptimizedImage } from "@elcokiin/ui/optimized-image";
 import {
   ImageIcon,
   SparklesIcon,
-  TextIcon,
   XIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -21,7 +20,7 @@ import { useDebouncedSave } from "@/hooks/use-debounced-save";
 import { normalizeOptionalText } from "@/lib/text";
 import { compressImage } from "@/utils/compress-image";
 
-type CoverConfigTab = "image" | "prompt" | "description";
+type CoverConfigTab = "image" | "prompt";
 
 type CoverSectionProps = {
   documentId: Id<"documents">;
@@ -30,7 +29,6 @@ type CoverSectionProps = {
 export function CoverSection({ documentId }: CoverSectionProps) {
   const [activeCoverTab, setActiveCoverTab] = useState<CoverConfigTab>("image");
   const [coverImagePrompt, setCoverImagePrompt] = useState("");
-  const [description, setDescription] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const initializedRef = useRef(false);
 
@@ -43,7 +41,6 @@ export function CoverSection({ documentId }: CoverSectionProps) {
   );
 
   const updateCoverImage = useMutation(api.documents.mutations.updateCoverImage);
-  const updateMetadata = useMutation(api.documents.mutations.updateMetadata);
   const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
 
   useEffect(() => {
@@ -51,7 +48,6 @@ export function CoverSection({ documentId }: CoverSectionProps) {
     if (initializedRef.current) return;
     initializedRef.current = true;
     setCoverImagePrompt(document.coverImage?.prompt ?? "");
-    setDescription(document.description ?? "");
   }, [document]);
 
   const saveCoverImage = useDebouncedSave(async () => {
@@ -70,27 +66,9 @@ export function CoverSection({ documentId }: CoverSectionProps) {
     }
   }, 700);
 
-  const saveDescription = useDebouncedSave(async () => {
-    try {
-      await updateMetadata({
-        documentId,
-        description: normalizeOptionalText(description),
-      });
-    } catch (error) {
-      handleError(error, {
-        context: "CoverSection.saveDescription",
-      });
-    }
-  }, 700);
-
   const handlePromptChange = (value: string) => {
     setCoverImagePrompt(value);
     saveCoverImage();
-  };
-
-  const handleDescriptionChange = (value: string) => {
-    setDescription(value);
-    saveDescription();
   };
 
   const handleImageUpload = async (file: File) => {
@@ -149,7 +127,6 @@ export function CoverSection({ documentId }: CoverSectionProps) {
   const tabs: { id: CoverConfigTab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
     { id: "image", label: "Image", icon: ImageIcon },
     { id: "prompt", label: "Prompt", icon: SparklesIcon },
-    { id: "description", label: "Description", icon: TextIcon },
   ];
 
   return (
@@ -158,7 +135,7 @@ export function CoverSection({ documentId }: CoverSectionProps) {
         <h3 className="text-lg font-medium mb-1">Cover Image</h3>
         <p className="text-sm text-muted-foreground">
           Add a cover image that will be displayed on your document
-          card. A cover image is required to submit for review.
+          card. Required to publish.
         </p>
       </div>
 
@@ -228,22 +205,6 @@ export function CoverSection({ documentId }: CoverSectionProps) {
             value={coverImagePrompt}
             onChange={(event) => handlePromptChange(event.target.value)}
             placeholder="e.g. cinematic street photo, golden hour, 50mm lens, high detail"
-            className="min-h-[220px] resize-y"
-          />
-        </div>
-      )}
-
-      {activeCoverTab === "description" && (
-        <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">
-            Add a short summary for this document. Optional.
-          </p>
-          <label htmlFor="cover-description" className="sr-only">Document description</label>
-          <Textarea
-            id="cover-description"
-            value={description}
-            onChange={(event) => handleDescriptionChange(event.target.value)}
-            placeholder="Write a concise summary of what this document covers..."
             className="min-h-[220px] resize-y"
           />
         </div>

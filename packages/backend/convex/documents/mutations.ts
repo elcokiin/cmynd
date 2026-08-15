@@ -334,6 +334,10 @@ export const publish = mutation({
       );
     }
 
+    if (!document.coverImage?.storageId) {
+      throwConvexError(ErrorCode.DOCUMENT_COVER_REQUIRED);
+    }
+
     if (document.type === "reprint" && !document.reprint) {
       throwConvexError(
         ErrorCode.DOCUMENT_VALIDATION,
@@ -402,10 +406,6 @@ export const submit = mutation({
         ErrorCode.DOCUMENT_VALIDATION,
         "Document must have a title to be submitted",
       );
-    }
-
-    if (!document.coverImage?.storageId) {
-      throwConvexError(ErrorCode.DOCUMENT_COVER_REQUIRED);
     }
 
     const submissionHistory = document.submissionHistory ?? [];
