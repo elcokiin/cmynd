@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ImageIcon, Link2Icon, UserIcon, XIcon } from "lucide-react";
 import { Button } from "@elcokiin/ui/button";
 import { Input } from "@elcokiin/ui/input";
@@ -6,10 +6,6 @@ import { Label } from "@elcokiin/ui/label";
 import { ImageDropzone } from "@elcokiin/ui/image-dropzone";
 import { OptimizedImage } from "@elcokiin/ui/optimized-image";
 import { cn } from "@elcokiin/ui/lib/utils";
-import { toast } from "sonner";
-
-import { useConvexImageUpload } from "@/hooks/use-convex-image-upload";
-import { useErrorHandler } from "@/hooks/use-error-handler";
 
 export type AvatarValue = {
   url: string;
@@ -19,13 +15,20 @@ export type AvatarValue = {
 interface AvatarFieldProps {
   value: AvatarValue;
   onChange: (value: AvatarValue) => void;
+  pendingFile: File | null;
+  onFileStage: (file: File | null) => void;
+  isUploading?: boolean;
 }
 
-function AvatarPreview({ value }: { value: AvatarValue }) {
+function AvatarPreview({ url }: { url: string }) {
   const [error, setError] = useState(false);
-  const url = value.url.trim();
+  const trimmed = url.trim();
 
-  if (!url || error) {
+  useEffect(() => {
+    setError(false);
+  }, [url]);
+
+  if (!trimmed || error) {
     return (
       <div className="flex size-20 shrink-0 items-center justify-center rounded-full border border-dashed bg-muted">
         <UserIcon className="h-8 w-8 text-muted-foreground/50" />
@@ -36,7 +39,7 @@ function AvatarPreview({ value }: { value: AvatarValue }) {
   return (
     <div className="size-20 shrink-0 overflow-hidden rounded-full border bg-muted">
       <OptimizedImage
-        src={url}
+        src={trimmed}
         alt="Avatar preview"
         layout="fullWidth"
         className="size-full object-cover"
@@ -46,33 +49,51 @@ function AvatarPreview({ value }: { value: AvatarValue }) {
   );
 }
 
-export function AvatarField({ value, onChange }: AvatarFieldProps) {
-  const { handleError } = useErrorHandler();
-  const uploadAvatar = useConvexImageUpload();
-  const [isUploading, setIsUploading] = useState(false);
+export function AvatarField({
+  value,
+  onChange,
+  pendingFile,
+  onFileStage,
+  isUploading = false,
+}: AvatarFieldProps) {
+  const [previewUrl, setPreviewUrl] = useState("");
+  const objectUrlRef = useRef<string | null>(null);
 
-  const handleDrop = async (file: File) => {
-    setIsUploading(true);
-    try {
-      const { url, storageId } = await uploadAvatar(file);
-      onChange({ url, storageId });
-      toast.success("Avatar uploaded");
-    } catch (error) {
-      handleError(error, { context: "AvatarField.handleDrop" });
-    } finally {
-      setIsUploading(false);
+  const revokeObjectUrl = () => {
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
     }
   };
 
+  useEffect(() => {
+    return () => {
+      revokeObjectUrl();
+    };
+  }, []);
+
+  const handleDrop = (file: File) => {
+    revokeObjectUrl();
+    const objectUrl = URL.createObjectURL(file);
+    objectUrlRef.current = objectUrl;
+    setPreviewUrl(objectUrl);
+    onFileStage(file);
+  };
+
   const handleClear = () => {
+    revokeObjectUrl();
+    setPreviewUrl("");
+    onFileStage(null);
     onChange({ url: "", storageId: undefined });
   };
+
+  const preview = pendingFile ? previewUrl : value.url;
 
   return (
     <div className="grid gap-3">
       <Label>Avatar</Label>
       <div className="flex items-start gap-4">
-        <AvatarPreview value={value} />
+        <AvatarPreview url={preview} />
 
         <div className="min-w-0 flex-1 space-y-3">
           <ImageDropzone
@@ -80,7 +101,7 @@ export function AvatarField({ value, onChange }: AvatarFieldProps) {
             isUploading={isUploading}
             className={cn(
               "px-4 py-3",
-              value.url.trim() && "border-primary/40",
+              (pendingFile || value.url.trim()) && "border-primary/40",
             )}
           />
 
@@ -98,13 +119,18 @@ export function AvatarField({ value, onChange }: AvatarFieldProps) {
               <ImageIcon className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
               <Input
                 value={value.url}
-                onChange={(e) => onChange({ ...value, url: e.target.value })}
+                onChange={(e) => {
+                  if (pendingFile) {
+                    handleClear();
+                  }
+                  onChange({ url: e.target.value });
+                }}
                 placeholder="https://example.com/avatar.jpg"
                 type="url"
                 className="pl-8"
               />
             </div>
-            {value.url.trim() && (
+            {(value.url.trim() || pendingFile) && (
               <Button
                 type="button"
                 variant="ghost"

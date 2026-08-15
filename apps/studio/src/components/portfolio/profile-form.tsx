@@ -1,7 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "convex/react";
+import { useConvexImageUpload } from "@/hooks/use-convex-image-upload";
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { Button } from "@elcokiin/ui/button";
 import { Separator } from "@elcokiin/ui/separator";
@@ -85,6 +86,9 @@ function SectionHeader({ label }: { label: string }) {
 export function ProfileForm({ portfolio }: ProfileFormProps) {
   const { handleError } = useErrorHandler();
   const updateProfile = useMutation(api.portfolio.mutations.updateProfile);
+  const uploadAvatar = useConvexImageUpload();
+  const [pendingAvatarFile, setPendingAvatarFile] = useState<File | null>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   const form = useForm({
     defaultValues: {
@@ -104,14 +108,25 @@ export function ProfileForm({ portfolio }: ProfileFormProps) {
     },
     onSubmit: async ({ value }) => {
       try {
+        const trimmedAvatarUrl = (value.avatarUrl ?? "").trim();
+        let avatarUrl = trimmedAvatarUrl;
+        let avatarStorageId = value.avatarStorageId && trimmedAvatarUrl
+          ? value.avatarStorageId
+          : undefined;
+
+        if (pendingAvatarFile) {
+          setIsUploadingAvatar(true);
+          const result = await uploadAvatar(pendingAvatarFile);
+          avatarUrl = result.url;
+          avatarStorageId = result.storageId;
+          setPendingAvatarFile(null);
+        }
+
         await updateProfile({
           name: value.name,
           headline: value.headline || undefined,
-          avatarUrl: normalizeOptionalText(value.avatarUrl ?? ""),
-          avatarStorageId:
-            value.avatarStorageId && value.avatarUrl?.trim()
-              ? value.avatarStorageId
-              : undefined,
+          avatarUrl,
+          avatarStorageId,
           about: normalizeOptionalText(value.about ?? ""),
           philosophy: normalizeOptionalText(value.philosophy ?? ""),
           socialLinks: value.socialLinks && value.socialLinks.length > 0
@@ -136,11 +151,14 @@ export function ProfileForm({ portfolio }: ProfileFormProps) {
         toast.success("Profile updated");
       } catch (error) {
         handleError(error, { context: "ProfileForm.onSubmit" });
+      } finally {
+        setIsUploadingAvatar(false);
       }
     },
   });
 
   useEffect(() => {
+    setPendingAvatarFile(null);
     form.reset();
   }, [portfolio]);
 
@@ -242,6 +260,9 @@ export function ProfileForm({ portfolio }: ProfileFormProps) {
                       field.handleChange(avatar.url);
                       field.form.setFieldValue("avatarStorageId", avatar.storageId ?? "");
                     }}
+                    pendingFile={pendingAvatarFile}
+                    onFileStage={setPendingAvatarFile}
+                    isUploading={isUploadingAvatar}
                   />
                   {showErrors && (errors ?? []).map((error) => (
                     <p key={error?.message} className="text-xs text-destructive">

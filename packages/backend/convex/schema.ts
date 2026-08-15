@@ -101,6 +101,7 @@ export default defineSchema({
   authors: defineTable({
     name: v.string(),
     avatarUrl: v.optional(v.string()),
+    avatarStorageId: v.optional(v.string()),
     userId: v.optional(v.string()),
     createdBy: v.optional(v.string()),
     bio: v.optional(v.string()),

@@ -1,6 +1,6 @@
 import type { Id } from "@elcokiin/backend/convex/_generated/dataModel";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { z } from "zod";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery } from "convex/react";
@@ -15,18 +15,19 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@elcokiin/ui/dialog";
+import { ImageDropzone } from "@elcokiin/ui/image-dropzone";
 import { Label } from "@elcokiin/ui/label";
-import { UserIcon, ImageIcon, FileTextIcon, CheckIcon, ClockIcon, LoaderIcon } from "lucide-react";
+import { UserIcon, ImageIcon, FileTextIcon, CheckIcon, ClockIcon, LoaderIcon, Link2Icon, XIcon } from "lucide-react";
 
 import { InputWithIcon, TextareaWithIcon } from "@/components/ui/input-with-icon";
 import { useErrorHandler } from "@/hooks/use-error-handler";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { useConvexImageUpload } from "@/hooks/use-convex-image-upload";
 import { normalizeOptionalText } from "@/lib/text";
 
 const createAuthorSchema = z.object({
   name: z.string().min(1, "Name is required"),
   bio: z.string().max(500, "Bio must be under 500 characters"),
-  avatarUrl: z.string().url("Must be a valid URL").or(z.literal("")),
 });
 
 type CreateAuthorFormValues = z.infer<typeof createAuthorSchema>;
@@ -70,12 +71,38 @@ export function CreateAuthorDialog({ open, onOpenChange, onSuccess }: CreateAuth
   const { handleError } = useErrorHandler();
   const createAuthor = useMutation(api.authors.mutations.createAuthor);
   const isAdmin = useQuery(api.auth.isCurrentUserAdmin);
+  const uploadAvatar = useConvexImageUpload();
+
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const objectUrlRef = useRef<string | null>(null);
+
+  const revokeObjectUrl = () => {
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    if (open) {
+      setAvatarUrl("");
+      setPendingFile(null);
+      setPreviewUrl("");
+      form.reset();
+    }
+    return () => {
+      revokeObjectUrl();
+      objectUrlRef.current = null;
+    };
+  }, [open]);
 
   const form = useForm({
     defaultValues: {
       name: "",
       bio: "",
-      avatarUrl: "",
     } as CreateAuthorFormValues,
     validators: {
       onSubmit: createAuthorSchema,
@@ -83,23 +110,53 @@ export function CreateAuthorDialog({ open, onOpenChange, onSuccess }: CreateAuth
     onSubmit: async ({ value }) => {
       try {
         const name = value.name.trim();
+
+        let url = avatarUrl.trim();
+        let storageId: string | undefined;
+        if (pendingFile) {
+          setIsUploading(true);
+          const result = await uploadAvatar(pendingFile);
+          url = result.url;
+          storageId = result.storageId;
+        }
+
         const authorId = await createAuthor({
           name,
           bio: normalizeOptionalText(value.bio ?? ""),
-          avatarUrl: normalizeOptionalText(value.avatarUrl ?? ""),
+          avatarUrl: url ? url : undefined,
+          avatarStorageId: url ? storageId : undefined,
         });
+
+        revokeObjectUrl();
+        setPendingFile(null);
+        setPreviewUrl("");
         onOpenChange(false);
         onSuccess?.(name, authorId);
         form.reset();
       } catch (error) {
         handleError(error, { context: "CreateAuthorDialog.handleSubmit" });
+      } finally {
+        setIsUploading(false);
       }
     },
   });
 
-  useEffect(() => {
-    if (open) form.reset();
-  }, [open]);
+  const handleDrop = (file: File) => {
+    revokeObjectUrl();
+    const objectUrl = URL.createObjectURL(file);
+    objectUrlRef.current = objectUrl;
+    setPendingFile(file);
+    setPreviewUrl(objectUrl);
+  };
+
+  const handleClearAvatar = () => {
+    revokeObjectUrl();
+    setAvatarUrl("");
+    setPendingFile(null);
+    setPreviewUrl("");
+  };
+
+  const avatarPreview = pendingFile ? previewUrl : avatarUrl;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -159,30 +216,57 @@ export function CreateAuthorDialog({ open, onOpenChange, onSuccess }: CreateAuth
               )}
             </form.Field>
 
-            <form.Field name="avatarUrl">
-              {(field) => (
-                <div className="grid gap-2">
-                  <Label htmlFor={field.name} className="text-sm font-medium">Avatar</Label>
-                  <div className="flex items-center gap-3">
-                    <AvatarPreview url={field.state.value} />
-                    <InputWithIcon
-                      icon={<ImageIcon />}
-                      id={field.name}
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      placeholder="https://example.com/avatar.jpg"
-                      type="url"
-                      className="flex-1"
-                    />
-                  </div>
-                  {field.state.meta.errors.map((error) => (
-                    <p key={error?.message} className="text-xs text-destructive">
-                      {error?.message}
-                    </p>
-                  ))}
+            <div className="grid gap-2">
+              <Label className="text-sm font-medium">Avatar</Label>
+              <div className="flex items-center gap-3">
+                <AvatarPreview url={avatarPreview} />
+                <ImageDropzone
+                  onDrop={handleDrop}
+                  isUploading={isUploading}
+                  className="px-4 py-3 flex-1"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span className="h-px flex-1 bg-border" />
+                <span className="inline-flex items-center gap-1">
+                  <Link2Icon className="h-3 w-3" />
+                  or use a URL
+                </span>
+                <span className="h-px flex-1 bg-border" />
+              </div>
+
+              <div className="flex gap-2">
+                <div className="relative min-w-0 flex-1">
+                  <InputWithIcon
+                    icon={<ImageIcon />}
+                    value={avatarUrl}
+                    onChange={(e) => {
+                      if (pendingFile) {
+                        handleClearAvatar();
+                      }
+                      setAvatarUrl(e.target.value);
+                    }}
+                    placeholder="https://example.com/avatar.jpg"
+                    type="url"
+                    disabled={!!pendingFile}
+                  />
                 </div>
-              )}
-            </form.Field>
+                {(avatarUrl.trim() || pendingFile) && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleClearAvatar}
+                    aria-label="Remove avatar"
+                    disabled={isUploading}
+                    className="shrink-0 text-muted-foreground hover:text-destructive"
+                  >
+                    <XIcon className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
 
             <form.Field name="bio">
               {(field) => (

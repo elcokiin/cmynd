@@ -123,6 +123,32 @@ export const getAuthorCount = query({
 });
 
 /**
+ * Get the current user's account image.
+ * Resolves the account/author avatar URL, falling back to the portfolio
+ * avatar when the user has not set a custom account image.
+ * Returns null when unauthenticated or no image exists.
+ */
+export const getAccountImage = query({
+  args: {},
+  handler: async (ctx): Promise<{ avatarUrl: string | null }> => {
+    const user = await Auth.getCurrentUserOrNull(ctx);
+    if (!user) return { avatarUrl: null };
+
+    const author = await ctx.db
+      .query("authors")
+      .withIndex("by_user_id", (q) => q.eq("userId", user._id))
+      .unique();
+
+    if (author?.avatarUrl) {
+      return { avatarUrl: author.avatarUrl };
+    }
+
+    const portfolio = await ctx.db.query("portfolio").collect();
+    return { avatarUrl: portfolio[0]?.avatarUrl ?? null };
+  },
+});
+
+/**
  * List original author candidates.
  * Returns authors suitable as original authors for reprints:
  * - Verified authors, OR

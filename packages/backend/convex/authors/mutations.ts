@@ -2,9 +2,10 @@ import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import type { Id } from "../_generated/dataModel";
 import { phraseValidator } from "../../lib/validators/authors";
-import { getAuthorById } from "./helpers";
+import { getAuthorById, getOrCreateAuthorForUser } from "./helpers";
 import * as Auth from "../_lib/auth";
 import { ErrorCode, throwConvexError } from "@elcokiin/errors";
+import { r2 } from "../r2";
 
 /**
  * Create a new author (admin-only).
@@ -74,6 +75,57 @@ export const update = mutation({
 });
 
 /**
+ * Update the current user's account image (shared with their author profile).
+ * Get-or-creates an author profile for the user, then sets the avatar.
+ * An empty/absent avatarUrl clears the image (falls back to portfolio).
+ */
+export const updateAccountAvatar = mutation({
+  args: {
+    avatarUrl: v.optional(v.string()),
+    avatarStorageId: v.optional(v.string()),
+  },
+  handler: async (ctx, args): Promise<void> => {
+    const user = await Auth.getCurrentUser(ctx);
+
+    const authorId = await getOrCreateAuthorForUser(ctx, user._id);
+    const author = await getAuthorById(ctx, authorId);
+
+    const hasAvatarArg = args.avatarUrl !== undefined;
+    const trimmed = args.avatarUrl?.trim() ?? "";
+    const avatarUrl = trimmed || undefined;
+
+    if (avatarUrl) {
+      try {
+        new URL(avatarUrl);
+      } catch {
+        throwConvexError(ErrorCode.AUTHOR_INVALID_AVATAR_URL);
+      }
+    }
+
+    const updates: {
+      avatarUrl?: string;
+      avatarStorageId?: string;
+      updatedAt: number;
+    } = {
+      updatedAt: Date.now(),
+    };
+
+    if (hasAvatarArg) {
+      updates.avatarUrl = avatarUrl;
+      updates.avatarStorageId = avatarUrl ? args.avatarStorageId : undefined;
+    }
+
+    await ctx.db.patch(authorId, updates);
+
+    const oldStorageId = author.avatarStorageId;
+    const newStorageId = avatarUrl ? args.avatarStorageId : undefined;
+    if (oldStorageId && oldStorageId !== newStorageId) {
+      await r2.deleteObject(ctx, oldStorageId);
+    }
+  },
+});
+
+/**
  * Create a new author.
  * If the current user is an admin, the author is auto-verified.
  * If not, the author is created unverified.
@@ -83,6 +135,7 @@ export const createAuthor = mutation({
     name: v.string(),
     bio: v.optional(v.string()),
     avatarUrl: v.optional(v.string()),
+    avatarStorageId: v.optional(v.string()),
   },
   handler: async (ctx, args): Promise<Id<"authors">> => {
     const user = await Auth.getCurrentUser(ctx);
@@ -100,6 +153,7 @@ export const createAuthor = mutation({
     const authorId = await ctx.db.insert("authors", {
       name: args.name,
       avatarUrl: args.avatarUrl,
+      avatarStorageId: args.avatarStorageId,
       bio: args.bio,
       createdBy: user._id,
       isVerified: admin,

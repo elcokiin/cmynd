@@ -13,7 +13,7 @@ const hasCoverInfo = !!(coverImagePrompt || description);
 const promptText = coverImagePrompt || description || '';
 ---
 
-<figure class="post-cover group relative overflow-hidden rounded-lg bg-neutral-900 aspect-video w-full" data-color-thief data-cover-url={coverUrl} data-prompt-text={promptText}>
+<figure class="post-cover group relative overflow-hidden rounded-lg bg-neutral-900 aspect-video w-full" data-overlay-dismissed data-color-thief data-cover-url={coverUrl} data-prompt-text={promptText}>
   <div class="img-skeleton" aria-hidden="true"></div>
   <Image
     src={coverUrl}
