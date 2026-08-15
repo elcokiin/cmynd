@@ -133,6 +133,7 @@ export default defineSchema({
     publishedAt: v.optional(v.number()),
     estimatedReadTime: v.optional(v.number()),
     isVisible: v.optional(v.boolean()),
+    order: v.optional(v.number()),
     submittedAt: v.optional(v.number()),
     rejectionReason: v.optional(v.string()),
     submissionHistory: v.optional(v.array(v.number())),
@@ -141,6 +142,7 @@ export default defineSchema({
     .index("by_author", ["authorId"])
     .index("by_status", ["status", "createdAt"])
     .index("by_published", ["status", "publishedAt"])
+    .index("by_published_order", ["status", "order"])
     .index("by_slug", ["slug"])
     .searchIndex("search_title", {
       searchField: "title",

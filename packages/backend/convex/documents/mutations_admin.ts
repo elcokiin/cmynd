@@ -38,6 +38,7 @@ export const approve = mutation({
       status: "published",
       isVisible: true,
       publishedAt: Date.now(),
+      order: Date.now(),
       estimatedReadTime,
       description,
       updatedAt: Date.now(),
@@ -157,5 +158,63 @@ export const setPublishedVisibility = mutation({
       isVisible: args.isVisible,
       updatedAt: Date.now(),
     });
+  },
+});
+
+/**
+ * Move a published document up or down in the blog rendering order (admin only).
+ * Swaps the document's order value with its adjacent published neighbor.
+ * No-op if the document is already at the requested boundary.
+ */
+export const reorderPublished = mutation({
+  args: {
+    documentId: v.id("documents"),
+    direction: v.union(v.literal("up"), v.literal("down")),
+  },
+  handler: async (ctx, args) => {
+    await Auth.requireAdmin(ctx);
+
+    const document = await ctx.db.get(args.documentId);
+    if (!document) {
+      throwConvexError(ErrorCode.DOCUMENT_NOT_FOUND);
+    }
+
+    if (document.status !== "published") {
+      throwConvexError(
+        ErrorCode.DOCUMENT_INVALID_STATUS,
+        "Only published documents can be reordered",
+      );
+    }
+
+    if (typeof document.order !== "number") {
+      throwConvexError(
+        ErrorCode.DOCUMENT_VALIDATION,
+        "Document is missing an order value",
+      );
+    }
+
+    const neighbor =
+      args.direction === "up"
+        ? await ctx.db
+            .query("documents")
+            .withIndex("by_published_order", (idx) =>
+              idx.eq("status", "published").gt("order", document.order),
+            )
+            .order("asc")
+            .first()
+        : await ctx.db
+            .query("documents")
+            .withIndex("by_published_order", (idx) =>
+              idx.eq("status", "published").lt("order", document.order),
+            )
+            .order("desc")
+            .first();
+
+    if (!neighbor) {
+      return;
+    }
+
+    await ctx.db.patch(args.documentId, { order: neighbor.order });
+    await ctx.db.patch(neighbor._id, { order: document.order });
   },
 });

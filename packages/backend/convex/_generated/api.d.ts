@@ -20,6 +20,7 @@ import type * as chat_internal from "../chat/internal.js";
 import type * as chat_mutations from "../chat/mutations.js";
 import type * as chat_queries from "../chat/queries.js";
 import type * as documents_helpers from "../documents/helpers.js";
+import type * as documents_internal from "../documents/internal.js";
 import type * as documents_mutations from "../documents/mutations.js";
 import type * as documents_mutations_admin from "../documents/mutations_admin.js";
 import type * as documents_mutations_inspirations from "../documents/mutations_inspirations.js";
@@ -64,6 +65,7 @@ declare const fullApi: ApiFromModules<{
   "chat/mutations": typeof chat_mutations;
   "chat/queries": typeof chat_queries;
   "documents/helpers": typeof documents_helpers;
+  "documents/internal": typeof documents_internal;
   "documents/mutations": typeof documents_mutations;
   "documents/mutations_admin": typeof documents_mutations_admin;
   "documents/mutations_inspirations": typeof documents_mutations_inspirations;

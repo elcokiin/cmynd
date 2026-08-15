@@ -1,6 +1,7 @@
 import type { AdminPublishedDocumentListItem } from "@elcokiin/backend/lib/types/documents";
 
 import { useState } from "react";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { api } from "@elcokiin/backend/convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@elcokiin/ui/card";
 import { Pagination } from "@elcokiin/ui/pagination";
@@ -8,7 +9,7 @@ import { Input } from "@elcokiin/ui/input";
 import { Button } from "@elcokiin/ui/button";
 import { useNavigate } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
-import { EyeIcon, EyeOffIcon, SearchIcon } from "lucide-react";
+import { ArrowDownIcon, ArrowUpIcon, EyeIcon, EyeOffIcon, SearchIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import { useErrorHandler } from "@/hooks/use-error-handler";
@@ -20,18 +21,28 @@ type PublishedDocumentListProps = {
   search: string;
 };
 
+type ReorderDirection = "up" | "down";
+
 type PublishedDocumentRowProps = {
   document: AdminPublishedDocumentListItem;
   onToggleVisibility: (documentId: AdminPublishedDocumentListItem["_id"], nextVisible: boolean) => Promise<void>;
   onOpenReview: (slug: string) => void;
+  onReorder: (documentId: AdminPublishedDocumentListItem["_id"], direction: ReorderDirection) => Promise<void>;
   isToggling: boolean;
+  isReordering: boolean;
+  isFirst: boolean;
+  isLast: boolean;
 };
 
 function PublishedDocumentRow({
   document,
   onToggleVisibility,
   onOpenReview,
+  onReorder,
   isToggling,
+  isReordering,
+  isFirst,
+  isLast,
 }: PublishedDocumentRowProps): React.ReactNode {
   const formattedDate = new Intl.DateTimeFormat("en-US", {
     month: "short",
@@ -66,23 +77,57 @@ function PublishedDocumentRow({
         </div>
       </div>
 
-      <Button
-        type="button"
-        variant={document.isVisible ? "outline" : "default"}
-        disabled={isToggling}
-        onClick={(event) => {
-          event.stopPropagation();
-          onToggleVisibility(document._id, nextVisible);
-        }}
-        className="shrink-0"
-      >
-        {document.isVisible ? (
-          <EyeOffIcon className="mr-2 h-4 w-4" />
-        ) : (
-          <EyeIcon className="mr-2 h-4 w-4" />
-        )}
-        {document.isVisible ? "Hide" : "Make Visible"}
-      </Button>
+      <div className="flex shrink-0 items-center gap-1">
+        <div className="flex flex-col">
+          {!isFirst && (
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              disabled={isToggling || isReordering}
+              onClick={(event) => {
+                event.stopPropagation();
+                onReorder(document._id, "up");
+              }}
+              aria-label={`Move ${document.title || "Untitled"} up in the blog order`}
+            >
+              <ArrowUpIcon className="h-4 w-4" />
+            </Button>
+          )}
+          {!isLast && (
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              disabled={isToggling || isReordering}
+              onClick={(event) => {
+                event.stopPropagation();
+                onReorder(document._id, "down");
+              }}
+              aria-label={`Move ${document.title || "Untitled"} down in the blog order`}
+            >
+              <ArrowDownIcon className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+
+        <Button
+          type="button"
+          variant={document.isVisible ? "outline" : "default"}
+          disabled={isToggling || isReordering}
+          onClick={(event) => {
+            event.stopPropagation();
+            onToggleVisibility(document._id, nextVisible);
+          }}
+        >
+          {document.isVisible ? (
+            <EyeOffIcon className="mr-2 h-4 w-4" />
+          ) : (
+            <EyeIcon className="mr-2 h-4 w-4" />
+          )}
+          {document.isVisible ? "Hide" : "Make Visible"}
+        </Button>
+      </div>
     </div>
   );
 }
@@ -93,11 +138,16 @@ export function PublishedDocumentList({
 }: PublishedDocumentListProps): React.ReactNode {
   const navigate = useNavigate();
   const { handleError } = useErrorHandler();
+  const [rowsRef] = useAutoAnimate<HTMLDivElement>();
   const setPublishedVisibility = useMutation(
     api.documents.mutations.setPublishedVisibility,
   );
+  const reorderPublished = useMutation(
+    api.documents.mutations.reorderPublished,
+  );
   const ITEMS_PER_PAGE = 10;
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [reorderingId, setReorderingId] = useState<string | null>(null);
   const { localSearch, setLocalSearch, debouncedSearch } = useSearchUrlSync({
     urlSearch: search,
     baseRoute: "/admin/published",
@@ -137,6 +187,21 @@ export function PublishedDocumentList({
     });
   }
 
+  async function handleReorder(
+    documentId: AdminPublishedDocumentListItem["_id"],
+    direction: ReorderDirection,
+  ): Promise<void> {
+    setReorderingId(documentId);
+    try {
+      await reorderPublished({ documentId, direction });
+      toast.success(direction === "up" ? "Moved up in blog order" : "Moved down in blog order");
+    } catch (error) {
+      handleError(error, { context: "PublishedDocumentList.handleReorder" });
+    } finally {
+      setReorderingId(null);
+    }
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -162,14 +227,18 @@ export function PublishedDocumentList({
         ) : !documents || documents.length === 0 ? (
           <div className="py-10 text-center text-muted-foreground">No published documents found</div>
         ) : (
-          <div className="space-y-3">
-            {documents.map((doc) => (
+          <div ref={rowsRef} className="space-y-3">
+            {documents.map((doc, index) => (
               <PublishedDocumentRow
                 key={doc._id}
                 document={doc}
                 onToggleVisibility={handleToggleVisibility}
                 onOpenReview={handleOpenReview}
+                onReorder={handleReorder}
                 isToggling={togglingId === doc._id}
+                isReordering={reorderingId === doc._id}
+                isFirst={pagination.currentPage === 1 && index === 0}
+                isLast={!pagination.hasNextPage && index === documents.length - 1}
               />
             ))}
           </div>

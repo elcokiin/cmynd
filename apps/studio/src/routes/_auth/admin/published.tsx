@@ -26,7 +26,8 @@ function AdminPublishedPage() {
         <div>
           <h2 className="mb-2 text-3xl font-bold">Published Documents</h2>
           <p className="text-muted-foreground">
-            Manage which published documents are visible to the public.
+            Manage visibility and ordering for published documents. Use the
+            arrows to set the order they are rendered in on the blog.
           </p>
         </div>
 
