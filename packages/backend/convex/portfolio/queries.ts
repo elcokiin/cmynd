@@ -18,12 +18,10 @@ import type {
   ProjectImage,
   SkillReference,
 } from "../../lib/types/portfolio";
-import type { Id } from "../_generated/dataModel";
+import type { Id, Doc } from "../_generated/dataModel";
 import * as Auth from "../_lib/auth";
 import { getCdnUrl } from "../../lib/utils/cdn";
 import {
-  getPortfolio,
-  getProjectBySlug,
   getSkillById,
   listProjectSkillLinks,
   listSkillsForProject,
@@ -121,17 +119,23 @@ async function hydrateAdminProjectsWithSkills<
 }
 
 // ═════════════════════════════════════════════════════════════════════
-// Public queries
+// Public queries (view any user's portfolio)
 // ═════════════════════════════════════════════════════════════════════
 
 /**
- * Get the full portfolio profile.
+ * Get a user's portfolio profile by userId.
  */
-export const getProfile = query({
-  args: {},
-  returns: publicPortfolioValidator,
-  handler: async (ctx): Promise<PublicPortfolio> => {
-    const portfolio = await getPortfolio(ctx);
+export const getProfileByUserId = query({
+  args: { userId: v.string() },
+  returns: v.union(publicPortfolioValidator, v.null()),
+  handler: async (ctx, args): Promise<PublicPortfolio | null> => {
+    const portfolio = await ctx.db
+      .query("portfolio")
+      .withIndex("by_userId", (q) => q.eq("userId", args.userId))
+      .first();
+    
+    if (!portfolio) return null;
+    
     return {
       _id: portfolio._id,
       name: portfolio.name,
@@ -149,89 +153,97 @@ export const getProfile = query({
 });
 
 /**
- * List visible skills, optionally filtered by category.
+ * List a user's visible skills (via their projects and experience).
  */
-export const listPublicSkills = query({
-  args: {
-    category: v.optional(v.string()),
-  },
+export const listUserPublicSkills = query({
+  args: { userId: v.string() },
   handler: async (ctx, args): Promise<PublicSkill[]> => {
-    const category = args.category;
-
-    let query;
-
-    if (category) {
-      query = ctx.db
-        .query("skills")
-        .withIndex("by_category_visible", (q) =>
-          q.eq("category", category).eq("isVisible", true),
-        );
-    } else {
-      query = ctx.db
-        .query("skills")
-        .withIndex("by_visible", (q) => q.eq("isVisible", true));
-    }
-
-    const skills = await query.order("asc").collect();
-    return skills.map(toPublicSkill);
-  },
-});
-
-/**
- * List all skill categories (derived from visible skills).
- */
-export const listCategories = query({
-  args: {},
-  handler: async (ctx): Promise<string[]> => {
-    const skills = await ctx.db
-      .query("skills")
-      .withIndex("by_visible", (q) => q.eq("isVisible", true))
-      .collect();
-
-    const categories = new Set(skills.map((s) => s.category));
-    return Array.from(categories).sort();
-  },
-});
-
-/**
- * List visible projects ordered by `order`, each with its linked skills.
- */
-export const listPublicProjects = query({
-  args: {},
-  handler: async (ctx): Promise<PublicProject[]> => {
+    // Get user's visible projects
     const projects = await ctx.db
       .query("projects")
-      .withIndex("by_visible", (q) => q.eq("isVisible", true))
+      .withIndex("by_userId", (q) => q.eq("userId", args.userId))
+      .collect();
+    
+    const visibleProjects = projects.filter(p => p.isVisible);
+    
+    // Get user's experience
+    const experience = await ctx.db
+      .query("experience")
+      .withIndex("by_userId", (q) => q.eq("userId", args.userId))
+      .collect();
+    
+    // Collect all skill IDs from projects and experience
+    const skillIds = new Set<string>();
+    
+    for (const project of visibleProjects) {
+      const links = await listProjectSkillLinks(ctx, project._id);
+      links.forEach(link => skillIds.add(link.skillId));
+    }
+    
+    for (const exp of experience) {
+      const links = await ctx.db
+        .query("experienceSkills")
+        .withIndex("by_experience", (q) => q.eq("experienceId", exp._id))
+        .collect();
+      links.forEach(link => skillIds.add(link.skillId));
+    }
+    
+    // Fetch and return unique skills
+    const skills = await Promise.all(
+      Array.from(skillIds).map(id => ctx.db.get("skills", id as Id<"skills">))
+    );
+    
+    return skills
+      .filter((s): s is Doc<"skills"> => s !== null)
+      .map(toPublicSkill);
+  },
+});
+
+/**
+ * List a user's visible projects ordered by `order`.
+ */
+export const listUserPublicProjects = query({
+  args: { userId: v.string() },
+  handler: async (ctx, args): Promise<PublicProject[]> => {
+    const projects = await ctx.db
+      .query("projects")
+      .withIndex("by_userId", (q) => q.eq("userId", args.userId))
       .order("asc")
       .collect();
-
-    const withImages = await resolveProjects(projects.map(toPublicProject));
+    
+    const visibleProjects = projects.filter(p => p.isVisible);
+    const withImages = await resolveProjects(visibleProjects.map(toPublicProject));
     return hydrateProjectsWithSkills(ctx, withImages);
   },
 });
 
 /**
- * Get a single project by its slug, including its linked skills.
+ * Get a single project by its slug for a specific user.
  */
-export const getProjectBySlugQuery = query({
-  args: { slug: v.string() },
+export const getUserProjectBySlug = query({
+  args: { userId: v.string(), slug: v.string() },
   returns: v.union(publicProjectValidator, v.null()),
   handler: async (ctx, args): Promise<PublicProject | null> => {
-    const project = await getProjectBySlug(ctx, args.slug);
+    const project = await ctx.db
+      .query("projects")
+      .withIndex("by_userId_and_slug", (q) => 
+        q.eq("userId", args.userId).eq("slug", args.slug)
+      )
+      .first();
+    
     if (!project || !project.isVisible) return null;
     const withImages = await resolveSingleProject(toPublicProject(project));
-    const [skills] = await Promise.all([
-      listSkillsForProject(ctx, project._id),
-    ]);
+    const skills = await listSkillsForProject(ctx, project._id);
     return { ...withImages, skills: skills.map(toSkillReference) };
   },
 });
 
 /**
- * List all experience entries ordered by `order`, each with its linked skills.
+ * List a user's experience entries.
  */
-export const listPublicExperience = query({
+export const listUserPublicExperience = query({
   args: {
+    userId: v.string(),
     type: v.optional(v.union(v.literal("work"), v.literal("education"), v.literal("certification"))),
   },
   handler: async (ctx, args): Promise<PublicExperience[]> => {
@@ -242,9 +254,11 @@ export const listPublicExperience = query({
         .query("experience")
         .withIndex("by_type", (q) => q.eq("type", args.type!))
         .collect();
+      experience = experience.filter(e => e.userId === args.userId);
     } else {
       experience = await ctx.db
         .query("experience")
+        .withIndex("by_userId", (q) => q.eq("userId", args.userId))
         .order("asc")
         .collect();
     }
@@ -254,20 +268,49 @@ export const listPublicExperience = query({
 });
 
 // ═════════════════════════════════════════════════════════════════════
-// Admin queries
+// Authenticated queries (edit own portfolio)
 // ═════════════════════════════════════════════════════════════════════
 
 /**
- * Get a single skill with computed evidence derived from its real
- * relationships. `yearsSinceFirstUse` is intentionally `null` — queries
- * must not read the wall clock (stale + cache-hostile); compute it on
- * the client from `firstUsedAt`.
+ * Get current user's portfolio for editing. Returns null if no portfolio exists yet.
+ */
+export const getMyPortfolio = query({
+  args: {},
+  returns: v.union(adminPortfolioValidator, v.null()),
+  handler: async (ctx) => {
+    const userId = await Auth.requireAuth(ctx);
+    const portfolio = await ctx.db
+      .query("portfolio")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .first();
+    
+    if (!portfolio) return null;
+    
+    return {
+      _id: portfolio._id,
+      name: portfolio.name,
+      headline: portfolio.headline,
+      avatarUrl: portfolio.avatarUrl,
+      avatarStorageId: portfolio.avatarStorageId,
+      about: portfolio.about,
+      philosophy: portfolio.philosophy,
+      socialLinks: portfolio.socialLinks,
+      hobbies: portfolio.hobbies,
+      playlist: portfolio.playlist,
+      createdAt: portfolio.createdAt,
+      updatedAt: portfolio.updatedAt,
+    };
+  },
+});
+
+/**
+ * Get a single skill with computed evidence (for editing).
  */
 export const getSkillWithEvidence = query({
   args: { skillId: v.id("skills") },
   returns: v.union(skillWithEvidenceValidator, v.null()),
   handler: async (ctx, args): Promise<SkillWithEvidence | null> => {
-    await Auth.requireAdmin(ctx);
+    await Auth.requireAuth(ctx);
     const skill = await getSkillById(ctx, args.skillId);
 
     const projectIds = await listProjectIdsForSkill(ctx, args.skillId);
@@ -299,67 +342,46 @@ export const getSkillWithEvidence = query({
 });
 
 /**
- * Get portfolio for editing (admin only). Returns null if no portfolio exists yet.
- */
-export const getPortfolioForEdit = query({
-  args: {},
-  returns: v.union(adminPortfolioValidator, v.null()),
-  handler: async (ctx) => {
-    await Auth.requireAdmin(ctx);
-    const existing = await ctx.db.query("portfolio").collect();
-    if (existing.length === 0) return null;
-    const portfolio = existing[0]!;
-    return {
-      _id: portfolio._id,
-      name: portfolio.name,
-      headline: portfolio.headline,
-      avatarUrl: portfolio.avatarUrl,
-      avatarStorageId: portfolio.avatarStorageId,
-      about: portfolio.about,
-      philosophy: portfolio.philosophy,
-      socialLinks: portfolio.socialLinks,
-      hobbies: portfolio.hobbies,
-      playlist: portfolio.playlist,
-      createdBy: portfolio.createdBy,
-      createdAt: portfolio.createdAt,
-      updatedAt: portfolio.updatedAt,
-    };
-  },
-});
-
-/**
- * List all skills (admin only).
+ * List all skills (for the skill picker). Skills are global.
  */
 export const listAllSkills = query({
   args: {},
   handler: async (ctx) => {
-    await Auth.requireAdmin(ctx);
+    await Auth.requireAuth(ctx);
     const skills = await ctx.db.query("skills").order("asc").collect();
     return skills.map(toAdminSkill);
   },
 });
 
 /**
- * List all projects (admin only), each with its linked skills.
+ * List current user's projects (for editing).
  */
-export const listAllProjects = query({
+export const listMyProjects = query({
   args: {},
   handler: async (ctx) => {
-    await Auth.requireAdmin(ctx);
-    const projects = await ctx.db.query("projects").order("asc").collect();
+    const userId = await Auth.requireAuth(ctx);
+    const projects = await ctx.db
+      .query("projects")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .order("asc")
+      .collect();
     const withImages = await resolveProjects(projects.map(toAdminProject));
     return hydrateAdminProjectsWithSkills(ctx, withImages);
   },
 });
 
 /**
- * List all experience (admin only), each with its linked skills.
+ * List current user's experience (for editing).
  */
-export const listAllExperience = query({
+export const listMyExperience = query({
   args: {},
   handler: async (ctx) => {
-    await Auth.requireAdmin(ctx);
-    const experience = await ctx.db.query("experience").order("asc").collect();
+    const userId = await Auth.requireAuth(ctx);
+    const experience = await ctx.db
+      .query("experience")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .order("asc")
+      .collect();
     return hydrateExperienceWithSkills(ctx, experience.map(toAdminExperience));
   },
 });

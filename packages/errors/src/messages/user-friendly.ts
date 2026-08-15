@@ -9,6 +9,7 @@ export const USER_FRIENDLY_MESSAGES: Record<ErrorCode, string> = {
   [ErrorCode.UNAUTHENTICATED]: "Please sign in to continue",
   [ErrorCode.UNAUTHORIZED]: "You don't have permission to perform this action",
   [ErrorCode.ADMIN_REQUIRED]: "Admin privileges required",
+  [ErrorCode.FORBIDDEN]: "You don't have permission to access this resource",
 
   // Document Errors
   [ErrorCode.DOCUMENT_NOT_FOUND]: "Document not found",

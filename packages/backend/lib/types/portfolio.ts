@@ -142,7 +142,6 @@ export type PublicExperience = {
 
 export type AdminPortfolio = PublicPortfolio & {
   avatarStorageId?: string;
-  createdBy?: string;
 };
 
 export type AdminSkill = {
@@ -172,7 +171,6 @@ export type AdminProject = {
   images?: ProjectImage[];
   order: number;
   isVisible?: boolean;
-  createdBy?: string;
   createdAt: number;
   updatedAt: number;
 };
@@ -191,7 +189,6 @@ export type AdminExperience = {
   credentialUrl?: string;
   skills?: SkillReference[];
   order: number;
-  createdBy?: string;
   createdAt: number;
   updatedAt: number;
 };

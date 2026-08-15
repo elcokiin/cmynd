@@ -74,9 +74,9 @@ export const updateProfile = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const user = await Auth.requireAdmin(ctx);
+    const userId = await Auth.requireAuth(ctx);
 
-    const portfolioId = await getPortfolioId(ctx);
+    const portfolioId = await getPortfolioId(ctx, userId);
 
     const updates: Record<string, unknown> = {
       updatedAt: Date.now(),
@@ -96,14 +96,10 @@ export const updateProfile = mutation({
       updates.avatarStorageId = args.avatarStorageId;
     }
 
-    const existing = await ctx.db.get(portfolioId);
-    if (!existing?.createdBy) {
-      updates.createdBy = user._id;
-    }
-
     await ctx.db.patch(portfolioId, updates);
 
     // Clean up the previous R2 object when the avatar is replaced or removed.
+    const existing = await ctx.db.get(portfolioId);
     const oldStorageId = existing?.avatarStorageId;
     const newStorageId = args.avatarUrl !== undefined ? args.avatarStorageId : undefined;
     if (oldStorageId && oldStorageId !== newStorageId) {
@@ -119,7 +115,7 @@ export const updateProfile = mutation({
 export const upsertSkill = mutation({
   args: upsertSkillArgsValidator,
   handler: async (ctx, args) => {
-    const user = await Auth.requireAdmin(ctx);
+    await Auth.requireAuth(ctx);
 
     const duplicate = await isSkillNameTaken(ctx, args.name, args.category, args._id);
     if (duplicate) {
@@ -148,7 +144,6 @@ export const upsertSkill = mutation({
         firstUsedAt: args.firstUsedAt,
         isVisible: args.isVisible ?? true,
         icon: args.icon,
-        createdBy: user._id,
         createdAt: now,
         updatedAt: now,
       });
@@ -160,7 +155,7 @@ export const upsertSkill = mutation({
 export const removeSkill = mutation({
   args: { _id: v.id("skills") },
   handler: async (ctx, args) => {
-    await Auth.requireAdmin(ctx);
+    await Auth.requireAuth(ctx);
     await getSkillById(ctx, args._id);
     await deleteSkillLinks(ctx, args._id);
     await ctx.db.delete(args._id);
@@ -174,15 +169,16 @@ export const removeSkill = mutation({
 export const createProject = mutation({
   args: createProjectArgsValidator,
   handler: async (ctx, args) => {
-    const user = await Auth.requireAdmin(ctx);
+    const userId = await Auth.requireAuth(ctx);
 
-    const slugTaken = await isSlugTaken(ctx, args.slug);
+    const slugTaken = await isSlugTaken(ctx, args.slug, userId);
     if (slugTaken) {
       throwConvexError(ErrorCode.PROJECT_SLUG_TAKEN);
     }
 
     const now = Date.now();
     const projectId = await ctx.db.insert("projects", {
+      userId,
       title: args.title,
       slug: args.slug,
       description: args.description,
@@ -194,7 +190,6 @@ export const createProject = mutation({
       images: args.images,
       order: args.order,
       isVisible: args.isVisible ?? true,
-      createdBy: user._id,
       createdAt: now,
       updatedAt: now,
     });
@@ -208,12 +203,17 @@ export const createProject = mutation({
 export const updateProject = mutation({
   args: updateProjectArgsValidator,
   handler: async (ctx, args) => {
-    await Auth.requireAdmin(ctx);
+    const userId = await Auth.requireAuth(ctx);
 
     const existing = await getProjectById(ctx, args._id);
+    
+    // Verify ownership
+    if (existing.userId !== userId) {
+      throwConvexError(ErrorCode.FORBIDDEN);
+    }
 
     if (args.slug !== undefined && args.slug !== existing.slug) {
-      const slugTaken = await isSlugTaken(ctx, args.slug, args._id);
+      const slugTaken = await isSlugTaken(ctx, args.slug, userId, args._id);
       if (slugTaken) {
         throwConvexError(ErrorCode.PROJECT_SLUG_TAKEN);
       }
@@ -246,8 +246,14 @@ export const updateProject = mutation({
 export const removeProject = mutation({
   args: { _id: v.id("projects") },
   handler: async (ctx, args) => {
-    await Auth.requireAdmin(ctx);
-    await getProjectById(ctx, args._id);
+    const userId = await Auth.requireAuth(ctx);
+    const project = await getProjectById(ctx, args._id);
+    
+    // Verify ownership
+    if (project.userId !== userId) {
+      throwConvexError(ErrorCode.FORBIDDEN);
+    }
+    
     await deleteProjectSkillLinks(ctx, args._id);
     await ctx.db.delete(args._id);
   },
@@ -264,8 +270,13 @@ export const uploadProjectImage = mutation({
     alt: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await Auth.requireAdmin(ctx);
+    const userId = await Auth.requireAuth(ctx);
     const project = await getProjectById(ctx, args.projectId);
+    
+    // Verify ownership
+    if (project.userId !== userId) {
+      throwConvexError(ErrorCode.FORBIDDEN);
+    }
 
     const url = getCdnUrl(args.storageId, env.R2_PUBLIC_DOMAIN);
     const newImage = { storageId: args.storageId, url, alt: args.alt };
@@ -281,8 +292,13 @@ export const removeProjectImage = mutation({
     storageId: v.string(),
   },
   handler: async (ctx, args) => {
-    await Auth.requireAdmin(ctx);
+    const userId = await Auth.requireAuth(ctx);
     const project = await getProjectById(ctx, args.projectId);
+    
+    // Verify ownership
+    if (project.userId !== userId) {
+      throwConvexError(ErrorCode.FORBIDDEN);
+    }
 
     const images = (project.images ?? []).filter(
       (img) => img.storageId !== args.storageId,
@@ -300,10 +316,11 @@ export const removeProjectImage = mutation({
 export const createExperience = mutation({
   args: createExperienceArgsValidator,
   handler: async (ctx, args) => {
-    const user = await Auth.requireAdmin(ctx);
+    const userId = await Auth.requireAuth(ctx);
 
     const now = Date.now();
     const experienceId = await ctx.db.insert("experience", {
+      userId,
       type: args.type,
       title: args.title,
       organization: args.organization,
@@ -315,7 +332,6 @@ export const createExperience = mutation({
       credentialId: args.credentialId,
       credentialUrl: args.credentialUrl,
       order: args.order,
-      createdBy: user._id,
       createdAt: now,
       updatedAt: now,
     });
@@ -329,9 +345,14 @@ export const createExperience = mutation({
 export const updateExperience = mutation({
   args: updateExperienceArgsValidator,
   handler: async (ctx, args) => {
-    await Auth.requireAdmin(ctx);
+    const userId = await Auth.requireAuth(ctx);
 
-    await getExperienceById(ctx, args._id);
+    const existing = await getExperienceById(ctx, args._id);
+    
+    // Verify ownership
+    if (existing.userId !== userId) {
+      throwConvexError(ErrorCode.FORBIDDEN);
+    }
 
     const updates: Record<string, unknown> = {
       updatedAt: Date.now(),
@@ -360,8 +381,14 @@ export const updateExperience = mutation({
 export const removeExperience = mutation({
   args: { _id: v.id("experience") },
   handler: async (ctx, args) => {
-    await Auth.requireAdmin(ctx);
-    await getExperienceById(ctx, args._id);
+    const userId = await Auth.requireAuth(ctx);
+    const experience = await getExperienceById(ctx, args._id);
+    
+    // Verify ownership
+    if (experience.userId !== userId) {
+      throwConvexError(ErrorCode.FORBIDDEN);
+    }
+    
     await deleteExperienceSkillLinks(ctx, args._id);
     await ctx.db.delete(args._id);
   },

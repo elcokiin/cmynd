@@ -12,6 +12,7 @@ export const ERROR_DEFAULTS: Record<ErrorCode, string> = {
   [ErrorCodes.UNAUTHENTICATED]: "Not authenticated",
   [ErrorCodes.UNAUTHORIZED]: "Unauthorized",
   [ErrorCodes.ADMIN_REQUIRED]: "Admin access required",
+  [ErrorCodes.FORBIDDEN]: "You don't have permission to access this resource",
 
   // Document Errors (2xxx)
   [ErrorCodes.DOCUMENT_NOT_FOUND]: "Document not found",

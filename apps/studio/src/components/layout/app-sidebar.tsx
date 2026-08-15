@@ -42,17 +42,17 @@ function ThemeToggleWrapper() {
 type PortfolioTab = "profile" | "skills" | "projects" | "experience";
 
 const portfolioSections: { tab: PortfolioTab; label: string; icon: typeof UserIcon; path: string }[] = [
-  { tab: "profile", label: "Profile", icon: UserIcon, path: "/admin/portfolio" },
-  { tab: "skills", label: "Skills", icon: WrenchIcon, path: "/admin/portfolio/skills" },
-  { tab: "projects", label: "Projects", icon: BriefcaseIcon, path: "/admin/portfolio/projects" },
-  { tab: "experience", label: "Experience", icon: LayersIcon, path: "/admin/portfolio/experience" },
+  { tab: "profile", label: "Profile", icon: UserIcon, path: "/my-portfolio" },
+  { tab: "skills", label: "Skills", icon: WrenchIcon, path: "/my-portfolio/skills" },
+  { tab: "projects", label: "Projects", icon: BriefcaseIcon, path: "/my-portfolio/projects" },
+  { tab: "experience", label: "Experience", icon: LayersIcon, path: "/my-portfolio/experience" },
 ];
 
 export function AppSidebar() {
   const location = useLocation();
   const isAdmin = useQuery(api.auth.isCurrentUserAdmin);
 
-  const isPortfolioActive = location.pathname.startsWith("/admin/portfolio");
+  const isPortfolioActive = location.pathname.startsWith("/my-portfolio");
 
   const navItems = [
     {
@@ -97,35 +97,33 @@ export function AppSidebar() {
                 </SidebarMenuItem>
               ))}
 
-              {isAdmin && (
-                <SidebarMenuItem>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger
-                      openOnHover
-                      delay={100}
-                      closeDelay={150}
-                      render={
-                        <SidebarMenuButton isActive={isPortfolioActive} />
-                      }
-                    >
-                      <FolderKanbanIcon />
-                      Portfolio
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent side="right" sideOffset={8}>
-                      {portfolioSections.map((section) => (
-                        <DropdownMenuLinkItem
-                          key={section.tab}
-                          render={<Link to={section.path} />}
-                          data-active={location.pathname === section.path || undefined}
-                        >
-                          <section.icon />
-                          {section.label}
-                        </DropdownMenuLinkItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </SidebarMenuItem>
-              )}
+              <SidebarMenuItem>
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    openOnHover
+                    delay={100}
+                    closeDelay={150}
+                    render={
+                      <SidebarMenuButton isActive={isPortfolioActive} />
+                    }
+                  >
+                    <FolderKanbanIcon />
+                    My Portfolio
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent side="right" sideOffset={8}>
+                    {portfolioSections.map((section) => (
+                      <DropdownMenuLinkItem
+                        key={section.tab}
+                        render={<Link to={section.path} />}
+                        data-active={location.pathname === section.path || undefined}
+                      >
+                        <section.icon />
+                        {section.label}
+                      </DropdownMenuLinkItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

@@ -10,6 +10,7 @@ export const ErrorCode = {
   UNAUTHENTICATED: "AUTH_1001",
   UNAUTHORIZED: "AUTH_1002",
   ADMIN_REQUIRED: "AUTH_1003",
+  FORBIDDEN: "AUTH_1004",
 
   // Document Errors (2xxx)
   DOCUMENT_NOT_FOUND: "DOC_2001",

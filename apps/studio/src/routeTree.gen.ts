@@ -13,6 +13,7 @@ import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthIndexRouteImport } from './routes/_auth/index'
 import { Route as AuthAdminRouteRouteImport } from './routes/_auth/admin/route'
+import { Route as AuthMyPortfolioRouteRouteImport } from './routes/_auth/my-portfolio/route'
 import { Route as AuthAdminIndexRouteImport } from './routes/_auth/admin/index'
 import { Route as AuthAdminAuthorsRouteImport } from './routes/_auth/admin/authors'
 import { Route as AuthAdminPortfolioRouteRouteImport } from './routes/_auth/admin/portfolio/route'
@@ -20,6 +21,10 @@ import { Route as AuthAdminPublishedRouteImport } from './routes/_auth/admin/pub
 import { Route as AuthAdminReviewRouteImport } from './routes/_auth/admin/review'
 import { Route as AuthEditorSlugRouteImport } from './routes/_auth/editor/$slug'
 import { Route as AuthEditorNewRouteImport } from './routes/_auth/editor/new'
+import { Route as AuthMyPortfolioIndexRouteImport } from './routes/_auth/my-portfolio/index'
+import { Route as AuthMyPortfolioExperienceRouteImport } from './routes/_auth/my-portfolio/experience'
+import { Route as AuthMyPortfolioProjectsRouteImport } from './routes/_auth/my-portfolio/projects'
+import { Route as AuthMyPortfolioSkillsRouteImport } from './routes/_auth/my-portfolio/skills'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AuthAdminPortfolioIndexRouteImport } from './routes/_auth/admin/portfolio/index'
 import { Route as AuthAdminPortfolioExperienceRouteImport } from './routes/_auth/admin/portfolio/experience'
@@ -44,6 +49,11 @@ const AuthIndexRoute = AuthIndexRouteImport.update({
 const AuthAdminRouteRoute = AuthAdminRouteRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => AuthRouteRoute,
+} as any)
+const AuthMyPortfolioRouteRoute = AuthMyPortfolioRouteRouteImport.update({
+  id: '/my-portfolio',
+  path: '/my-portfolio',
   getParentRoute: () => AuthRouteRoute,
 } as any)
 const AuthAdminIndexRoute = AuthAdminIndexRouteImport.update({
@@ -80,6 +90,27 @@ const AuthEditorNewRoute = AuthEditorNewRouteImport.update({
   id: '/editor/new',
   path: '/editor/new',
   getParentRoute: () => AuthRouteRoute,
+} as any)
+const AuthMyPortfolioIndexRoute = AuthMyPortfolioIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthMyPortfolioRouteRoute,
+} as any)
+const AuthMyPortfolioExperienceRoute =
+  AuthMyPortfolioExperienceRouteImport.update({
+    id: '/experience',
+    path: '/experience',
+    getParentRoute: () => AuthMyPortfolioRouteRoute,
+  } as any)
+const AuthMyPortfolioProjectsRoute = AuthMyPortfolioProjectsRouteImport.update({
+  id: '/projects',
+  path: '/projects',
+  getParentRoute: () => AuthMyPortfolioRouteRoute,
+} as any)
+const AuthMyPortfolioSkillsRoute = AuthMyPortfolioSkillsRouteImport.update({
+  id: '/skills',
+  path: '/skills',
+  getParentRoute: () => AuthMyPortfolioRouteRoute,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
@@ -119,14 +150,19 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthIndexRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthAdminRouteRouteWithChildren
+  '/my-portfolio': typeof AuthMyPortfolioRouteRouteWithChildren
   '/admin/portfolio': typeof AuthAdminPortfolioRouteRouteWithChildren
   '/admin/authors': typeof AuthAdminAuthorsRoute
   '/admin/published': typeof AuthAdminPublishedRoute
   '/admin/review': typeof AuthAdminReviewRoute
   '/editor/$slug': typeof AuthEditorSlugRoute
   '/editor/new': typeof AuthEditorNewRoute
+  '/my-portfolio/experience': typeof AuthMyPortfolioExperienceRoute
+  '/my-portfolio/projects': typeof AuthMyPortfolioProjectsRoute
+  '/my-portfolio/skills': typeof AuthMyPortfolioSkillsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin/': typeof AuthAdminIndexRoute
+  '/my-portfolio/': typeof AuthMyPortfolioIndexRoute
   '/admin/portfolio/experience': typeof AuthAdminPortfolioExperienceRoute
   '/admin/portfolio/projects': typeof AuthAdminPortfolioProjectsRoute
   '/admin/portfolio/skills': typeof AuthAdminPortfolioSkillsRoute
@@ -141,8 +177,12 @@ export interface FileRoutesByTo {
   '/admin/review': typeof AuthAdminReviewRoute
   '/editor/$slug': typeof AuthEditorSlugRoute
   '/editor/new': typeof AuthEditorNewRoute
+  '/my-portfolio/experience': typeof AuthMyPortfolioExperienceRoute
+  '/my-portfolio/projects': typeof AuthMyPortfolioProjectsRoute
+  '/my-portfolio/skills': typeof AuthMyPortfolioSkillsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin': typeof AuthAdminIndexRoute
+  '/my-portfolio': typeof AuthMyPortfolioIndexRoute
   '/admin/portfolio/experience': typeof AuthAdminPortfolioExperienceRoute
   '/admin/portfolio/projects': typeof AuthAdminPortfolioProjectsRoute
   '/admin/portfolio/skills': typeof AuthAdminPortfolioSkillsRoute
@@ -154,6 +194,7 @@ export interface FileRoutesById {
   '/_auth': typeof AuthRouteRouteWithChildren
   '/reset-password': typeof ResetPasswordRoute
   '/_auth/admin': typeof AuthAdminRouteRouteWithChildren
+  '/_auth/my-portfolio': typeof AuthMyPortfolioRouteRouteWithChildren
   '/_auth/': typeof AuthIndexRoute
   '/_auth/admin/portfolio': typeof AuthAdminPortfolioRouteRouteWithChildren
   '/_auth/admin/authors': typeof AuthAdminAuthorsRoute
@@ -161,8 +202,12 @@ export interface FileRoutesById {
   '/_auth/admin/review': typeof AuthAdminReviewRoute
   '/_auth/editor/$slug': typeof AuthEditorSlugRoute
   '/_auth/editor/new': typeof AuthEditorNewRoute
+  '/_auth/my-portfolio/experience': typeof AuthMyPortfolioExperienceRoute
+  '/_auth/my-portfolio/projects': typeof AuthMyPortfolioProjectsRoute
+  '/_auth/my-portfolio/skills': typeof AuthMyPortfolioSkillsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/_auth/admin/': typeof AuthAdminIndexRoute
+  '/_auth/my-portfolio/': typeof AuthMyPortfolioIndexRoute
   '/_auth/admin/portfolio/experience': typeof AuthAdminPortfolioExperienceRoute
   '/_auth/admin/portfolio/projects': typeof AuthAdminPortfolioProjectsRoute
   '/_auth/admin/portfolio/skills': typeof AuthAdminPortfolioSkillsRoute
@@ -175,14 +220,19 @@ export interface FileRouteTypes {
     | '/'
     | '/reset-password'
     | '/admin'
+    | '/my-portfolio'
     | '/admin/portfolio'
     | '/admin/authors'
     | '/admin/published'
     | '/admin/review'
     | '/editor/$slug'
     | '/editor/new'
+    | '/my-portfolio/experience'
+    | '/my-portfolio/projects'
+    | '/my-portfolio/skills'
     | '/api/auth/$'
     | '/admin/'
+    | '/my-portfolio/'
     | '/admin/portfolio/experience'
     | '/admin/portfolio/projects'
     | '/admin/portfolio/skills'
@@ -197,8 +247,12 @@ export interface FileRouteTypes {
     | '/admin/review'
     | '/editor/$slug'
     | '/editor/new'
+    | '/my-portfolio/experience'
+    | '/my-portfolio/projects'
+    | '/my-portfolio/skills'
     | '/api/auth/$'
     | '/admin'
+    | '/my-portfolio'
     | '/admin/portfolio/experience'
     | '/admin/portfolio/projects'
     | '/admin/portfolio/skills'
@@ -209,6 +263,7 @@ export interface FileRouteTypes {
     | '/_auth'
     | '/reset-password'
     | '/_auth/admin'
+    | '/_auth/my-portfolio'
     | '/_auth/'
     | '/_auth/admin/portfolio'
     | '/_auth/admin/authors'
@@ -216,8 +271,12 @@ export interface FileRouteTypes {
     | '/_auth/admin/review'
     | '/_auth/editor/$slug'
     | '/_auth/editor/new'
+    | '/_auth/my-portfolio/experience'
+    | '/_auth/my-portfolio/projects'
+    | '/_auth/my-portfolio/skills'
     | '/api/auth/$'
     | '/_auth/admin/'
+    | '/_auth/my-portfolio/'
     | '/_auth/admin/portfolio/experience'
     | '/_auth/admin/portfolio/projects'
     | '/_auth/admin/portfolio/skills'
@@ -259,6 +318,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AuthAdminRouteRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
+    '/_auth/my-portfolio': {
+      id: '/_auth/my-portfolio'
+      path: '/my-portfolio'
+      fullPath: '/my-portfolio'
+      preLoaderRoute: typeof AuthMyPortfolioRouteRouteImport
       parentRoute: typeof AuthRouteRoute
     }
     '/_auth/admin/': {
@@ -309,6 +375,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/editor/new'
       preLoaderRoute: typeof AuthEditorNewRouteImport
       parentRoute: typeof AuthRouteRoute
+    }
+    '/_auth/my-portfolio/': {
+      id: '/_auth/my-portfolio/'
+      path: '/'
+      fullPath: '/my-portfolio/'
+      preLoaderRoute: typeof AuthMyPortfolioIndexRouteImport
+      parentRoute: typeof AuthMyPortfolioRouteRoute
+    }
+    '/_auth/my-portfolio/experience': {
+      id: '/_auth/my-portfolio/experience'
+      path: '/experience'
+      fullPath: '/my-portfolio/experience'
+      preLoaderRoute: typeof AuthMyPortfolioExperienceRouteImport
+      parentRoute: typeof AuthMyPortfolioRouteRoute
+    }
+    '/_auth/my-portfolio/projects': {
+      id: '/_auth/my-portfolio/projects'
+      path: '/projects'
+      fullPath: '/my-portfolio/projects'
+      preLoaderRoute: typeof AuthMyPortfolioProjectsRouteImport
+      parentRoute: typeof AuthMyPortfolioRouteRoute
+    }
+    '/_auth/my-portfolio/skills': {
+      id: '/_auth/my-portfolio/skills'
+      path: '/skills'
+      fullPath: '/my-portfolio/skills'
+      preLoaderRoute: typeof AuthMyPortfolioSkillsRouteImport
+      parentRoute: typeof AuthMyPortfolioRouteRoute
     }
     '/api/auth/$': {
       id: '/api/auth/$'
@@ -397,8 +491,26 @@ const AuthAdminRouteRouteWithChildren = AuthAdminRouteRoute._addFileChildren(
   AuthAdminRouteRouteChildren,
 )
 
+interface AuthMyPortfolioRouteRouteChildren {
+  AuthMyPortfolioExperienceRoute: typeof AuthMyPortfolioExperienceRoute
+  AuthMyPortfolioProjectsRoute: typeof AuthMyPortfolioProjectsRoute
+  AuthMyPortfolioSkillsRoute: typeof AuthMyPortfolioSkillsRoute
+  AuthMyPortfolioIndexRoute: typeof AuthMyPortfolioIndexRoute
+}
+
+const AuthMyPortfolioRouteRouteChildren: AuthMyPortfolioRouteRouteChildren = {
+  AuthMyPortfolioExperienceRoute: AuthMyPortfolioExperienceRoute,
+  AuthMyPortfolioProjectsRoute: AuthMyPortfolioProjectsRoute,
+  AuthMyPortfolioSkillsRoute: AuthMyPortfolioSkillsRoute,
+  AuthMyPortfolioIndexRoute: AuthMyPortfolioIndexRoute,
+}
+
+const AuthMyPortfolioRouteRouteWithChildren =
+  AuthMyPortfolioRouteRoute._addFileChildren(AuthMyPortfolioRouteRouteChildren)
+
 interface AuthRouteRouteChildren {
   AuthAdminRouteRoute: typeof AuthAdminRouteRouteWithChildren
+  AuthMyPortfolioRouteRoute: typeof AuthMyPortfolioRouteRouteWithChildren
   AuthIndexRoute: typeof AuthIndexRoute
   AuthEditorSlugRoute: typeof AuthEditorSlugRoute
   AuthEditorNewRoute: typeof AuthEditorNewRoute
@@ -406,6 +518,7 @@ interface AuthRouteRouteChildren {
 
 const AuthRouteRouteChildren: AuthRouteRouteChildren = {
   AuthAdminRouteRoute: AuthAdminRouteRouteWithChildren,
+  AuthMyPortfolioRouteRoute: AuthMyPortfolioRouteRouteWithChildren,
   AuthIndexRoute: AuthIndexRoute,
   AuthEditorSlugRoute: AuthEditorSlugRoute,
   AuthEditorNewRoute: AuthEditorNewRoute,

@@ -1,3 +1,4 @@
+import { v } from "convex/values";
 import { internalMutation } from "../_generated/server";
 import { getPortfolioId } from "./helpers";
 
@@ -6,9 +7,9 @@ import { getPortfolioId } from "./helpers";
  * Call this once after setting up the portfolio tables.
  */
 export const seed = internalMutation({
-  args: {},
-  handler: async (ctx) => {
-    const portfolioId = await getPortfolioId(ctx);
+  args: { userId: v.string() },
+  handler: async (ctx, args) => {
+    const portfolioId = await getPortfolioId(ctx, args.userId);
 
     await ctx.db.patch(portfolioId, {
       name: "Diego Tenjo",

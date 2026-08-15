@@ -5,18 +5,24 @@ import { ErrorCode, throwConvexError } from "@elcokiin/errors";
 import type { SkillLink } from "../../lib/types/portfolio";
 
 /**
- * Get the singleton portfolio ID (mutation only).
+ * Get the portfolio ID for a specific user (mutation only).
  * Lazily creates the portfolio row on first access.
  */
 export async function getPortfolioId(
   ctx: MutationCtx,
+  userId: string,
 ): Promise<Id<"portfolio">> {
-  const existing = await ctx.db.query("portfolio").collect();
-  if (existing.length > 0) {
-    return existing[0]!._id;
+  const existing = await ctx.db
+    .query("portfolio")
+    .withIndex("by_userId", (q) => q.eq("userId", userId))
+    .first();
+
+  if (existing) {
+    return existing._id;
   }
 
   const id = await ctx.db.insert("portfolio", {
+    userId,
     name: "",
     headline: "",
     createdAt: Date.now(),
@@ -27,16 +33,34 @@ export async function getPortfolioId(
 }
 
 /**
- * Get the portfolio document. Throws if not found.
+ * Get the portfolio document for a specific user. Returns null if not found.
+ */
+export async function getPortfolioByUserId(
+  ctx: QueryCtx,
+  userId: string,
+): Promise<Doc<"portfolio"> | null> {
+  return await ctx.db
+    .query("portfolio")
+    .withIndex("by_userId", (q) => q.eq("userId", userId))
+    .first();
+}
+
+/**
+ * Get the portfolio document for a specific user. Throws if not found.
  */
 export async function getPortfolio(
   ctx: QueryCtx | MutationCtx,
+  userId: string,
 ): Promise<Doc<"portfolio">> {
-  const existing = await ctx.db.query("portfolio").collect();
-  if (existing.length === 0) {
+  const existing = await ctx.db
+    .query("portfolio")
+    .withIndex("by_userId", (q) => q.eq("userId", userId))
+    .first();
+
+  if (!existing) {
     throwConvexError(ErrorCode.PORTFOLIO_NOT_FOUND);
   }
-  return existing[0]!;
+  return existing;
 }
 
 /**
@@ -68,29 +92,17 @@ export async function getProjectById(
 }
 
 /**
- * Get a project by slug. Returns null if not found.
- */
-export async function getProjectBySlug(
-  ctx: QueryCtx,
-  slug: string,
-) {
-  return await ctx.db
-    .query("projects")
-    .withIndex("by_slug", (q) => q.eq("slug", slug))
-    .first();
-}
-
-/**
- * Check if a project slug is already taken by another project.
+ * Check if a project slug is already taken by another project for the same user.
  */
 export async function isSlugTaken(
   ctx: QueryCtx | MutationCtx,
   slug: string,
+  userId: string,
   excludeId?: Id<"projects">,
 ) {
   const existing = await ctx.db
     .query("projects")
-    .withIndex("by_slug", (q) => q.eq("slug", slug))
+    .withIndex("by_userId_and_slug", (q) => q.eq("userId", userId).eq("slug", slug))
     .first();
 
   if (!existing) return false;

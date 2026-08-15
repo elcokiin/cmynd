@@ -173,6 +173,7 @@ export default defineSchema({
     .index("by_author_date", ["authorId", "date"]),
 
   portfolio: defineTable({
+    userId: v.string(),
     name: v.string(),
     headline: v.string(),
     avatarUrl: v.optional(v.string()),
@@ -182,10 +183,9 @@ export default defineSchema({
     socialLinks: v.optional(v.array(socialLink)),
     hobbies: v.optional(v.array(hobby)),
     playlist: v.optional(playlist),
-    createdBy: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
-  }),
+  }).index("by_userId", ["userId"]),
 
   skills: defineTable({
     name: v.string(),
@@ -204,6 +204,7 @@ export default defineSchema({
     .index("by_category_visible", ["category", "isVisible"]),
 
   projects: defineTable({
+    userId: v.string(),
     title: v.string(),
     slug: v.string(),
     description: v.optional(v.string()),
@@ -215,15 +216,16 @@ export default defineSchema({
     images: v.optional(v.array(projectImage)),
     order: v.number(),
     isVisible: v.optional(v.boolean()),
-    createdBy: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
-    .index("by_slug", ["slug"])
+    .index("by_userId", ["userId"])
+    .index("by_userId_and_slug", ["userId", "slug"])
     .index("by_visible", ["isVisible"])
     .index("by_order", ["order"]),
 
   experience: defineTable({
+    userId: v.string(),
     type: experienceType,
     title: v.string(),
     organization: v.string(),
@@ -235,10 +237,10 @@ export default defineSchema({
     credentialId: v.optional(v.string()),
     credentialUrl: v.optional(v.string()),
     order: v.number(),
-    createdBy: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
+    .index("by_userId", ["userId"])
     .index("by_type", ["type"])
     .index("by_order", ["order"]),
 

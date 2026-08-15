@@ -78,7 +78,6 @@ export function toAdminProject(project: Doc<"projects">): AdminProject {
     images: project.images,
     order: project.order,
     isVisible: project.isVisible,
-    createdBy: project.createdBy,
     createdAt: project.createdAt,
     updatedAt: project.updatedAt,
   };
@@ -121,7 +120,6 @@ export function toAdminExperience(
     credentialId: experience.credentialId,
     credentialUrl: experience.credentialUrl,
     order: experience.order,
-    createdBy: experience.createdBy,
     createdAt: experience.createdAt,
     updatedAt: experience.updatedAt,
   };
