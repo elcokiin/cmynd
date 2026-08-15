@@ -7,6 +7,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "check-types": "astro check",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "test:e2e": "playwright test",
     "deploy": "astro build && wrangler deploy --var CONVEX_URL:https://useful-lemming-995.convex.cloud"
   },
@@ -34,6 +36,8 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
     "@playwright/test": "^1.62.1",
-    "typescript": "catalog:"
+    "jsdom": "^26.0.0",
+    "typescript": "catalog:",
+    "vitest": "^4.0.17"
   }
 }
