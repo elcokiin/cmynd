@@ -6,7 +6,7 @@ import logo from '../assets/logo.png';
 
 <header 
   id="site-header" 
-  class="z-50 fixed top-0 flex items-center justify-between p-2 w-full sm:p-4 md:px-20 border-b border-transparent transition-all duration-255 backdrop-blur-md"
+  class="z-50 fixed top-0 flex items-center justify-between p-2 w-full sm:p-4 md:px-20 border-b border-transparent transition-all duration-255"
   style="color: var(--header-text);"
 >
   <Atmosphere client:load transparent className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -175,10 +175,46 @@ href="https://elcokiin.me"
     });
   }
 
+  function setupHeaderBg() {
+    const header = document.getElementById("site-header");
+    const foreground = document.querySelector(".hero-title");
+    if (!header || !foreground) {
+      header?.classList.add("is-scrolled");
+      return;
+    }
+
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const rect = foreground.getBoundingClientRect();
+      header.classList.toggle("is-scrolled", rect.bottom < 0);
+    };
+
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    update();
+  }
+
   setupMobileMenu();
   setupThemeButtons();
+  setupHeaderBg();
   document.addEventListener('astro:page-load', () => {
     setupMobileMenu();
     setupThemeButtons();
+    setupHeaderBg();
   });
 </script>
+
+<style>
+  #site-header {
+    background: transparent;
+  }
+
+  #site-header.is-scrolled {
+    background: color-mix(in srgb, var(--header-bg) 80%, transparent);
+  }
+</style>
