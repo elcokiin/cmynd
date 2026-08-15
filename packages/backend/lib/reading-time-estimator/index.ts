@@ -1,5 +1,7 @@
 import { readingTime } from "reading-time-estimator";
 
 export function getReadingTimeMinutes(text: string): number {
-  return readingTime(text).minutes;
+  const normalized = text.trim();
+  if (!normalized) return 0;
+  return Math.max(1, readingTime(normalized).minutes);
 }

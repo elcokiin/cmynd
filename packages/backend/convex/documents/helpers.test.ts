@@ -155,14 +155,24 @@ describe("computePublishMetadata", () => {
       expect(result.estimatedReadTime).toBeGreaterThanOrEqual(2);
     });
 
-    it("should return at least 0 for short content", () => {
+    it("should return 0 for empty content", () => {
+      const document = createMockDocument({
+        content: null,
+      });
+
+      const result = computePublishMetadata(document);
+      expect(result.estimatedReadTime).toBe(0);
+    });
+
+    it("should never hide short non-empty content (returns at least 1)", () => {
+      const words = Array.from({ length: 50 }, (_, i) => `word${i + 1}`).join(" ");
       const document = createMockDocument({
         content: {
           root: {
             children: [
               {
                 type: "paragraph",
-                children: [{ type: "text", text: "Short text" }],
+                children: [{ type: "text", text: words }],
               },
             ],
           },
@@ -170,7 +180,7 @@ describe("computePublishMetadata", () => {
       });
 
       const result = computePublishMetadata(document);
-      expect(result.estimatedReadTime).toBeGreaterThanOrEqual(0);
+      expect(result.estimatedReadTime).toBe(1);
     });
   });
 });
