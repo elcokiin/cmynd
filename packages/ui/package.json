@@ -55,6 +55,7 @@
     "./marker": "./src/components/marker.tsx",
     "./optimized-image": "./src/components/custom/optimized-image.tsx",
     "./flame-wrap": "./src/components/canvasui/FlameWrap.tsx",
+    "./force-field": "./src/components/canvasui/ForceField.tsx",
     "./logo": "./src/components/custom/logo.tsx"
   },
   "scripts": {
