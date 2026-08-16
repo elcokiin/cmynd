@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
+import { useTheme } from "../../hooks/useTheme";
 import Author from "./Author";
 
 type CardProps = {
@@ -316,21 +317,7 @@ function Card({
 }: CardProps) {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
-  const [isDark, setIsDark] = useState(true);
-
-  useEffect(() => {
-    const checkTheme = () => {
-      const theme = document.documentElement.getAttribute("data-theme");
-      setIsDark(theme !== "light");
-    };
-    checkTheme();
-    const observer = new MutationObserver(checkTheme);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["data-theme"],
-    });
-    return () => observer.disconnect();
-  }, []);
+  const isDark = useTheme() === "dark";
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();

@@ -74,16 +74,10 @@ const { phrase, author } = getRandomPhrase();
           invalidateOnRefresh: true,
           id: "hero-title-scroll",
           onUpdate: (self) => {
-            if (headerAuthorName) {
-              if (self.progress > 0.95) {
-                headerAuthorName.classList.remove('opacity-0', 'pointer-events-none');
-                headerAuthorName.classList.add('opacity-100', 'pointer-events-auto');
-                (titleLink as HTMLElement).style.opacity = '0';
-              } else {
-                headerAuthorName.classList.add('opacity-0', 'pointer-events-none');
-                headerAuthorName.classList.remove('opacity-100', 'pointer-events-auto');
-                (titleLink as HTMLElement).style.opacity = '1';
-              }
+            if (self.progress > 0.95) {
+              (titleLink as HTMLElement).style.opacity = '0';
+            } else {
+              (titleLink as HTMLElement).style.opacity = '1';
             }
           }
         },

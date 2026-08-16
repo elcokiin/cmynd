@@ -1,17 +1,15 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { ForceField } from "@elcokiin/ui/force-field";
+import { ForceField404 } from "../components/react/ForceField404";
 import { Atmosphere } from "@elcokiin/ui/atmosphere";
 
 import "../styles/global.css";
 ---
 
 <BaseLayout title="Not Found · elcokiin blog" description="Page not found" canonicalPath="/404">
-    <ForceField client:load
+    <ForceField404 client:load
       className="ff-404 relative flex flex-col items-center justify-center min-h-[96vh] w-full overflow-hidden"
     shape="hexagon"
-    color={[0.39, 1, 0.855]}
-    edgeColor={[0.65, 1, 0.9]}
     opacity={0.8}
     cellScale={18}
     lineWidth={0.035}
@@ -44,7 +42,7 @@ import "../styles/global.css";
     bloom={1.1}
     grain={0.12}
   >
-  <Atmosphere client:load transparent className="relative z-0 min-h-[75vh] flex items-center">
+  <Atmosphere client:load transparent className="relative z-0 min-h-[96vh] flex items-center">
       <div class="mx-auto flex w-full max-w-2xl flex-col items-center justify-center text-center">
       <h1 class="not-found-title">Post no encontrado</h1>
 
