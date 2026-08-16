@@ -23,7 +23,7 @@ const isHome = Astro.url.pathname === "/";
     </a>
   </div>
 
-  <div id="header-theme-wrap" class="flex items-center gap-4 relative z-10" data-theme-reveal={isHome ? "true" : null}>
+  <div id="header-theme-wrap" class="flex items-center gap-4 relative z-10" data-theme-reveal={isHome ? "true" : "false"}>
     <button
       id="header-theme-toggle"
       class="header-theme-toggle"
@@ -42,7 +42,7 @@ href="https://elcokiin.me"
       target="_blank"
       rel="noopener noreferrer"
       id="header-author-name" 
-      class="animated-underline font-bold text-xl opacity-0 pointer-events-none transition-opacity duration-300 hidden sm:block"
+      class="animated-underline font-bold text-xl opacity-0 pointer-events-none hidden sm:block"
       style="color: var(--header-text); --underline-height: 2px; --underline-bottom: -2px;"
     >
       Diego Tenjo
@@ -110,10 +110,7 @@ href="https://elcokiin.me"
 
 <script>
   import gsap from 'gsap';
-  import { ScrollTrigger } from 'gsap/ScrollTrigger';
   import { applyTheme, getTheme, toggleTheme, runWithThemeTransition } from "../lib/theme";
-
-  gsap.registerPlugin(ScrollTrigger);
 
   let revealCtx: gsap.Context | null = null;
 
@@ -186,36 +183,49 @@ href="https://elcokiin.me"
       const mm = gsap.matchMedia();
 
       mm.add("(min-width: 640px)", () => {
+        let visible = false;
+
         const shift = () => {
           const gap = parseFloat(getComputedStyle(wrap).gap) || 16;
-          return (link.getBoundingClientRect().width || link.offsetWidth) + gap;
+          return (link.offsetWidth || 0) + gap;
         };
 
-        gsap.set(button, { x: 0, force3D: true });
+        const apply = () => {
+          const s = shift();
+          const tl = gsap.timeline({ overwrite: "auto" });
+          if (visible) {
+            tl.to(button, { x: -s, duration: 0.3, ease: "power2.out" }, 0).to(
+              link,
+              { opacity: 1, pointerEvents: "auto", duration: 0.25, ease: "power2.out" },
+              0.15,
+            );
+          } else {
+            tl.to(
+              link,
+              { opacity: 0, pointerEvents: "none", duration: 0.15, ease: "power2.out" },
+              0,
+            ).to(button, { x: 0, duration: 0.3, ease: "power2.out" }, 0.1);
+          }
+        };
 
-        const tl = gsap.timeline({
-          defaults: { ease: "none" },
-          scrollTrigger: {
-            trigger: document.body,
-            start: () => window.innerHeight * 0.08,
-            end: () => window.innerHeight * 0.08 + 200,
-            scrub: true,
-            invalidateOnRefresh: true,
-            onRefresh: () => gsap.set(button, { x: 0 }),
-          },
-        });
+        const update = () => {
+          const next = window.scrollY >= window.innerHeight * 0.18;
+          if (next !== visible) {
+            visible = next;
+            apply();
+          }
+        };
 
-        tl.fromTo(
-          button,
-          { x: 0 },
-          { x: () => -(shift()) }
-        ).to(
-          link,
-          { opacity: 1, pointerEvents: "auto", duration: 0.6 },
-          0.25
-        );
+        gsap.set(button, { x: 0 });
+        gsap.set(link, { opacity: 0, pointerEvents: "none" });
+
+        window.addEventListener("resize", update);
+        window.addEventListener("scroll", update, { passive: true });
+        update();
 
         return () => {
+          window.removeEventListener("scroll", update);
+          window.removeEventListener("resize", update);
           button.style.transform = "";
           link.style.opacity = "";
           link.style.pointerEvents = "";
@@ -324,7 +334,7 @@ href="https://elcokiin.me"
     background: color-mix(in srgb, var(--header-bg) 60%, transparent);
     color: var(--header-text);
     cursor: pointer;
-    transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
   }
 
   .header-theme-toggle:hover {
@@ -347,5 +357,16 @@ href="https://elcokiin.me"
     top: 50%;
     transform: translateY(-50%);
     white-space: nowrap;
+  }
+
+  #header-theme-wrap[data-theme-reveal="false"] #header-author-name {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  @media (max-width: 639px) {
+    #header-author-name {
+      display: none !important;
+    }
   }
 </style>

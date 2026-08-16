@@ -1,198 +1,184 @@
 import { test, expect, type Page } from "@playwright/test";
 
-test.describe("SiteHeader - Theme button and author link overlap prevention", () => {
+const DESKTOP = { width: 1280, height: 720 };
+
+async function scrollToReveal(page: Page) {
+  await page.evaluate(() => window.scrollTo(0, window.innerHeight * 0.5));
+}
+
+type Box = { x: number; y: number; width: number; height: number };
+
+function doOverlap(a: Box, b: Box): boolean {
+  return !(
+    a.x + a.width <= b.x ||
+    b.x + b.width <= a.x ||
+    a.y + a.height <= b.y ||
+    b.y + b.height <= a.y
+  );
+}
+
+async function readBoxes(page: Page): Promise<{ button: Box; link: Box }> {
+  const button = page.locator("#header-theme-toggle");
+  const link = page.locator("#header-author-name");
+  await expect(button).toHaveCount(1);
+  await expect(link).toHaveCount(1);
+  const buttonBox = await button.boundingBox();
+  const linkBox = await link.boundingBox();
+  expect(buttonBox).not.toBeNull();
+  expect(linkBox).not.toBeNull();
+  return { button: buttonBox!, link: linkBox! };
+}
+
+async function linkOpacity(page: Page): Promise<string> {
+  return page
+    .locator("#header-author-name")
+    .evaluate((el) => getComputedStyle(el).opacity);
+}
+
+async function linkPointerEvents(page: Page): Promise<string> {
+  return page
+    .locator("#header-author-name")
+    .evaluate((el) => getComputedStyle(el).pointerEvents);
+}
+
+test.describe("SiteHeader - home reveal behavior (desktop)", () => {
   test.beforeEach(async ({ page }) => {
+    await page.setViewportSize(DESKTOP);
     await page.goto("/");
+    await page.waitForLoadState("networkidle");
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.waitForTimeout(250);
   });
 
-  test("theme button and author link should not overlap on desktop", async ({
-    page,
-  }) => {
-    // Set desktop viewport
-    await page.setViewportSize({ width: 1280, height: 720 });
-
-    // Wait for page load and animations to complete
-    await page.waitForLoadState("networkidle");
-    await page.waitForTimeout(1000);
-
-    const themeButton = page.locator("#header-theme-toggle");
-    const authorLink = page.locator("#header-author-name");
-
-    // Both elements should be visible on desktop
-    await expect(themeButton).toBeVisible();
-    await expect(authorLink).toBeVisible();
-
-    // Get bounding boxes
-    const buttonBox = await themeButton.boundingBox();
-    const linkBox = await authorLink.boundingBox();
-
-    expect(buttonBox).not.toBeNull();
-    expect(linkBox).not.toBeNull();
-
-    if (buttonBox && linkBox) {
-      // Check that elements don't overlap
-      // Two rectangles overlap if one is not completely to the left, right, above, or below the other
-      const noOverlap =
-        buttonBox.x + buttonBox.width <= linkBox.x ||
-        linkBox.x + linkBox.width <= buttonBox.x ||
-        buttonBox.y + buttonBox.height <= linkBox.y ||
-        linkBox.y + linkBox.height <= buttonBox.y;
-
-      expect(noOverlap).toBe(true);
-    }
+  test("author link is hidden at the top of the home page", async ({ page }) => {
+    const opacity = await linkOpacity(page);
+    expect(Number(opacity)).toBeLessThan(0.05);
+    expect(await linkPointerEvents(page)).toBe("none");
   });
 
-  test("theme button should be positioned to the left of author link", async ({
+  test("theme button fills the link's place when the link is hidden", async ({
     page,
   }) => {
-    await page.setViewportSize({ width: 1280, height: 720 });
-    await page.waitForLoadState("networkidle");
-    await page.waitForTimeout(1000);
-
-    const themeButton = page.locator("#header-theme-toggle");
-    const authorLink = page.locator("#header-author-name");
-
-    await expect(themeButton).toBeVisible();
-    await expect(authorLink).toBeVisible();
-
-    const buttonBox = await themeButton.boundingBox();
-    const linkBox = await authorLink.boundingBox();
-
-    expect(buttonBox).not.toBeNull();
-    expect(linkBox).not.toBeNull();
-
-    if (buttonBox && linkBox) {
-      // Button should be to the left of the link (button's right edge <= link's left edge)
-      expect(buttonBox.x + buttonBox.width).toBeLessThanOrEqual(linkBox.x);
-    }
+    // Both button and (hidden) link are anchored to the wrap's right edge, so
+    // the button alone occupies the space the link would take: no leftover gap.
+    const { button, link } = await readBoxes(page);
+    expect(Math.abs(button.x + button.width - (link.x + link.width))).toBeLessThan(3);
   });
 
-  test("theme button and author link should have minimum gap between them", async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width: 1280, height: 720 });
-    await page.waitForLoadState("networkidle");
-    await page.waitForTimeout(1000);
+  test("author link appears after scrolling down", async ({ page }) => {
+    await scrollToReveal(page);
+    await page.waitForTimeout(800);
 
-    const themeButton = page.locator("#header-theme-toggle");
-    const authorLink = page.locator("#header-author-name");
-
-    await expect(themeButton).toBeVisible();
-    await expect(authorLink).toBeVisible();
-
-    const buttonBox = await themeButton.boundingBox();
-    const linkBox = await authorLink.boundingBox();
-
-    expect(buttonBox).not.toBeNull();
-    expect(linkBox).not.toBeNull();
-
-    if (buttonBox && linkBox) {
-      // Calculate gap between button's right edge and link's left edge
-      const gap = linkBox.x - (buttonBox.x + buttonBox.width);
-
-      // Minimum gap should be at least 8px (half of the gap-4 = 16px)
-      expect(gap).toBeGreaterThanOrEqual(8);
-    }
+    expect(Number(await linkOpacity(page))).toBeGreaterThan(0.95);
+    expect(await linkPointerEvents(page)).toBe("auto");
   });
 
-  test("elements should not overlap after scrolling triggers animation", async ({
+  test("theme button shifts left on scroll to make room for the link", async ({
     page,
   }) => {
-    await page.setViewportSize({ width: 1280, height: 720 });
-    await page.waitForLoadState("networkidle");
+    const atTop = await readBoxes(page);
 
-    // Scroll down to trigger the reveal animation
-    await page.evaluate(() => {
-      window.scrollTo(0, window.innerHeight * 0.15);
-    });
-    await page.waitForTimeout(500);
+    await scrollToReveal(page);
+    await page.waitForTimeout(800);
 
-    // Scroll back up to ensure animation state is stable
-    await page.evaluate(() => {
-      window.scrollTo(0, 0);
-    });
-    await page.waitForTimeout(500);
+    const afterScroll = await readBoxes(page);
 
-    const themeButton = page.locator("#header-theme-toggle");
-    const authorLink = page.locator("#header-author-name");
-
-    await expect(themeButton).toBeVisible();
-    await expect(authorLink).toBeVisible();
-
-    const buttonBox = await themeButton.boundingBox();
-    const linkBox = await authorLink.boundingBox();
-
-    expect(buttonBox).not.toBeNull();
-    expect(linkBox).not.toBeNull();
-
-    if (buttonBox && linkBox) {
-      // Check no overlap after animation
-      const noOverlap =
-        buttonBox.x + buttonBox.width <= linkBox.x ||
-        linkBox.x + linkBox.width <= buttonBox.x ||
-        buttonBox.y + buttonBox.height <= linkBox.y ||
-        linkBox.y + linkBox.height <= buttonBox.y;
-
-      expect(noOverlap).toBe(true);
-    }
-  });
-
-  test("header wrapper should have proper flex layout to prevent overlap", async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width: 1280, height: 720 });
-    await page.waitForLoadState("networkidle");
-
-    const themeWrap = page.locator("#header-theme-wrap");
-
-    // Check that the wrapper has proper flex display
-    const display = await themeWrap.evaluate(
-      (el) => getComputedStyle(el).display
+    // Button moved left (smaller x) to free space for the link
+    expect(afterScroll.button.x).toBeLessThan(atTop.button.x);
+    // Link is to the right of the button with a visible gap
+    expect(afterScroll.button.x + afterScroll.button.width).toBeLessThanOrEqual(
+      afterScroll.link.x,
     );
-    expect(display).toBe("flex");
-
-    // Check that align-items is set for vertical alignment
-    const alignItems = await themeWrap.evaluate(
-      (el) => getComputedStyle(el).alignItems
-    );
-    expect(alignItems).toBe("center");
+    const gap = afterScroll.link.x - (afterScroll.button.x + afterScroll.button.width);
+    expect(gap).toBeGreaterThanOrEqual(8);
+    // Button is exactly adjacent ([button][link]): its right edge + the flex gap
+    // lands precisely on the link's left edge.
+    const gapPx = await page
+      .locator("#header-theme-wrap")
+      .evaluate((el) => parseFloat(getComputedStyle(el).gap) || 16);
+    expect(
+      Math.abs(afterScroll.button.x + afterScroll.button.width + gapPx - afterScroll.link.x),
+    ).toBeLessThan(3);
   });
 
-  test("author link should have proper positioning when visible", async ({
+  test("no overlap after the reveal animation completes", async ({ page }) => {
+    await scrollToReveal(page);
+    await page.waitForTimeout(800);
+
+    const { button, link } = await readBoxes(page);
+    expect(doOverlap(button, link)).toBe(false);
+    expect(link.x - (button.x + button.width)).toBeGreaterThanOrEqual(8);
+  });
+
+  test("no overlap after repeated scroll round-trips (regression for the intermittent bug)", async ({
     page,
   }) => {
-    await page.setViewportSize({ width: 1280, height: 720 });
-    await page.waitForLoadState("networkidle");
-    await page.waitForTimeout(1000);
+    for (let i = 0; i < 3; i++) {
+      await scrollToReveal(page);
+      await page.waitForTimeout(700);
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.waitForTimeout(300);
+    }
+    await scrollToReveal(page);
+    await page.waitForTimeout(800);
 
-    const authorLink = page.locator("#header-author-name");
+    const { button, link } = await readBoxes(page);
+    expect(doOverlap(button, link)).toBe(false);
+    expect(link.x - (button.x + button.width)).toBeGreaterThanOrEqual(8);
+  });
 
-    await expect(authorLink).toBeVisible();
-
-    // Check that the link has proper positioning
-    const position = await authorLink.evaluate(
-      (el) => getComputedStyle(el).position
+  test("wrapper keeps flex layout so elements stay vertically aligned", async ({
+    page,
+  }) => {
+    const wrap = page.locator("#header-theme-wrap");
+    expect(await wrap.evaluate((el) => getComputedStyle(el).display)).toBe(
+      "flex",
     );
-
-    // On desktop with theme-reveal, the link should be absolutely positioned
-    // but should not overlap due to proper right positioning
-    expect(["absolute", "relative", "static"]).toContain(position);
+    expect(
+      await wrap.evaluate((el) => getComputedStyle(el).alignItems),
+    ).toBe("center");
   });
 });
 
-test.describe("SiteHeader - Mobile layout", () => {
-  test("theme button and author link behavior on mobile", async ({ page }) => {
-    // Set mobile viewport
-    await page.setViewportSize({ width: 375, height: 667 });
+test.describe("SiteHeader - non-home pages", () => {
+  test("author link is visible immediately and never overlaps the theme button", async ({
+    page,
+  }) => {
+    await page.goto("/");
     await page.waitForLoadState("networkidle");
+    const hrefs = await page
+      .locator('a[href^="/"]')
+      .evaluateAll((els) =>
+        [...new Set(els.map((el) => el.getAttribute("href")!))].filter(
+          (h) => h !== "/",
+        ),
+      );
+    expect(hrefs.length).toBeGreaterThan(0); // no content → cannot test, fail loudly
 
-    const themeButton = page.locator("#header-theme-toggle");
-    const authorLink = page.locator("#header-author-name");
+    await page.setViewportSize(DESKTOP);
+    await page.goto(hrefs[0]);
+    await page.waitForLoadState("networkidle");
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.waitForTimeout(400);
 
-    // Author link should be hidden on mobile (has hidden sm:block class)
-    await expect(authorLink).not.toBeVisible();
+    // Always visible: full opacity and clickable, even before any scroll
+    expect(Number(await linkOpacity(page))).toBeGreaterThan(0.95);
+    expect(await linkPointerEvents(page)).toBe("auto");
 
-    // Theme button should still be visible
-    await expect(themeButton).toBeVisible();
+    const { button, link } = await readBoxes(page);
+    expect(doOverlap(button, link)).toBe(false);
+    expect(link.x - (button.x + button.width)).toBeGreaterThanOrEqual(8);
+  });
+});
+
+test.describe("SiteHeader - mobile", () => {
+  test("author link is hidden on mobile viewport", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(400);
+
+    await expect(page.locator("#header-author-name")).not.toBeVisible();
+    await expect(page.locator("#site-header")).toBeAttached();
   });
 });
