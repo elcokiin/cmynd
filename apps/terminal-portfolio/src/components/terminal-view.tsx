@@ -37,10 +37,24 @@ export function TerminalView() {
   const isMobile = useIsMobile();
   const hideNeofetch = searchParams.get("neofetch") === "hidden" || isMobile;
 
-  const profile = useQuery(api.portfolio.queries.getProfile);
-  const skills = useQuery(api.portfolio.queries.listPublicSkills, {});
-  const projects = useQuery(api.portfolio.queries.listPublicProjects);
-  const experience = useQuery(api.portfolio.queries.listPublicExperience, {});
+  const ownerUserId = process.env.NEXT_PUBLIC_PORTFOLIO_USER_ID;
+
+  const profile = useQuery(
+    api.portfolio.queries.getProfileByUserId,
+    ownerUserId ? { userId: ownerUserId } : "skip",
+  );
+  const skills = useQuery(
+    api.portfolio.queries.listUserPublicSkills,
+    ownerUserId ? { userId: ownerUserId } : "skip",
+  );
+  const projects = useQuery(
+    api.portfolio.queries.listUserPublicProjects,
+    ownerUserId ? { userId: ownerUserId } : "skip",
+  );
+  const experience = useQuery(
+    api.portfolio.queries.listUserPublicExperience,
+    ownerUserId ? { userId: ownerUserId } : "skip",
+  );
 
   const createThread = useMutation(api.chat.mutations.createThread);
   const sendMessage = useMutation(api.chat.mutations.sendMessage);
@@ -81,22 +95,22 @@ export function TerminalView() {
     initThread();
   }, [initThread]);
 
-  const isLoading = profile === undefined || skills === undefined || projects === undefined || experience === undefined;
+  const isLoading = profile == null || skills === undefined || projects === undefined || experience === undefined;
 
   const vfsRoot = useMemo(() => {
-    if (profile === undefined || skills === undefined || projects === undefined || experience === undefined) {
+    if (profile == null || skills === undefined || projects === undefined || experience === undefined) {
       return null;
     }
     return buildVfs(profile, skills, projects, experience);
   }, [profile, skills, projects, experience]);
 
   const neofetch = useMemo(() => {
-    if (profile === undefined) return null;
+    if (profile == null) return null;
     return buildNeofetch(profile);
   }, [profile]);
 
   const promptName = useMemo(() => {
-    if (profile === undefined) return "portfolio";
+    if (profile == null) return "portfolio";
     return profile.name.split(" ")[0]?.toLowerCase() ?? "portfolio";
   }, [profile]);
 
@@ -244,6 +258,26 @@ export function TerminalView() {
   const currentPrompt = getPrompt(state.cwd);
 
   const hasChat = chatMessages && chatMessages.length > 0;
+
+  if (!ownerUserId) {
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <div className="text-zinc-500 text-sm font-mono">
+          Set NEXT_PUBLIC_PORTFOLIO_USER_ID to load the portfolio.
+        </div>
+      </div>
+    );
+  }
+
+  if (profile === null) {
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <div className="text-zinc-500 text-sm font-mono">
+          Portfolio not found for the configured user.
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
