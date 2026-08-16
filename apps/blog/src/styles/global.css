@@ -42,6 +42,8 @@
   --text-title-light: #1e293b;
   --text-desc-dark: #cbd5e1;
   --text-desc-light: #334155;
+  --text-title: var(--text-title-dark);
+  --text-desc: var(--text-desc-dark);
   --text-hover: var(--primary-aquamarine);
   --accent: var(--primary-aquamarine);
   --desc-hover-color: #9ca3af;
@@ -70,6 +72,8 @@ html[data-theme="light"] {
   --text-hover: #2563eb;
   --accent: #2563eb;
   --desc-hover-color: #64748b;
+  --text-title: var(--text-title-light);
+  --text-desc: var(--text-desc-light);
 
   --heading-gradient-from: #1e293b;
   --heading-gradient-to: #dc2626;
@@ -661,6 +665,7 @@ html[data-theme="light"] .reprint-card__notes-content {
   border-radius: 20px;
   background: var(--content-bg);
   backdrop-filter: blur(8px);
+  overflow-wrap: break-word;
 }
 
 /* Corner brackets via box-shadow */

@@ -14,18 +14,14 @@ type CardProps = {
   type: "featured" | "grid-medium" | "grid-large";
 };
 
-function getTitleColor(isHovering: boolean, isDark: boolean) {
+function getTitleColor(isHovering: boolean) {
   if (isHovering) return "text-[var(--text-hover)]";
-  return isDark
-    ? "text-[var(--text-title-dark)]"
-    : "text-[var(--text-title-light)]";
+  return "text-[var(--text-title)]";
 }
 
-function getDescColor(isHovering: boolean, isDark: boolean) {
+function getDescColor(isHovering: boolean) {
   if (isHovering) return "text-[var(--desc-hover-color)]";
-  return isDark
-    ? "text-[var(--text-desc-dark)]"
-    : "text-[var(--text-desc-light)]";
+  return "text-[var(--text-desc)]";
 }
 
 function Image({
@@ -224,12 +220,12 @@ function FeaturedLayout({
 
       <div className="w-full lg:w-1/2 p-10 flex flex-col justify-center">
         <h2
-          className={`font-bold text-3xl lg:text-4xl mb-2 transition-colors duration-300 ${getTitleColor(isHovering, isDark)}`}
+          className={`font-bold text-3xl lg:text-4xl mb-2 transition-colors duration-300 ${getTitleColor(isHovering)}`}
         >
           {title}
         </h2>
         <p
-          className={`text-lg lg:text-xl mb-8 line-clamp-4 transition-colors duration-300 ${getDescColor(isHovering, isDark)}`}
+          className={`text-lg lg:text-xl mb-8 line-clamp-4 transition-colors duration-300 ${getDescColor(isHovering)}`}
         >
           {description}
         </p>
@@ -238,7 +234,6 @@ function FeaturedLayout({
           avatarUrl={authorAvatarUrl}
           date={date}
           minDuration={minDuration}
-          isDark={isDark}
         />
       </div>
     </div>
@@ -282,12 +277,12 @@ function GridLayout({
       <div className={`${padding} grow flex flex-col justify-between`}>
         <div>
           <h2
-            className={`font-bold ${titleSize} mb-1 transition-colors duration-300 ${getTitleColor(isHovering, isDark)}`}
+            className={`font-bold ${titleSize} mb-1 transition-colors duration-300 ${getTitleColor(isHovering)}`}
           >
             {title}
           </h2>
           <p
-            className={`${descSize} transition-colors duration-300 ${getDescColor(isHovering, isDark)}`}
+            className={`${descSize} transition-colors duration-300 ${getDescColor(isHovering)}`}
           >
             {description}
           </p>
@@ -298,7 +293,6 @@ function GridLayout({
           avatarUrl={authorAvatarUrl}
           date={date}
           minDuration={minDuration}
-          isDark={isDark}
         />
       </div>
     </div>

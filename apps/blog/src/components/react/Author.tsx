@@ -5,7 +5,6 @@ type AuthorProps = {
   avatarUrl?: string;
   date: string;
   minDuration?: string;
-  isDark: boolean;
 };
 
 export default function Author({
@@ -13,10 +12,9 @@ export default function Author({
   avatarUrl,
   date,
   minDuration,
-  isDark,
 }: AuthorProps) {
-  const authorColor = isDark ? "text-gray-100" : "text-[#0a192f]";
-  const authorSubColor = isDark ? "text-gray-400" : "text-[#0a192f]/60";
+  const authorColor = "text-[var(--text-title)]";
+  const authorSubColor = "text-[var(--text-desc)]/80";
 
   return (
     <div className="flex items-center gap-3 mt-4">
