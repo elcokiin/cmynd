@@ -1,7 +1,5 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import SiteHeader from "../components/SiteHeader.astro";
-import SiteFooter from "../components/SiteFooter.astro";
 import { ForceField } from "@elcokiin/ui/force-field";
 import { Atmosphere } from "@elcokiin/ui/atmosphere";
 
@@ -9,7 +7,6 @@ import "../styles/global.css";
 ---
 
 <BaseLayout title="Not Found · elcokiin blog" description="Page not found" canonicalPath="/404">
-  <SiteHeader />
     <ForceField client:load
       className="ff-404 relative flex flex-col items-center justify-center min-h-[96vh] w-full overflow-hidden"
     shape="hexagon"
@@ -67,7 +64,6 @@ import "../styles/global.css";
       </div>
   </Atmosphere>
     </ForceField>
-  <SiteFooter />
 </BaseLayout>
 
 <style>

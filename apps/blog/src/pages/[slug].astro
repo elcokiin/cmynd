@@ -1,7 +1,5 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import SiteHeader from "../components/SiteHeader.astro";
-import SiteFooter from "../components/SiteFooter.astro";
 import CoverImage from "../components/CoverImage.astro";
 import ReprintCard from "../components/ReprintCard.astro";
 import { loadPost } from "../lib/load-post";
@@ -34,7 +32,6 @@ const isReprint = reprint !== undefined;
 ---
 
 <BaseLayout title={title} description={description} canonicalPath={canonicalPath}>
-  <SiteHeader />
   <main class="post-main container">
     <article class="post-article">
       <h1>{post.title}</h1>
@@ -67,5 +64,4 @@ const isReprint = reprint !== undefined;
       </section>
     </article>
   </main>
-  <SiteFooter />
 </BaseLayout>

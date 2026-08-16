@@ -177,17 +177,13 @@ href="https://elcokiin.me"
 
   function setupHeaderBg() {
     const header = document.getElementById("site-header");
-    const foreground = document.querySelector(".hero-title");
-    if (!header || !foreground) {
-      header?.classList.add("is-scrolled");
-      return;
-    }
+    if (!header) return;
 
     let frame = 0;
     const update = () => {
       frame = 0;
-      const rect = foreground.getBoundingClientRect();
-      header.classList.toggle("is-scrolled", rect.bottom < 0);
+      const scrolled = window.scrollY >= window.innerHeight * 0.1;
+      header.classList.toggle("is-scrolled", scrolled);
     };
 
     const onScroll = () => {

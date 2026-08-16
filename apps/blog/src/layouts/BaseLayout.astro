@@ -1,6 +1,8 @@
 ---
 import { SITE } from "../lib/config";
 import { ThemeShortcut } from "../components/react/ThemeShortcut";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
 
 type Props = {
   title: string;
@@ -68,7 +70,9 @@ const jsonLd = {
     </script>
   </head>
   <body>
+    <SiteHeader />
     <slot />
+    <SiteFooter />
     <ThemeShortcut client:only="react" />
   </body>
 </html>

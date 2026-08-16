@@ -1,7 +1,5 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import SiteHeader from "../components/SiteHeader.astro";
-import SiteFooter from "../components/SiteFooter.astro";
 import BlogGrid from "../components/BlogGrid.astro";
 import SiteHero from "../components/SiteHero.astro"
 import { loadPublishedPosts } from "../lib/load-post";
@@ -17,12 +15,10 @@ const posts = await loadPublishedPosts();
 ---
 
 <BaseLayout title={`${SITE.title}`} description={SITE.description} canonicalPath="/">
-  <SiteHeader />
   <div class="w-full">
     <SiteHero /> 
   </div>
   <main class="container mx-auto px-4 md:px-8 max-w-7xl">
     <BlogGrid posts={posts as any} />
   </main>
-  <SiteFooter />
 </BaseLayout>
