@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { applyTheme, getTheme, runWithThemeTransition } from "../../lib/theme";
+import { applyTheme, getTheme } from "../../lib/theme";
 
 export function ThemeShortcut() {
   const themeRef = useRef(getTheme());
@@ -15,9 +15,7 @@ export function ThemeShortcut() {
       if (e.key === "d" || e.key === "D") {
         const next = themeRef.current === "dark" ? "light" : "dark";
         themeRef.current = next;
-        runWithThemeTransition(() => {
-          applyTheme(next);
-        });
+        applyTheme(next);
       }
     }
     document.addEventListener("keydown", onKeyDown);
