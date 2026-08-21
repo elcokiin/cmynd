@@ -25,7 +25,10 @@ export function DocumentSettingsDialog({
   const [activeSection, setActiveSection] =
     useState<NavigationSection>("cover");
 
-  const document = useQuery(api.documents.queries.getForEdit, { documentId });
+  const document = useQuery(
+    api.documents.queries.getForEdit,
+    open ? { documentId } : "skip",
+  );
   const isReprint = document?.type === "reprint";
 
   return (
@@ -38,16 +41,20 @@ export function DocumentSettingsDialog({
             disabledSections={isReprint ? ["inspirations"] : []}
           />
           <div className="flex-1 p-6 overflow-y-auto min-h-0 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-primary/50 [&::-webkit-scrollbar-thumb]:hover:bg-primary/70">
-            {activeSection === "cover" && (
+            {/* Only mount sections while the dialog is open so we don't keep
+                live document subscriptions alive for every card on the
+                dashboard. Mounting them always caused stale/deleted docs to
+                re-throw On every table change (see Fix A). */}
+            {open && activeSection === "cover" && (
               <CoverSection documentId={documentId} />
             )}
-            {activeSection === "description" && (
+            {open && activeSection === "description" && (
               <DescriptionSection documentId={documentId} />
             )}
-            {activeSection === "reprint" && (
+            {open && activeSection === "reprint" && (
               <ReprintSection documentId={documentId} />
             )}
-            {activeSection === "inspirations" && (
+            {open && activeSection === "inspirations" && (
               <InspirationsSection
                 documentId={documentId}
                 onNavigateToReprint={() => setActiveSection("reprint")}

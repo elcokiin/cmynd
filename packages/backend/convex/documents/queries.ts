@@ -6,6 +6,7 @@ import type {
 
 import { v } from "convex/values";
 import { query } from "../_generated/server";
+import { ConvexError } from "convex/values";
 import { ErrorCode, throwConvexError } from "@elcokiin/errors";
 import * as Auth from "../_lib/auth";
 import { getByIdForAuthor, paginationOptsValidator } from "./helpers";
@@ -105,7 +106,7 @@ export const getPublishedBySlug = query({
   handler: async (ctx, args): Promise<PublishedDocument | null> => {
     let document = await ctx.db
       .query("documents")
-      .withIndex("by_slug", q => q.eq("slug", args.slug))
+      .withIndex("by_slug", (q) => q.eq("slug", args.slug))
       .unique();
 
     if (!document) {
@@ -167,7 +168,10 @@ export const listPublished = query({
       .filter((doc) => doc.type === "reprint" && doc.reprint?.originalAuthorId)
       .map((doc) => doc.reprint!.originalAuthorId!);
     const uniqueAuthorIds = [
-      ...new Set([...publishedDocs.map((doc) => doc.authorId), ...originalAuthorIds]),
+      ...new Set([
+        ...publishedDocs.map((doc) => doc.authorId),
+        ...originalAuthorIds,
+      ]),
     ];
     const authors = await Promise.all(
       uniqueAuthorIds.map((id) => ctx.db.get(id)),
@@ -205,7 +209,18 @@ export const listPublished = query({
 export const getForEdit = query({
   args: { documentId: v.id("documents") },
   handler: async (ctx, args) => {
-    return await getByIdForAuthor(ctx, args.documentId);
+    try {
+      return await getByIdForAuthor(ctx, args.documentId);
+    } catch (error) {
+      if (
+        error instanceof ConvexError &&
+        (error.data as { code?: unknown } | null)?.code ===
+          ErrorCode.DOCUMENT_NOT_FOUND
+      ) {
+        return null;
+      }
+      throw error;
+    }
   },
 });
 
@@ -418,9 +433,7 @@ export const listPublishedForAdmin = query({
         }
         return toAdminPublishedDocumentListItem(doc);
       })
-      .filter(
-        (doc): doc is AdminPublishedDocumentListItem => doc !== null,
-      );
+      .filter((doc): doc is AdminPublishedDocumentListItem => doc !== null);
 
     return {
       ...result,
