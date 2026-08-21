@@ -11,48 +11,35 @@ import { useErrorHandler } from "@/hooks/use-error-handler";
 
 const UNTITLED = "Untitled";
 
-type EditableDocumentTitleProps =
-  | {
-      documentId: Id<"documents">;
-      initialTitle: string;
-      isEditable: boolean;
-      // Controlled mode props (not used in this variant)
-      title?: never;
-      onTitleChange?: never;
-    }
-  | {
-      // Controlled mode (for draft documents)
-      title: string;
-      onTitleChange: (title: string) => void;
-      isEditable: boolean;
-      // Server-synced props (not used in this variant)
-      documentId?: never;
-      initialTitle?: never;
-    };
+type EditableDocumentTitleProps = {
+  documentId: Id<"documents">;
+  initialTitle: string;
+  isEditable: boolean;
+  // Tracking-only side channel so owners (e.g. the draft lifecycle hook)
+  // can observe the current title without taking over persistence.
+  onTitleChange?: (title: string) => void;
+};
 
-export function EditableDocumentTitle(props: EditableDocumentTitleProps) {
-  const isControlledMode = "title" in props && props.title !== undefined;
-
-  const [localTitle, setLocalTitle] = useState(
-    isControlledMode ? props.title : props.initialTitle,
-  );
+export function EditableDocumentTitle({
+  documentId,
+  initialTitle,
+  isEditable,
+  onTitleChange,
+}: EditableDocumentTitleProps): React.ReactNode {
+  const [localTitle, setLocalTitle] = useState(initialTitle);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
 
   const titleInputRef = useRef<HTMLInputElement>(null);
   const { handleErrorSilent } = useErrorHandler();
 
+  // Tracks the last persisted title. The blur/escape comparison uses this
+  // instead of the `initialTitle` prop so a stale or re-supplied prop never
+  // blocks an updateTitle auto-save that should still happen.
+  const committedTitleRef = useRef(initialTitle.trim() || UNTITLED);
+
   const updateTitleMutation = useMutation(api.documents.mutations.updateTitle);
 
-  const isEditable = props.isEditable;
-
-  // Update local title when controlled title changes
-  useEffect(() => {
-    if (isControlledMode) {
-      setLocalTitle(props.title);
-    }
-  }, [isControlledMode, isControlledMode && props.title]);
-
-  // Focus input when editing starts
+  // Focus and select the input when editing starts
   useEffect(() => {
     if (isEditingTitle && titleInputRef.current) {
       titleInputRef.current.focus();
@@ -60,14 +47,16 @@ export function EditableDocumentTitle(props: EditableDocumentTitleProps) {
     }
   }, [isEditingTitle]);
 
-  const saveTitleToBackend = async (newTitle: string) => {
-    if (isControlledMode) return;
-
+  const saveTitleToBackend = async (newTitle: string): Promise<boolean> => {
     try {
       const result = await updateTitleMutation({
-        documentId: props.documentId,
+        documentId,
         title: newTitle,
       });
+
+      // Only advance the persisted baseline once the server confirms, so a
+      // failed rename is retried on the next blur instead of forgotten.
+      committedTitleRef.current = newTitle;
 
       // Show notification if an old slug was deleted
       if (result?.slugDeleted) {
@@ -75,30 +64,34 @@ export function EditableDocumentTitle(props: EditableDocumentTitleProps) {
           description: `Old URL /editor/${result.slugDeleted} is no longer accessible`,
         });
       }
+
+      return true;
     } catch (error: unknown) {
       handleErrorSilent(error, "EditableDocumentTitle.saveTitleToBackend");
+      return false;
     }
   };
 
   const handleTitleChange = (newTitle: string) => {
     setLocalTitle(newTitle);
-
-    if (isControlledMode) {
-      props.onTitleChange(newTitle);
-    }
+    onTitleChange?.(newTitle);
   };
 
   const handleTitleBlur = async () => {
     setIsEditingTitle(false);
 
-    const finalTitle = localTitle.trim() || UNTITLED;
+    const trimmed = localTitle.trim();
 
-    if (!localTitle.trim()) {
-      setLocalTitle(UNTITLED);
+    if (!trimmed) {
+      // The backend rejects empty/"Untitled" titles (DOCUMENT_INVALID_TITLE),
+      // so persisting one would fail silently and leave the UI disagreeing
+      // with the server. Revert to the last persisted title instead.
+      setLocalTitle(committedTitleRef.current);
+      return;
     }
 
-    if (!isControlledMode && finalTitle !== props.initialTitle) {
-      await saveTitleToBackend(finalTitle);
+    if (trimmed !== committedTitleRef.current) {
+      await saveTitleToBackend(trimmed);
     }
   };
 
@@ -107,10 +100,7 @@ export function EditableDocumentTitle(props: EditableDocumentTitleProps) {
       handleTitleBlur();
     }
     if (e.key === "Escape") {
-      const fallbackTitle = isControlledMode
-        ? props.title
-        : props.initialTitle || UNTITLED;
-      setLocalTitle(fallbackTitle);
+      setLocalTitle(committedTitleRef.current);
       setIsEditingTitle(false);
     }
   };

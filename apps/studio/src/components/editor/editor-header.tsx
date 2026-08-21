@@ -24,6 +24,9 @@ type EditorHeaderProps = {
   status: DocumentStatus;
   isEditable: boolean;
   rejectionReason?: string;
+  // Tracking-only side channel (see EditableDocumentTitle) for routes that
+  // need to observe the live title without taking over persistence.
+  onTitleChange?: (title: string) => void;
 };
 
 export function EditorHeader({
@@ -33,6 +36,7 @@ export function EditorHeader({
   status,
   isEditable,
   rejectionReason,
+  onTitleChange,
 }: EditorHeaderProps): React.ReactNode {
   return (
     <div className="flex items-center justify-between border-b px-4 py-2">
@@ -48,6 +52,7 @@ export function EditorHeader({
             documentId={documentId}
             initialTitle={title}
             isEditable={isEditable}
+            onTitleChange={onTitleChange}
           />
           <span className="text-xs text-muted-foreground capitalize">
             {status} · {type}
