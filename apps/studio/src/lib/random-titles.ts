@@ -36,7 +36,3 @@ type RandomTitle = (typeof RANDOM_TITLES)[number];
 export function isRandomTitle(title: string): title is RandomTitle {
   return RANDOM_TITLES.includes(title as RandomTitle);
 }
-
-export type { RandomTitle };
-
-export { RANDOM_TITLES };

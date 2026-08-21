@@ -20,7 +20,6 @@ import { Route as AuthAdminPortfolioRouteRouteImport } from './routes/_auth/admi
 import { Route as AuthAdminPublishedRouteImport } from './routes/_auth/admin/published'
 import { Route as AuthAdminReviewRouteImport } from './routes/_auth/admin/review'
 import { Route as AuthEditorSlugRouteImport } from './routes/_auth/editor/$slug'
-import { Route as AuthEditorNewRouteImport } from './routes/_auth/editor/new'
 import { Route as AuthMyPortfolioIndexRouteImport } from './routes/_auth/my-portfolio/index'
 import { Route as AuthMyPortfolioExperienceRouteImport } from './routes/_auth/my-portfolio/experience'
 import { Route as AuthMyPortfolioProjectsRouteImport } from './routes/_auth/my-portfolio/projects'
@@ -84,11 +83,6 @@ const AuthAdminReviewRoute = AuthAdminReviewRouteImport.update({
 const AuthEditorSlugRoute = AuthEditorSlugRouteImport.update({
   id: '/editor/$slug',
   path: '/editor/$slug',
-  getParentRoute: () => AuthRouteRoute,
-} as any)
-const AuthEditorNewRoute = AuthEditorNewRouteImport.update({
-  id: '/editor/new',
-  path: '/editor/new',
   getParentRoute: () => AuthRouteRoute,
 } as any)
 const AuthMyPortfolioIndexRoute = AuthMyPortfolioIndexRouteImport.update({
@@ -156,7 +150,6 @@ export interface FileRoutesByFullPath {
   '/admin/published': typeof AuthAdminPublishedRoute
   '/admin/review': typeof AuthAdminReviewRoute
   '/editor/$slug': typeof AuthEditorSlugRoute
-  '/editor/new': typeof AuthEditorNewRoute
   '/my-portfolio/experience': typeof AuthMyPortfolioExperienceRoute
   '/my-portfolio/projects': typeof AuthMyPortfolioProjectsRoute
   '/my-portfolio/skills': typeof AuthMyPortfolioSkillsRoute
@@ -176,7 +169,6 @@ export interface FileRoutesByTo {
   '/admin/published': typeof AuthAdminPublishedRoute
   '/admin/review': typeof AuthAdminReviewRoute
   '/editor/$slug': typeof AuthEditorSlugRoute
-  '/editor/new': typeof AuthEditorNewRoute
   '/my-portfolio/experience': typeof AuthMyPortfolioExperienceRoute
   '/my-portfolio/projects': typeof AuthMyPortfolioProjectsRoute
   '/my-portfolio/skills': typeof AuthMyPortfolioSkillsRoute
@@ -201,7 +193,6 @@ export interface FileRoutesById {
   '/_auth/admin/published': typeof AuthAdminPublishedRoute
   '/_auth/admin/review': typeof AuthAdminReviewRoute
   '/_auth/editor/$slug': typeof AuthEditorSlugRoute
-  '/_auth/editor/new': typeof AuthEditorNewRoute
   '/_auth/my-portfolio/experience': typeof AuthMyPortfolioExperienceRoute
   '/_auth/my-portfolio/projects': typeof AuthMyPortfolioProjectsRoute
   '/_auth/my-portfolio/skills': typeof AuthMyPortfolioSkillsRoute
@@ -226,7 +217,6 @@ export interface FileRouteTypes {
     | '/admin/published'
     | '/admin/review'
     | '/editor/$slug'
-    | '/editor/new'
     | '/my-portfolio/experience'
     | '/my-portfolio/projects'
     | '/my-portfolio/skills'
@@ -246,7 +236,6 @@ export interface FileRouteTypes {
     | '/admin/published'
     | '/admin/review'
     | '/editor/$slug'
-    | '/editor/new'
     | '/my-portfolio/experience'
     | '/my-portfolio/projects'
     | '/my-portfolio/skills'
@@ -270,7 +259,6 @@ export interface FileRouteTypes {
     | '/_auth/admin/published'
     | '/_auth/admin/review'
     | '/_auth/editor/$slug'
-    | '/_auth/editor/new'
     | '/_auth/my-portfolio/experience'
     | '/_auth/my-portfolio/projects'
     | '/_auth/my-portfolio/skills'
@@ -367,13 +355,6 @@ declare module '@tanstack/react-router' {
       path: '/editor/$slug'
       fullPath: '/editor/$slug'
       preLoaderRoute: typeof AuthEditorSlugRouteImport
-      parentRoute: typeof AuthRouteRoute
-    }
-    '/_auth/editor/new': {
-      id: '/_auth/editor/new'
-      path: '/editor/new'
-      fullPath: '/editor/new'
-      preLoaderRoute: typeof AuthEditorNewRouteImport
       parentRoute: typeof AuthRouteRoute
     }
     '/_auth/my-portfolio/': {
@@ -513,7 +494,6 @@ interface AuthRouteRouteChildren {
   AuthMyPortfolioRouteRoute: typeof AuthMyPortfolioRouteRouteWithChildren
   AuthIndexRoute: typeof AuthIndexRoute
   AuthEditorSlugRoute: typeof AuthEditorSlugRoute
-  AuthEditorNewRoute: typeof AuthEditorNewRoute
 }
 
 const AuthRouteRouteChildren: AuthRouteRouteChildren = {
@@ -521,7 +501,6 @@ const AuthRouteRouteChildren: AuthRouteRouteChildren = {
   AuthMyPortfolioRouteRoute: AuthMyPortfolioRouteRouteWithChildren,
   AuthIndexRoute: AuthIndexRoute,
   AuthEditorSlugRoute: AuthEditorSlugRoute,
-  AuthEditorNewRoute: AuthEditorNewRoute,
 }
 
 const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
